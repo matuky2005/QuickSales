@@ -53,8 +53,7 @@ export const createSale = async (req, res, next) => {
       fechaHora: pago.fechaHora ? new Date(pago.fechaHora) : new Date()
     }));
     const pagoTotal = pagosNormalizados.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
-    const cobroEnCaja =
-      envio?.cobro === "CADETE" ? Math.max(total - envioMonto, 0) : total;
+    const cobroEnCaja = Math.max(total - envioMonto, 0);
     if (Math.round(pagoTotal) > Math.round(cobroEnCaja)) {
       return res.status(400).json({ message: "payments total cannot exceed expected cash" });
     }
@@ -152,11 +151,12 @@ export const addPayment = async (req, res, next) => {
     }));
     const nuevoTotalCobrado =
       sale.totalCobrado + nuevosPagos.reduce((sum, pago) => sum + pago.monto, 0);
-    if (nuevoTotalCobrado > sale.total) {
+    const totalCaja = sale.total - (sale.envio?.monto || 0);
+    if (nuevoTotalCobrado > totalCaja) {
       return res.status(400).json({ message: "payments total cannot exceed sale total" });
     }
     sale.totalCobrado = Math.round(nuevoTotalCobrado);
-    sale.saldoPendiente = Math.max(Math.round(sale.total - sale.totalCobrado), 0);
+    sale.saldoPendiente = Math.max(Math.round(totalCaja - sale.totalCobrado), 0);
     sale.estado = sale.saldoPendiente === 0 ? "PAGADA" : "PENDIENTE";
     sale.pagos.push(...nuevosPagos);
     sale.auditoria.push({
@@ -209,7 +209,8 @@ export const updateSale = async (req, res, next) => {
       cobro: envio?.cobro === "CADETE" ? "CADETE" : "INCLUIDO"
     };
     sale.total = total;
-    sale.saldoPendiente = Math.max(Math.round(total - sale.totalCobrado), 0);
+    const totalCaja = total - envioMonto;
+    sale.saldoPendiente = Math.max(Math.round(totalCaja - sale.totalCobrado), 0);
     sale.estado = sale.saldoPendiente === 0 ? "PAGADA" : "PENDIENTE";
     sale.auditoria.push({
       accion: "ACTUALIZADA",

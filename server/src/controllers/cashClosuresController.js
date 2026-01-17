@@ -16,7 +16,7 @@ const buildTotals = (sales) => {
     });
   });
 
-  const totalVentas = sales.reduce((sum, sale) => sum + sale.total, 0);
+  const totalVentas = sales.reduce((sum, sale) => sum + (sale.total - (sale.envio?.monto || 0)), 0);
 
   return { totalesPorMetodo, totalesPorCuenta, totalVentas };
 };

@@ -18,6 +18,8 @@ const SalePage = () => {
   const [montoPago, setMontoPago] = useState(0);
   const [tipoTarjeta, setTipoTarjeta] = useState("credito");
   const [cuentaTransferencia, setCuentaTransferencia] = useState("");
+  const [marca, setMarca] = useState("");
+  const [atributosInput, setAtributosInput] = useState("");
   const [status, setStatus] = useState("");
   const [sugerencias, setSugerencias] = useState([]);
 
@@ -40,7 +42,7 @@ const SalePage = () => {
 
   const montoEnvio = Math.round(Number(envio.monto || 0));
   const total = subtotalItems + montoRecargo + montoEnvio;
-  const totalCobrarCaja = envio.cobro === "CADETE" ? Math.max(total - montoEnvio, 0) : total;
+  const totalCobrarCaja = Math.max(total - montoEnvio, 0);
   const totalPagos = useMemo(
     () => pagos.reduce((sum, pago) => sum + Number(pago.monto || 0), 0),
     [pagos]
@@ -81,7 +83,15 @@ const SalePage = () => {
     try {
       const product = await apiFetch("/api/products", {
         method: "POST",
-        body: JSON.stringify({ descripcion: descripcionSnapshot, precioSugerido: precioNum })
+        body: JSON.stringify({
+          descripcion: descripcionSnapshot,
+          precioSugerido: precioNum,
+          marca: marca.trim(),
+          atributos: atributosInput
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        })
       });
       const subtotal = Math.round(cantidadNum * precioNum);
       setItems((prev) => [
@@ -98,6 +108,8 @@ const SalePage = () => {
       setDescripcion("");
       setCantidad(1);
       setPrecioUnitario(product.precioSugerido || 0);
+      setMarca("");
+      setAtributosInput("");
       descripcionRef.current?.focus();
       setStatus("Ítem agregado.");
     } catch (error) {
@@ -140,16 +152,16 @@ const SalePage = () => {
 
   const guardarVenta = async () => {
     try {
-    const payload = {
-      fechaHora: new Date().toISOString(),
-      customerNombreSnapshot: clienteNombre.trim() || undefined,
-      items,
-      recargo: { tipo: recargo.tipo, valor: Number(recargo.valor || 0) },
-      envio: { monto: montoEnvio, cobro: envio.cobro },
-      total,
-      pagos,
-      pagoEnElMomento
-    };
+      const payload = {
+        fechaHora: new Date().toISOString(),
+        customerNombreSnapshot: clienteNombre.trim() || undefined,
+        items,
+        recargo: { tipo: recargo.tipo, valor: Number(recargo.valor || 0) },
+        envio: { monto: montoEnvio, cobro: envio.cobro },
+        total,
+        pagos,
+        pagoEnElMomento
+      };
       await apiFetch("/api/sales", {
         method: "POST",
         body: JSON.stringify(payload)
@@ -270,6 +282,22 @@ const SalePage = () => {
           {sugerencias.length > 0 && (
             <div className="helper">Sugerencias: {sugerencias.map((p) => p.descripcion).join(" · ")}</div>
           )}
+        </div>
+        <div>
+          <label>
+            Marca
+            <input value={marca} onChange={(event) => setMarca(event.target.value)} />
+          </label>
+        </div>
+        <div>
+          <label>
+            Atributos (coma)
+            <input
+              value={atributosInput}
+              onChange={(event) => setAtributosInput(event.target.value)}
+              placeholder="ej: 1kg, frutilla"
+            />
+          </label>
         </div>
         <div>
           <label>
@@ -396,14 +424,14 @@ const SalePage = () => {
               value={envio.cobro}
               onChange={(event) => setEnvio((prev) => ({ ...prev, cobro: event.target.value }))}
             >
-              <option value="INCLUIDO">Incluido en pago</option>
-              <option value="CADETE">Cliente paga al cadete</option>
+              <option value="INCLUIDO">Cliente paga en local</option>
+              <option value="CADETE">Cadete lleva/cobra</option>
             </select>
           </label>
         </div>
         <div className="stack">
           <label>
-            Total en caja
+            Total en caja (sin envío)
             <input type="number" value={totalCobrarCaja} readOnly />
           </label>
         </div>

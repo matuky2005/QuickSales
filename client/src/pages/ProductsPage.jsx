@@ -6,6 +6,8 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [descripcion, setDescripcion] = useState("");
   const [precioSugerido, setPrecioSugerido] = useState("");
+  const [marca, setMarca] = useState("");
+  const [atributosInput, setAtributosInput] = useState("");
   const [status, setStatus] = useState("");
 
   const buscar = async () => {
@@ -25,12 +27,19 @@ const ProductsPage = () => {
         method: "POST",
         body: JSON.stringify({
           descripcion: descripcion.trim(),
+          marca: marca.trim(),
+          atributos: atributosInput
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
           precioSugerido: Number(precioSugerido || 0)
         })
       });
       setStatus("Producto guardado.");
       setDescripcion("");
       setPrecioSugerido("");
+      setMarca("");
+      setAtributosInput("");
       setProducts((prev) => [product, ...prev]);
     } catch (error) {
       setStatus(error.message);
@@ -45,6 +54,17 @@ const ProductsPage = () => {
         <label>
           Descripción
           <input value={descripcion} onChange={(event) => setDescripcion(event.target.value)} />
+        </label>
+        <label>
+          Marca
+          <input value={marca} onChange={(event) => setMarca(event.target.value)} />
+        </label>
+        <label>
+          Atributos (coma)
+          <input
+            value={atributosInput}
+            onChange={(event) => setAtributosInput(event.target.value)}
+          />
         </label>
         <label>
           Precio sugerido
@@ -65,7 +85,8 @@ const ProductsPage = () => {
       <ul style={{ marginTop: 16 }}>
         {products.map((product) => (
           <li key={product._id}>
-            {product.descripcion} - Sugerido: {product.precioSugerido}
+            {product.descripcion} {product.marca ? `(${product.marca})` : ""} - Sugerido: {product.precioSugerido}
+            {product.atributos?.length ? ` · ${product.atributos.join(", ")}` : ""}
           </li>
         ))}
       </ul>

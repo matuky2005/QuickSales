@@ -1,8 +1,8 @@
 :root {
   font-family: "Inter", system-ui, sans-serif;
   line-height: 1.4;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: #e2e8f0;
+  background-color: #0b1120;
 }
 
 * {
@@ -11,6 +11,7 @@
 
 body {
   margin: 0;
+  background: #0b1120;
 }
 
 .app-shell {
@@ -20,8 +21,8 @@ body {
 }
 
 header {
-  background: #0f172a;
-  color: white;
+  background: #111827;
+  color: #e2e8f0;
   padding: 12px 24px;
   display: flex;
   align-items: center;
@@ -39,16 +40,16 @@ main {
 }
 
 .nav-links a {
-  color: #e2e8f0;
+  color: #cbd5f5;
   text-decoration: none;
   font-weight: 600;
 }
 
 .container {
-  background: white;
+  background: #0f172a;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
 }
 
 .grid {
@@ -68,7 +69,9 @@ input, select, textarea {
   width: 100%;
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid #cbd5f5;
+  border: 1px solid #334155;
+  background: #111827;
+  color: #e2e8f0;
 }
 
 button {
@@ -82,13 +85,13 @@ button {
 }
 
 button.secondary {
-  background: #0f172a;
+  background: #1f2937;
 }
 
 button.ghost {
   background: transparent;
-  color: #0f172a;
-  border: 1px solid #cbd5f5;
+  color: #e2e8f0;
+  border: 1px solid #334155;
 }
 
 .table {
@@ -98,12 +101,12 @@ button.ghost {
 
 .table th, .table td {
   padding: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #1f2937;
   text-align: left;
 }
 
 .table tr.selected {
-  background: #f1f5f9;
+  background: #1f2937;
 }
 
 .badge {
@@ -111,7 +114,7 @@ button.ghost {
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  background: #e2e8f0;
+  background: #1f2937;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
@@ -119,7 +122,7 @@ button.ghost {
 
 .helper {
   font-size: 12px;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .stack {
@@ -137,8 +140,8 @@ button.ghost {
 .alert {
   padding: 10px;
   border-radius: 8px;
-  background: #fef9c3;
-  color: #854d0e;
+  background: #312e0e;
+  color: #facc15;
   font-size: 13px;
 }
 

@@ -63,6 +63,8 @@ npm run seed
 - Ventas pendientes pueden saldarse con `POST /api/sales/:id/payments`.
 - Cambios en ventas se registran en auditoría interna.
 - El cierre de caja es inmutable; ajustes posteriores se registran con notas de crédito/débito.
+- El cierre de caja **no incluye el envío**, ya que es un dinero a rendir al cadete.
+- Productos admiten marca y atributos (lista simple separada por comas).
 
 ## Endpoints principales
 - `POST /api/products`

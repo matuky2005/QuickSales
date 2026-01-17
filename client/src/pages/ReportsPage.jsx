@@ -28,6 +28,9 @@ const ReportsPage = () => {
       {report && (
         <div className="stack" style={{ marginTop: 16 }}>
           <div className="badge">Total: {report.totalVendido}</div>
+          <div>Cobrado en caja: {report.totalCobrado}</div>
+          <div>Saldo pendiente: {report.saldoPendiente}</div>
+          <div>Envío por rendir (cadete): {report.totalEnvioCadete}</div>
           <div>Ventas: {report.cantidadVentas}</div>
           <div>
             <strong>Totales por método</strong>

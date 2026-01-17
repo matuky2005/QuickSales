@@ -54,6 +54,11 @@ npm run seed
 - **Ctrl+Enter**: guardar venta.
 - **Esc**: cancelar/limpiar venta.
 
+## Envíos y saldos
+- Si el envío está **incluido en el pago**, el total se cobra en caja junto con el resto de la venta.
+- Si el cliente **paga el envío al cadete**, el envío queda marcado como “cadete debe rendir” y no se exige en los pagos de caja.
+- Se permiten pagos parciales: el saldo pendiente queda registrado en la venta y en el reporte diario.
+
 ## Endpoints principales
 - `POST /api/products`
 - `GET /api/products?query=`
@@ -68,4 +73,3 @@ npm run seed
 - Estado local con React hooks por simplicidad y velocidad.
 - Búsqueda de productos/clientes por coincidencia parcial (suggestions) y exacta case-insensitive en backend.
 - Totales en ARS sin decimales (redondeo a enteros).
-

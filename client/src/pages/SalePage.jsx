@@ -11,6 +11,7 @@ const SalePage = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [clienteNombre, setClienteNombre] = useState("");
   const [recargo, setRecargo] = useState(initialRecargo);
+  const [envio, setEnvio] = useState({ monto: 0, cobro: "INCLUIDO" });
   const [pagos, setPagos] = useState([]);
   const [metodoPago, setMetodoPago] = useState("EFECTIVO");
   const [montoPago, setMontoPago] = useState(0);
@@ -36,7 +37,14 @@ const SalePage = () => {
     return Math.round(Number(recargo.valor || 0));
   }, [recargo, subtotalItems]);
 
-  const total = subtotalItems + montoRecargo;
+  const montoEnvio = Math.round(Number(envio.monto || 0));
+  const total = subtotalItems + montoRecargo + montoEnvio;
+  const totalCobrarCaja = envio.cobro === "CADETE" ? Math.max(total - montoEnvio, 0) : total;
+  const totalPagos = useMemo(
+    () => pagos.reduce((sum, pago) => sum + Number(pago.monto || 0), 0),
+    [pagos]
+  );
+  const saldoPendiente = Math.max(Math.round(totalCobrarCaja - totalPagos), 0);
 
   const resetVenta = () => {
     setDescripcion("");
@@ -46,6 +54,7 @@ const SalePage = () => {
     setSelectedIndex(0);
     setClienteNombre("");
     setRecargo(initialRecargo);
+    setEnvio({ monto: 0, cobro: "INCLUIDO" });
     setPagos([]);
     setMetodoPago("EFECTIVO");
     setMontoPago(0);
@@ -100,6 +109,10 @@ const SalePage = () => {
       setStatus("Monto inválido.");
       return;
     }
+    if (Math.round(totalPagos + monto) > Math.round(totalCobrarCaja)) {
+      setStatus("El pago supera el total a cobrar en caja.");
+      return;
+    }
     const nuevoPago = {
       metodo: metodoPago,
       monto
@@ -125,16 +138,12 @@ const SalePage = () => {
 
   const guardarVenta = async () => {
     try {
-      const totalPagos = pagos.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
-      if (Math.round(totalPagos) !== Math.round(total)) {
-        setStatus("La suma de pagos debe igualar el total.");
-        return;
-      }
       const payload = {
         fechaHora: new Date().toISOString(),
         customerNombreSnapshot: clienteNombre.trim() || undefined,
         items,
         recargo: { tipo: recargo.tipo, valor: Number(recargo.valor || 0) },
+        envio: { monto: montoEnvio, cobro: envio.cobro },
         total,
         pagos
       };
@@ -142,7 +151,7 @@ const SalePage = () => {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      setStatus("Venta guardada.");
+      setStatus(saldoPendiente > 0 ? "Venta guardada con saldo pendiente." : "Venta guardada.");
       resetVenta();
     } catch (error) {
       setStatus(error.message);
@@ -352,6 +361,37 @@ const SalePage = () => {
         </div>
       </div>
 
+      <div className="grid grid-3" style={{ marginTop: 16 }}>
+        <div className="stack">
+          <label>
+            Envío
+            <input
+              type="number"
+              value={envio.monto}
+              onChange={(event) => setEnvio((prev) => ({ ...prev, monto: event.target.value }))}
+            />
+          </label>
+        </div>
+        <div className="stack">
+          <label>
+            Cobro envío
+            <select
+              value={envio.cobro}
+              onChange={(event) => setEnvio((prev) => ({ ...prev, cobro: event.target.value }))}
+            >
+              <option value="INCLUIDO">Incluido en pago</option>
+              <option value="CADETE">Cliente paga al cadete</option>
+            </select>
+          </label>
+        </div>
+        <div className="stack">
+          <label>
+            Total en caja
+            <input type="number" value={totalCobrarCaja} readOnly />
+          </label>
+        </div>
+      </div>
+
       <div className="grid" style={{ marginTop: 16 }}>
         <h3>Pagos</h3>
         <div className="grid grid-3">
@@ -422,6 +462,10 @@ const SalePage = () => {
             ))}
           </ul>
         )}
+        <div className="helper">
+          Total cobrado: {totalPagos} · Saldo pendiente: {saldoPendiente}
+          {envio.cobro === "CADETE" ? ` · Cadete debe rendir: ${montoEnvio}` : ""}
+        </div>
       </div>
 
       <div className="inline" style={{ marginTop: 16 }}>

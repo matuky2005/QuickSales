@@ -38,7 +38,11 @@ const seed = async () => {
         }
       ],
       recargo: { tipo: "fijo", valor: 0, montoCalculado: 0 },
+      envio: { monto: 0, cobro: "INCLUIDO" },
       total: 21000,
+      totalCobrado: 21000,
+      saldoPendiente: 0,
+      cadeteMontoPendiente: 0,
       pagos: [{ metodo: "EFECTIVO", monto: 21000 }]
     },
     {
@@ -55,7 +59,11 @@ const seed = async () => {
         }
       ],
       recargo: { tipo: "fijo", valor: 500, montoCalculado: 500 },
+      envio: { monto: 0, cobro: "INCLUIDO" },
       total: 9000,
+      totalCobrado: 9000,
+      saldoPendiente: 0,
+      cadeteMontoPendiente: 0,
       pagos: [{ metodo: "TRANSFERENCIA", cuentaTransferencia: "alias.demo", monto: 9000 }]
     },
     {
@@ -70,10 +78,14 @@ const seed = async () => {
         }
       ],
       recargo: { tipo: "porcentaje", valor: 10, montoCalculado: 660 },
+      envio: { monto: 1200, cobro: "CADETE" },
       total: 7260,
+      totalCobrado: 7260 - 1200,
+      saldoPendiente: 0,
+      cadeteMontoPendiente: 1200,
       pagos: [
         { metodo: "EFECTIVO", monto: 5000 },
-        { metodo: "QR", monto: 2260 }
+        { metodo: "QR", monto: 1060 }
       ]
     },
     {
@@ -95,7 +107,11 @@ const seed = async () => {
         }
       ],
       recargo: { tipo: "fijo", valor: 0, montoCalculado: 0 },
+      envio: { monto: 0, cobro: "INCLUIDO" },
       total: 14900,
+      totalCobrado: 14900,
+      saldoPendiente: 0,
+      cadeteMontoPendiente: 0,
       pagos: [{ metodo: "TARJETA", tipoTarjeta: "credito", monto: 14900 }]
     },
     {
@@ -110,7 +126,11 @@ const seed = async () => {
         }
       ],
       recargo: { tipo: "fijo", valor: 0, montoCalculado: 0 },
+      envio: { monto: 0, cobro: "INCLUIDO" },
       total: 17000,
+      totalCobrado: 17000,
+      saldoPendiente: 0,
+      cadeteMontoPendiente: 0,
       pagos: [{ metodo: "EFECTIVO", monto: 17000 }]
     }
   ];

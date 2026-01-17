@@ -13,6 +13,12 @@ export const getDailyReport = async (req, res, next) => {
     const sales = await Sale.find({ fechaHora: { $gte: start, $lte: end } }).sort({ fechaHora: 1 });
 
     const totalVendido = sales.reduce((sum, sale) => sum + sale.total, 0);
+    const totalCobrado = sales.reduce((sum, sale) => sum + (sale.totalCobrado || 0), 0);
+    const saldoPendiente = sales.reduce((sum, sale) => sum + (sale.saldoPendiente || 0), 0);
+    const totalEnvioCadete = sales.reduce(
+      (sum, sale) => sum + (sale.cadeteMontoPendiente || 0),
+      0
+    );
     const totalesPorMetodo = {};
 
     sales.forEach((sale) => {
@@ -24,6 +30,9 @@ export const getDailyReport = async (req, res, next) => {
     res.json({
       fecha: date,
       totalVendido,
+      totalCobrado,
+      saldoPendiente,
+      totalEnvioCadete,
       cantidadVentas: sales.length,
       totalesPorMetodo,
       ventas: sales

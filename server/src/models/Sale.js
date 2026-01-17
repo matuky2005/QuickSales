@@ -20,6 +20,14 @@ const recargoSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const envioSchema = new mongoose.Schema(
+  {
+    monto: { type: Number, default: 0 },
+    cobro: { type: String, enum: ["INCLUIDO", "CADETE"], default: "INCLUIDO" }
+  },
+  { _id: false }
+);
+
 const pagoSchema = new mongoose.Schema(
   {
     metodo: {
@@ -41,7 +49,11 @@ const saleSchema = new mongoose.Schema(
     customerNombreSnapshot: { type: String },
     items: { type: [saleItemSchema], required: true },
     recargo: { type: recargoSchema, default: () => ({}) },
+    envio: { type: envioSchema, default: () => ({}) },
     total: { type: Number, required: true, min: 0 },
+    totalCobrado: { type: Number, required: true, min: 0 },
+    saldoPendiente: { type: Number, required: true, min: 0 },
+    cadeteMontoPendiente: { type: Number, required: true, min: 0 },
     pagos: { type: [pagoSchema], required: true }
   },
   { timestamps: { createdAt: true, updatedAt: false } }

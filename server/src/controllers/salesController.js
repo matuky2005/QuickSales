@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 import Customer from "../models/Customer.js";
 import { buildExactMatch, normalizeText } from "../utils/normalize.js";
 
-const calculateTotals = (items, recargo) => {
+const calculateTotals = (items, recargo, envio) => {
   const subtotalItems = items.reduce((sum, item) => sum + item.subtotal, 0);
   let montoCalculado = 0;
   if (recargo?.tipo === "porcentaje") {
@@ -11,13 +11,20 @@ const calculateTotals = (items, recargo) => {
   } else if (recargo?.tipo === "fijo") {
     montoCalculado = Math.round(recargo.valor || 0);
   }
-  const total = subtotalItems + montoCalculado;
-  return { subtotalItems, montoCalculado, total };
+  const envioMonto = Math.round(envio?.monto || 0);
+  const total = subtotalItems + montoCalculado + envioMonto;
+  return { subtotalItems, montoCalculado, total, envioMonto };
 };
 
 export const createSale = async (req, res, next) => {
   try {
-    const { items = [], recargo = { tipo: "fijo", valor: 0 }, pagos = [], customerNombreSnapshot } = req.body;
+    const {
+      items = [],
+      recargo = { tipo: "fijo", valor: 0 },
+      envio = { monto: 0, cobro: "INCLUIDO" },
+      pagos = [],
+      customerNombreSnapshot
+    } = req.body;
 
     if (!items.length) {
       return res.status(400).json({ message: "items are required" });
@@ -37,12 +44,16 @@ export const createSale = async (req, res, next) => {
       }
     }
 
-    const { total, montoCalculado } = calculateTotals(normalizedItems, recargo);
+    const { total, montoCalculado, envioMonto } = calculateTotals(normalizedItems, recargo, envio);
 
     const pagoTotal = pagos.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
-    if (Math.round(pagoTotal) !== Math.round(total)) {
-      return res.status(400).json({ message: "payments total must match sale total" });
+    const cobroEnCaja =
+      envio?.cobro === "CADETE" ? Math.max(total - envioMonto, 0) : total;
+    if (Math.round(pagoTotal) > Math.round(cobroEnCaja)) {
+      return res.status(400).json({ message: "payments total cannot exceed expected cash" });
     }
+    const saldoPendiente = Math.max(Math.round(cobroEnCaja - pagoTotal), 0);
+    const cadeteMontoPendiente = envio?.cobro === "CADETE" ? Math.round(envioMonto) : 0;
 
     let customerId;
     let customerNombreSnapshotValue;
@@ -91,7 +102,14 @@ export const createSale = async (req, res, next) => {
         valor: Number(recargo.valor || 0),
         montoCalculado
       },
+      envio: {
+        monto: envioMonto,
+        cobro: envio?.cobro === "CADETE" ? "CADETE" : "INCLUIDO"
+      },
       total,
+      totalCobrado: Math.round(pagoTotal),
+      saldoPendiente,
+      cadeteMontoPendiente,
       pagos
     });
 

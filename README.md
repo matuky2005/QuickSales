@@ -72,6 +72,7 @@ npm run seed
 - `POST /api/customers`
 - `GET /api/customers?query=`
 - `POST /api/sales`
+- `GET /api/sales?date=YYYY-MM-DD&status=PENDIENTE`
 - `PATCH /api/sales/:id`
 - `POST /api/sales/:id/payments`
 - `PATCH /api/sales/:id/cadete-rendido`
@@ -86,3 +87,4 @@ npm run seed
 - Búsqueda de productos/clientes por coincidencia parcial (suggestions) y exacta case-insensitive en backend.
 - Totales en ARS sin decimales (redondeo a enteros).
 - Pantallas de productos y clientes incluyen alta rápida además de búsqueda.
+- La pantalla de ventas permite ver detalle, imputar pagos pendientes y emitir notas de crédito/débito.

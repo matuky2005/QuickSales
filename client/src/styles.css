@@ -109,6 +109,10 @@ button.ghost {
   background: #1f2937;
 }
 
+.table tr:hover {
+  background: #273449;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

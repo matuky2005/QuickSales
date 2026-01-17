@@ -5,6 +5,7 @@ import ReportsPage from "./pages/ReportsPage.jsx";
 import CashClosurePage from "./pages/CashClosurePage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
 import CustomersPage from "./pages/CustomersPage.jsx";
+import SalesListPage from "./pages/SalesListPage.jsx";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
           <NavLink to="/venta">Nueva venta</NavLink>
           <NavLink to="/reportes">Reportes</NavLink>
           <NavLink to="/cierre-caja">Cierre caja</NavLink>
+          <NavLink to="/ventas">Ventas</NavLink>
           <NavLink to="/productos">Productos</NavLink>
           <NavLink to="/clientes">Clientes</NavLink>
         </nav>
@@ -28,6 +30,7 @@ const App = () => {
           <Route path="/venta" element={<SalePage />} />
           <Route path="/reportes" element={<ReportsPage />} />
           <Route path="/cierre-caja" element={<CashClosurePage />} />
+          <Route path="/ventas" element={<SalesListPage />} />
           <Route path="/productos" element={<ProductsPage />} />
           <Route path="/clientes" element={<CustomersPage />} />
         </Routes>

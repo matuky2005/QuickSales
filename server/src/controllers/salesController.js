@@ -1,7 +1,7 @@
 import Sale from "../models/Sale.js";
 import Product from "../models/Product.js";
 import Customer from "../models/Customer.js";
-import { buildExactMatch, normalizeText } from "../utils/normalize.js";
+import { buildExactMatch, endOfDay, normalizeText, startOfDay } from "../utils/normalize.js";
 
 const calculateTotals = (items, recargo, envio) => {
   const subtotalItems = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -234,6 +234,26 @@ export const markCadeteRendido = async (req, res, next) => {
     sale.cadeteRendidoAt = new Date();
     await sale.save();
     res.json(sale);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listSales = async (req, res, next) => {
+  try {
+    const { status, date, customer } = req.query;
+    const filter = {};
+    if (status) {
+      filter.estado = status;
+    }
+    if (date) {
+      filter.fechaHora = { $gte: startOfDay(date), $lte: endOfDay(date) };
+    }
+    if (customer) {
+      filter.customerNombreSnapshot = new RegExp(customer, "i");
+    }
+    const sales = await Sale.find(filter).sort({ fechaHora: -1 }).limit(100);
+    res.json(sales);
   } catch (error) {
     next(error);
   }

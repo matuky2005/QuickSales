@@ -85,6 +85,8 @@ npm run seed
 - `GET /api/users`
 - `POST /api/users`
 - `PATCH /api/users/:id`
+- `POST /api/cash-movements`
+- `GET /api/cash-movements?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&descripcion=`
 
 ## Decisiones MVP
 - Estado local con React hooks por simplicidad y velocidad.
@@ -93,3 +95,5 @@ npm run seed
 - Pantallas de productos y clientes incluyen alta rápida además de búsqueda.
 - La pantalla de ventas permite ver detalle, imputar pagos pendientes y emitir notas de crédito/débito.
 - Login simple con usuarios locales (seed incluye `matias / 1023`).
+- Movimientos de caja permiten registrar depósitos, pagos y retiros con filtros por fecha/descripcion.
+- Transferencias requieren cuenta/alias en pagos y notas.

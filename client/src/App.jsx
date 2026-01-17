@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, Route, Routes } from "react-router-dom";
+import { NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import SalePage from "./pages/SalePage.jsx";
 import ReportsPage from "./pages/ReportsPage.jsx";
 import CashClosurePage from "./pages/CashClosurePage.jsx";
@@ -8,8 +8,16 @@ import CustomersPage from "./pages/CustomersPage.jsx";
 import SalesListPage from "./pages/SalesListPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
+import CashMovementsPage from "./pages/CashMovementsPage.jsx";
 
 const App = () => {
+  const location = useLocation();
+  const user = localStorage.getItem("qs-user");
+  const isLogin = location.pathname === "/login";
+  if (!user && !isLogin) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <div className="app-shell">
       <header>
@@ -18,14 +26,23 @@ const App = () => {
           <span className="badge" style={{ marginLeft: 12 }}>ARS</span>
         </div>
         <nav className="nav-links">
-          <NavLink to="/venta">Nueva venta</NavLink>
-          <NavLink to="/reportes">Reportes</NavLink>
-          <NavLink to="/cierre-caja">Cierre caja</NavLink>
+          <NavLink to="/venta">Venta</NavLink>
           <NavLink to="/ventas">Ventas</NavLink>
-          <NavLink to="/usuarios">Usuarios</NavLink>
-          <NavLink to="/login">Login</NavLink>
+          <NavLink to="/movimientos">Movimientos</NavLink>
+          <NavLink to="/cierre-caja">Cierre</NavLink>
+          <NavLink to="/reportes">Reportes</NavLink>
           <NavLink to="/productos">Productos</NavLink>
           <NavLink to="/clientes">Clientes</NavLink>
+          <NavLink to="/usuarios">Usuarios</NavLink>
+          <button
+            className="ghost"
+            onClick={() => {
+              localStorage.removeItem("qs-user");
+              window.location.href = "/login";
+            }}
+          >
+            Salir
+          </button>
         </nav>
       </header>
       <main>
@@ -35,6 +52,7 @@ const App = () => {
           <Route path="/reportes" element={<ReportsPage />} />
           <Route path="/cierre-caja" element={<CashClosurePage />} />
           <Route path="/ventas" element={<SalesListPage />} />
+          <Route path="/movimientos" element={<CashMovementsPage />} />
           <Route path="/usuarios" element={<UsersPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/productos" element={<ProductsPage />} />

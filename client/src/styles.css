@@ -38,13 +38,15 @@ main {
 
 .nav-links {
   display: flex;
-  gap: 16px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
   color: #cbd5f5;
   text-decoration: none;
   font-weight: 600;
+  font-size: 13px;
 }
 
 .container {

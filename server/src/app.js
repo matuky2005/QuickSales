@@ -9,7 +9,8 @@ import cashClosuresRouter from "./routes/cashClosures.js";
 import creditNotesRouter from "./routes/creditNotes.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
-import { notFoundHandler, errorHandler } from "./middleware/errorHandler.js";
+import cashMovementsRouter from "./routes/cashMovements.js";
+import { notFoundHandler, errorHandler, requireUser } from "./middleware/errorHandler.js";
 
 const app = express();
 
@@ -21,6 +22,8 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+app.use("/api/auth", authRouter);
+app.use("/api", requireUser);
 app.use("/api/products", productsRouter);
 app.use("/api/customers", customersRouter);
 app.use("/api/sales", salesRouter);
@@ -28,7 +31,7 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/cash-closures", cashClosuresRouter);
 app.use("/api/credit-notes", creditNotesRouter);
 app.use("/api/users", usersRouter);
-app.use("/api/auth", authRouter);
+app.use("/api/cash-movements", cashMovementsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

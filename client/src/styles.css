@@ -141,3 +141,21 @@ button.ghost {
   color: #854d0e;
   font-size: 13px;
 }
+
+@media print {
+  header,
+  .no-print,
+  nav,
+  button {
+    display: none !important;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  .container {
+    box-shadow: none;
+    padding: 0;
+  }
+}

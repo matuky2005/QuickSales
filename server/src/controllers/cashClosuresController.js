@@ -63,18 +63,6 @@ export const createCashClosure = async (req, res, next) => {
         }
       }
     );
-    await Sale.updateMany(
-      {
-        fechaHora: { $gte: start, $lte: end },
-        cadeteMontoPendiente: { $gt: 0 }
-      },
-      {
-        $set: {
-          cadeteMontoPendiente: 0,
-          cadeteRendidoAt: new Date()
-        }
-      }
-    );
 
     res.status(201).json({ closure, ventas: sales });
   } catch (error) {

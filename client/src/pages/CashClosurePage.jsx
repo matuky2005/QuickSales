@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiFetch } from "../utils/api.js";
 
 const CashClosurePage = () => {
-  const [date, setDate] = useState("");
-  const [efectivoContado, setEfectivoContado] = useState("");
-  const [notas, setNotas] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [closureData, setClosureData] = useState(null);
   const [showDetalle, setShowDetalle] = useState(false);
   const [status, setStatus] = useState("");
@@ -15,9 +13,7 @@ const CashClosurePage = () => {
       const data = await apiFetch("/api/cash-closures", {
         method: "POST",
         body: JSON.stringify({
-          fecha: date,
-          efectivoContado: efectivoContado ? Number(efectivoContado) : undefined,
-          notas
+          fecha: date
         })
       });
       setClosureData(data);
@@ -38,7 +34,7 @@ const CashClosurePage = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!date || !closureData) return;
     buscarCierre();
   }, [showDetalle]);
@@ -69,22 +65,11 @@ const CashClosurePage = () => {
           Fecha
           <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
         </label>
-        <label>
-          Efectivo contado (opcional)
-          <input
-            type="number"
-            value={efectivoContado}
-            onChange={(event) => setEfectivoContado(event.target.value)}
-          />
-        </label>
-        <label>
-          Notas
-          <input value={notas} onChange={(event) => setNotas(event.target.value)} />
-        </label>
       </div>
-      <div className="inline" style={{ marginTop: 16 }}>
+      <div className="inline no-print" style={{ marginTop: 16 }}>
         <button onClick={crearCierre}>Cerrar caja</button>
         <button className="ghost" onClick={buscarCierre}>Buscar cierre</button>
+        <button className="secondary" onClick={() => window.print()}>Imprimir cierre</button>
         <label className="inline" style={{ marginLeft: 8 }}>
           <input
             type="checkbox"

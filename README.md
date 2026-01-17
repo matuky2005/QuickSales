@@ -58,7 +58,7 @@ npm run seed
 - Si el envío está **incluido en el pago**, el total se cobra en caja junto con el resto de la venta.
 - Si el cliente **paga el envío al cadete**, el envío queda marcado como “cadete debe rendir” y no se exige en los pagos de caja.
 - Se permiten pagos parciales: el saldo pendiente queda registrado en la venta y en el reporte diario.
-- En el cierre de caja, los saldos pendientes quedan en 0 y los importes del cadete se marcan como rendidos (puede hacerse antes con el endpoint de cadete).
+- En el cierre de caja, los saldos pendientes quedan en 0; los importes del cadete permanecen pendientes para rendirse al día siguiente (o se marcan manualmente con el endpoint de cadete).
 
 ## Endpoints principales
 - `POST /api/products`

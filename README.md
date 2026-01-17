@@ -29,7 +29,7 @@ npm run dev
 ### server/.env
 ```
 PORT=4000
-MONGODB_URI=mongodb://localhost:27017/quicksales
+MONGODB_URI=mongodb://127.0.0.1:27017/quicksales
 ```
 
 ### client/.env

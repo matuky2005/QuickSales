@@ -10,6 +10,4 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-productSchema.index({ descripcion: 1 }, { unique: true });
-
 export default mongoose.model("Product", productSchema);

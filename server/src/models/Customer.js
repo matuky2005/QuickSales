@@ -7,6 +7,4 @@ const customerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-customerSchema.index({ nombre: 1 }, { unique: true });
-
 export default mongoose.model("Customer", customerSchema);

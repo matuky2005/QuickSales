@@ -6,6 +6,7 @@ import customersRouter from "./routes/customers.js";
 import salesRouter from "./routes/sales.js";
 import reportsRouter from "./routes/reports.js";
 import cashClosuresRouter from "./routes/cashClosures.js";
+import creditNotesRouter from "./routes/creditNotes.js";
 import { notFoundHandler, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/customers", customersRouter);
 app.use("/api/sales", salesRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/cash-closures", cashClosuresRouter);
+app.use("/api/credit-notes", creditNotesRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

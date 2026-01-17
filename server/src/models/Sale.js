@@ -37,7 +37,21 @@ const pagoSchema = new mongoose.Schema(
     },
     tipoTarjeta: { type: String },
     cuentaTransferencia: { type: String },
-    monto: { type: Number, required: true, min: 0 }
+    monto: { type: Number, required: true, min: 0 },
+    fechaHora: { type: Date, default: Date.now }
+  },
+  { _id: false }
+);
+
+const auditSchema = new mongoose.Schema(
+  {
+    accion: {
+      type: String,
+      enum: ["CREADA", "ACTUALIZADA", "PAGO_AGREGADO"],
+      required: true
+    },
+    detalle: { type: Object },
+    fechaHora: { type: Date, default: Date.now }
   },
   { _id: false }
 );
@@ -53,11 +67,13 @@ const saleSchema = new mongoose.Schema(
     total: { type: Number, required: true, min: 0 },
     totalCobrado: { type: Number, required: true, min: 0 },
     saldoPendiente: { type: Number, required: true, min: 0 },
+    estado: { type: String, enum: ["PENDIENTE", "PAGADA"], default: "PENDIENTE" },
     cadeteMontoPendiente: { type: Number, required: true, min: 0 },
     cadeteRendidoAt: { type: Date },
     cierreCajaId: { type: mongoose.Schema.Types.ObjectId, ref: "CashClosure" },
     cierreCajaAt: { type: Date },
-    pagos: { type: [pagoSchema], required: true }
+    pagos: { type: [pagoSchema], default: [] },
+    auditoria: { type: [auditSchema], default: [] }
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

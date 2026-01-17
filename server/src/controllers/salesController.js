@@ -23,7 +23,8 @@ export const createSale = async (req, res, next) => {
       recargo = { tipo: "fijo", valor: 0 },
       envio = { monto: 0, cobro: "INCLUIDO" },
       pagos = [],
-      customerNombreSnapshot
+      customerNombreSnapshot,
+      pagoEnElMomento = true
     } = req.body;
 
     if (!items.length) {
@@ -46,7 +47,12 @@ export const createSale = async (req, res, next) => {
 
     const { total, montoCalculado, envioMonto } = calculateTotals(normalizedItems, recargo, envio);
 
-    const pagoTotal = pagos.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
+    const pagosNormalizados = pagos.map((pago) => ({
+      ...pago,
+      monto: Number(pago.monto || 0),
+      fechaHora: pago.fechaHora ? new Date(pago.fechaHora) : new Date()
+    }));
+    const pagoTotal = pagosNormalizados.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
     const cobroEnCaja =
       envio?.cobro === "CADETE" ? Math.max(total - envioMonto, 0) : total;
     if (Math.round(pagoTotal) > Math.round(cobroEnCaja)) {
@@ -92,6 +98,8 @@ export const createSale = async (req, res, next) => {
       });
     }
 
+    const estado = saldoPendiente === 0 && pagoEnElMomento ? "PAGADA" : "PENDIENTE";
+
     const sale = await Sale.create({
       fechaHora: req.body.fechaHora ? new Date(req.body.fechaHora) : new Date(),
       customerId,
@@ -109,12 +117,107 @@ export const createSale = async (req, res, next) => {
       total,
       totalCobrado: Math.round(pagoTotal),
       saldoPendiente,
+      estado,
       cadeteMontoPendiente,
       cadeteRendidoAt: cadeteMontoPendiente > 0 ? null : undefined,
-      pagos
+      pagos: pagosNormalizados,
+      auditoria: [
+        {
+          accion: "CREADA",
+          detalle: { pagoEnElMomento, estado }
+        }
+      ]
     });
 
     res.status(201).json(sale);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addPayment = async (req, res, next) => {
+  try {
+    const { pagos = [] } = req.body;
+    if (!pagos.length) {
+      return res.status(400).json({ message: "payments are required" });
+    }
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: "sale not found" });
+    }
+    const nuevosPagos = pagos.map((pago) => ({
+      ...pago,
+      monto: Number(pago.monto || 0),
+      fechaHora: new Date()
+    }));
+    const nuevoTotalCobrado =
+      sale.totalCobrado + nuevosPagos.reduce((sum, pago) => sum + pago.monto, 0);
+    if (nuevoTotalCobrado > sale.total) {
+      return res.status(400).json({ message: "payments total cannot exceed sale total" });
+    }
+    sale.totalCobrado = Math.round(nuevoTotalCobrado);
+    sale.saldoPendiente = Math.max(Math.round(sale.total - sale.totalCobrado), 0);
+    sale.estado = sale.saldoPendiente === 0 ? "PAGADA" : "PENDIENTE";
+    sale.pagos.push(...nuevosPagos);
+    sale.auditoria.push({
+      accion: "PAGO_AGREGADO",
+      detalle: { pagos: nuevosPagos }
+    });
+    await sale.save();
+    res.json(sale);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateSale = async (req, res, next) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: "sale not found" });
+    }
+    const { items = sale.items, recargo = sale.recargo, envio = sale.envio } = req.body;
+
+    const normalizedItems = items.map((item) => {
+      const descripcionSnapshot = normalizeText(item.descripcionSnapshot || item.descripcion || "");
+      const cantidad = Number(item.cantidad);
+      const precioUnitario = Number(item.precioUnitario);
+      const subtotal = Math.round(cantidad * precioUnitario);
+      return { ...item, descripcionSnapshot, cantidad, precioUnitario, subtotal };
+    });
+
+    for (const item of normalizedItems) {
+      if (!item.descripcionSnapshot || item.cantidad <= 0 || item.precioUnitario < 0) {
+        return res.status(400).json({ message: "invalid item values" });
+      }
+    }
+
+    const { total, montoCalculado, envioMonto } = calculateTotals(
+      normalizedItems,
+      recargo,
+      envio
+    );
+
+    sale.items = normalizedItems;
+    sale.recargo = {
+      tipo: recargo.tipo || "fijo",
+      valor: Number(recargo.valor || 0),
+      montoCalculado
+    };
+    sale.envio = {
+      monto: envioMonto,
+      cobro: envio?.cobro === "CADETE" ? "CADETE" : "INCLUIDO"
+    };
+    sale.total = total;
+    sale.saldoPendiente = Math.max(Math.round(total - sale.totalCobrado), 0);
+    sale.estado = sale.saldoPendiente === 0 ? "PAGADA" : "PENDIENTE";
+    sale.auditoria.push({
+      accion: "ACTUALIZADA",
+      detalle: { total, recargo: sale.recargo, envio: sale.envio }
+    });
+
+    await sale.save();
+    res.json(sale);
   } catch (error) {
     next(error);
   }

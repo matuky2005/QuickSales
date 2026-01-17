@@ -13,6 +13,7 @@ const SalePage = () => {
   const [recargo, setRecargo] = useState(initialRecargo);
   const [envio, setEnvio] = useState({ monto: 0, cobro: "INCLUIDO" });
   const [pagos, setPagos] = useState([]);
+  const [pagoEnElMomento, setPagoEnElMomento] = useState(true);
   const [metodoPago, setMetodoPago] = useState("EFECTIVO");
   const [montoPago, setMontoPago] = useState(0);
   const [tipoTarjeta, setTipoTarjeta] = useState("credito");
@@ -56,6 +57,7 @@ const SalePage = () => {
     setRecargo(initialRecargo);
     setEnvio({ monto: 0, cobro: "INCLUIDO" });
     setPagos([]);
+    setPagoEnElMomento(true);
     setMetodoPago("EFECTIVO");
     setMontoPago(0);
     setTipoTarjeta("credito");
@@ -138,15 +140,16 @@ const SalePage = () => {
 
   const guardarVenta = async () => {
     try {
-      const payload = {
-        fechaHora: new Date().toISOString(),
-        customerNombreSnapshot: clienteNombre.trim() || undefined,
-        items,
-        recargo: { tipo: recargo.tipo, valor: Number(recargo.valor || 0) },
-        envio: { monto: montoEnvio, cobro: envio.cobro },
-        total,
-        pagos
-      };
+    const payload = {
+      fechaHora: new Date().toISOString(),
+      customerNombreSnapshot: clienteNombre.trim() || undefined,
+      items,
+      recargo: { tipo: recargo.tipo, valor: Number(recargo.valor || 0) },
+      envio: { monto: montoEnvio, cobro: envio.cobro },
+      total,
+      pagos,
+      pagoEnElMomento
+    };
       await apiFetch("/api/sales", {
         method: "POST",
         body: JSON.stringify(payload)
@@ -359,6 +362,20 @@ const SalePage = () => {
             <input type="number" value={total} readOnly />
           </label>
         </div>
+      </div>
+
+      <div className="grid grid-3" style={{ marginTop: 16 }}>
+        <label className="inline">
+          <input
+            type="checkbox"
+            checked={pagoEnElMomento}
+            onChange={(event) => setPagoEnElMomento(event.target.checked)}
+          />
+          Pago en el momento
+        </label>
+        {!pagoEnElMomento && (
+          <div className="helper">La venta se guardará como pendiente.</div>
+        )}
       </div>
 
       <div className="grid grid-3" style={{ marginTop: 16 }}>

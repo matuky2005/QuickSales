@@ -38,20 +38,21 @@ export const createCashClosure = async (req, res, next) => {
         ? Math.round(efectivoContado - (totalesPorMetodo.EFECTIVO || 0))
         : undefined;
 
-    const closure = await CashClosure.findOneAndUpdate(
-      { fecha },
-      {
-        fecha,
-        totalesPorMetodo,
-        totalesPorCuenta,
-        totalVentas,
-        cantidadVentas,
-        efectivoContado,
-        diferencia,
-        notas
-      },
-      { new: true, upsert: true }
-    );
+    const existing = await CashClosure.findOne({ fecha });
+    if (existing) {
+      return res.status(409).json({ message: "cash closure already exists for date" });
+    }
+
+    const closure = await CashClosure.create({
+      fecha,
+      totalesPorMetodo,
+      totalesPorCuenta,
+      totalVentas,
+      cantidadVentas,
+      efectivoContado,
+      diferencia,
+      notas
+    });
 
     await Sale.updateMany(
       { fechaHora: { $gte: start, $lte: end }, cierreCajaAt: { $exists: false } },

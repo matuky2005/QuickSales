@@ -40,6 +40,7 @@ main {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .nav-links a {
@@ -49,6 +50,23 @@ main {
   font-size: 13px;
 }
 
+.nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.nav-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
 .container {
   background: #0f172a;
   border-radius: 12px;
@@ -56,6 +74,10 @@ main {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
   border: 1px solid rgba(148, 163, 184, 0.12);
   animation: fadeUp 0.35s ease-out;
+}
+
+.login-card {
+  max-width: 520px;
 }
 
 .grid {

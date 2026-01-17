@@ -20,8 +20,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: 480 }}>
-      <h2>Login</h2>
+    <div className="container login-card">
+      <h2>Ingreso al sistema</h2>
+      <p className="helper">Ingresá con tu usuario para continuar con las ventas.</p>
       {status && <div className="alert">{status}</div>}
       <div className="stack" style={{ marginTop: 16 }}>
         <label>

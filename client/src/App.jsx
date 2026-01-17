@@ -26,14 +26,23 @@ const App = () => {
           <span className="badge" style={{ marginLeft: 12 }}>ARS</span>
         </div>
         <nav className="nav-links">
-          <NavLink to="/venta">Venta</NavLink>
-          <NavLink to="/ventas">Ventas</NavLink>
-          <NavLink to="/movimientos">Movimientos</NavLink>
-          <NavLink to="/cierre-caja">Cierre</NavLink>
-          <NavLink to="/reportes">Reportes</NavLink>
-          <NavLink to="/productos">Productos</NavLink>
-          <NavLink to="/clientes">Clientes</NavLink>
-          <NavLink to="/usuarios">Usuarios</NavLink>
+          <div className="nav-group">
+            <span className="nav-label">Venta</span>
+            <NavLink to="/venta">Nueva</NavLink>
+            <NavLink to="/ventas">Listado</NavLink>
+          </div>
+          <div className="nav-group">
+            <span className="nav-label">Caja</span>
+            <NavLink to="/movimientos">Movimientos</NavLink>
+            <NavLink to="/cierre-caja">Cierre</NavLink>
+            <NavLink to="/reportes">Reportes</NavLink>
+          </div>
+          <div className="nav-group">
+            <span className="nav-label">Gestión</span>
+            <NavLink to="/productos">Productos</NavLink>
+            <NavLink to="/clientes">Clientes</NavLink>
+            <NavLink to="/usuarios">Usuarios</NavLink>
+          </div>
           <button
             className="ghost"
             onClick={() => {

@@ -4,9 +4,16 @@ const creditNoteSchema = new mongoose.Schema(
   {
     saleId: { type: mongoose.Schema.Types.ObjectId, ref: "Sale" },
     tipo: { type: String, enum: ["CREDITO", "DEBITO"], required: true },
+    metodo: {
+      type: String,
+      enum: ["EFECTIVO", "TRANSFERENCIA", "TARJETA", "QR"],
+      required: true
+    },
+    cuentaTransferencia: { type: String },
     monto: { type: Number, required: true, min: 0 },
     motivo: { type: String, required: true },
-    fechaHora: { type: Date, default: Date.now }
+    fechaHora: { type: Date, default: Date.now },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
   },
   { timestamps: true }
 );

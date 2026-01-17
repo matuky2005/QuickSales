@@ -4,10 +4,12 @@ import { apiFetch } from "../utils/api.js";
 const paymentMethods = ["EFECTIVO", "TRANSFERENCIA", "TARJETA", "QR"];
 
 const SalesListPage = () => {
-  const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState("");
   const [customer, setCustomer] = useState("");
   const [sales, setSales] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 });
   const [selectedSale, setSelectedSale] = useState(null);
   const [notes, setNotes] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
@@ -19,18 +21,24 @@ const SalesListPage = () => {
   });
   const [noteForm, setNoteForm] = useState({
     tipo: "CREDITO",
+    metodo: "EFECTIVO",
+    cuentaTransferencia: "",
     monto: "",
     motivo: ""
   });
 
-  const loadSales = async () => {
+  const loadSales = async (page = 1) => {
     const params = new URLSearchParams();
-    if (date) params.append("date", date);
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
     if (status) params.append("status", status);
     if (customer) params.append("customer", customer);
+    params.append("page", page);
+    params.append("limit", pagination.limit);
     try {
       const data = await apiFetch(`/api/sales?${params.toString()}`);
-      setSales(data);
+      setSales(data.data || []);
+      setPagination(data.pagination || { page: 1, limit: 20, total: 0 });
       setStatusMessage("");
     } catch (error) {
       setStatusMessage(error.message);
@@ -53,6 +61,10 @@ const SalesListPage = () => {
 
   const submitPayment = async () => {
     if (!selectedSale) return;
+    if (paymentForm.metodo === "TRANSFERENCIA" && !paymentForm.cuentaTransferencia) {
+      setStatusMessage("La cuenta de transferencia es obligatoria.");
+      return;
+    }
     try {
       const payload = {
         pagos: [
@@ -71,7 +83,7 @@ const SalesListPage = () => {
       setSelectedSale(updated);
       setPaymentForm({ ...paymentForm, monto: "", cuentaTransferencia: "" });
       setStatusMessage("Pago registrado.");
-      loadSales();
+      loadSales(pagination.page);
     } catch (error) {
       setStatusMessage(error.message);
     }
@@ -79,10 +91,16 @@ const SalesListPage = () => {
 
   const submitNote = async () => {
     if (!selectedSale) return;
+    if (noteForm.metodo === "TRANSFERENCIA" && !noteForm.cuentaTransferencia) {
+      setStatusMessage("La cuenta de transferencia es obligatoria.");
+      return;
+    }
     try {
       const payload = {
         saleId: selectedSale._id,
         tipo: noteForm.tipo,
+        metodo: noteForm.metodo,
+        cuentaTransferencia: noteForm.cuentaTransferencia || undefined,
         monto: Number(noteForm.monto || 0),
         motivo: noteForm.motivo
       };
@@ -90,7 +108,13 @@ const SalesListPage = () => {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      setNoteForm({ tipo: noteForm.tipo, monto: "", motivo: "" });
+      setNoteForm({
+        tipo: noteForm.tipo,
+        metodo: noteForm.metodo,
+        cuentaTransferencia: "",
+        monto: "",
+        motivo: ""
+      });
       setStatusMessage("Nota registrada.");
       loadNotes(selectedSale._id);
     } catch (error) {
@@ -108,8 +132,12 @@ const SalesListPage = () => {
       {statusMessage && <div className="alert">{statusMessage}</div>}
       <div className="grid grid-3" style={{ marginTop: 16 }}>
         <label>
-          Fecha
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          Desde
+          <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
+        </label>
+        <label>
+          Hasta
+          <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
         </label>
         <label>
           Estado
@@ -125,7 +153,7 @@ const SalesListPage = () => {
         </label>
       </div>
       <div className="inline" style={{ marginTop: 16 }}>
-        <button onClick={loadSales}>Buscar</button>
+        <button onClick={() => loadSales(1)}>Buscar</button>
       </div>
 
       <table className="table" style={{ marginTop: 16 }}>
@@ -160,6 +188,25 @@ const SalesListPage = () => {
           )}
         </tbody>
       </table>
+      <div className="inline" style={{ marginTop: 12 }}>
+        <button
+          className="ghost"
+          onClick={() => loadSales(Math.max(pagination.page - 1, 1))}
+          disabled={pagination.page === 1}
+        >
+          Anterior
+        </button>
+        <span className="helper">
+          Página {pagination.page} de {Math.max(Math.ceil(pagination.total / pagination.limit), 1)}
+        </span>
+        <button
+          className="ghost"
+          onClick={() => loadSales(pagination.page + 1)}
+          disabled={pagination.page * pagination.limit >= pagination.total}
+        >
+          Siguiente
+        </button>
+      </div>
 
       {selectedSale && (
         <div className="grid" style={{ marginTop: 24 }}>
@@ -257,6 +304,28 @@ const SalesListPage = () => {
               </select>
             </label>
             <label>
+              Método
+              <select
+                value={noteForm.metodo}
+                onChange={(event) => setNoteForm({ ...noteForm, metodo: event.target.value })}
+              >
+                {paymentMethods.map((method) => (
+                  <option key={method} value={method}>{method}</option>
+                ))}
+              </select>
+            </label>
+            {noteForm.metodo === "TRANSFERENCIA" && (
+              <label>
+                Cuenta transferencia
+                <input
+                  value={noteForm.cuentaTransferencia}
+                  onChange={(event) =>
+                    setNoteForm({ ...noteForm, cuentaTransferencia: event.target.value })
+                  }
+                />
+              </label>
+            )}
+            <label>
               Monto nota
               <input
                 type="number"
@@ -282,7 +351,7 @@ const SalesListPage = () => {
               <ul>
                 {notes.map((note) => (
                   <li key={note._id}>
-                    {note.tipo} · {note.monto} · {note.motivo}
+                    {note.tipo} · {note.metodo} · {note.monto} · {note.motivo}
                   </li>
                 ))}
               </ul>

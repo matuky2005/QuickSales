@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import Product from "./models/Product.js";
 import Customer from "./models/Customer.js";
 import Sale from "./models/Sale.js";
+import User from "./models/User.js";
 
 dotenv.config();
 
@@ -10,7 +11,12 @@ const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/quicks
 
 const seed = async () => {
   await mongoose.connect(MONGODB_URI);
-  await Promise.all([Product.deleteMany({}), Customer.deleteMany({}), Sale.deleteMany({})]);
+  await Promise.all([
+    Product.deleteMany({}),
+    Customer.deleteMany({}),
+    Sale.deleteMany({}),
+    User.deleteMany({})
+  ]);
 
   const products = await Product.insertMany([
     { descripcion: "PROTEINA - ULTRATECH 1LB - FRUTILLA", precioSugerido: 10500 },
@@ -22,6 +28,8 @@ const seed = async () => {
     { nombre: "Juan Perez" },
     { nombre: "Lucia Gómez" }
   ]);
+
+  await User.insertMany([{ username: "matias", password: "1023", active: true }]);
 
   const sales = [
     {

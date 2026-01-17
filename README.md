@@ -81,6 +81,10 @@ npm run seed
 - `GET /api/cash-closures?date=YYYY-MM-DD&detail=true`
 - `POST /api/credit-notes`
 - `GET /api/credit-notes?saleId=`
+- `POST /api/auth/login`
+- `GET /api/users`
+- `POST /api/users`
+- `PATCH /api/users/:id`
 
 ## Decisiones MVP
 - Estado local con React hooks por simplicidad y velocidad.
@@ -88,3 +92,4 @@ npm run seed
 - Totales en ARS sin decimales (redondeo a enteros).
 - Pantallas de productos y clientes incluyen alta rápida además de búsqueda.
 - La pantalla de ventas permite ver detalle, imputar pagos pendientes y emitir notas de crédito/débito.
+- Login simple con usuarios locales (seed incluye `matias / 1023`).

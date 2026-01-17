@@ -52,6 +52,11 @@ export const createSale = async (req, res, next) => {
       monto: Number(pago.monto || 0),
       fechaHora: pago.fechaHora ? new Date(pago.fechaHora) : new Date()
     }));
+    for (const pago of pagosNormalizados) {
+      if (pago.metodo === "TRANSFERENCIA" && !pago.cuentaTransferencia) {
+        return res.status(400).json({ message: "cuentaTransferencia is required for transfer" });
+      }
+    }
     const pagoTotal = pagosNormalizados.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
     const cobroEnCaja = Math.max(total - envioMonto, 0);
     if (Math.round(pagoTotal) > Math.round(cobroEnCaja)) {
@@ -123,7 +128,11 @@ export const createSale = async (req, res, next) => {
       auditoria: [
         {
           accion: "CREADA",
-          detalle: { pagoEnElMomento, estado }
+          detalle: {
+            pagoEnElMomento,
+            estado,
+            userId: req.header("x-user-id") || null
+          }
         }
       ]
     });
@@ -149,6 +158,11 @@ export const addPayment = async (req, res, next) => {
       monto: Number(pago.monto || 0),
       fechaHora: new Date()
     }));
+    for (const pago of nuevosPagos) {
+      if (pago.metodo === "TRANSFERENCIA" && !pago.cuentaTransferencia) {
+        return res.status(400).json({ message: "cuentaTransferencia is required for transfer" });
+      }
+    }
     const nuevoTotalCobrado =
       sale.totalCobrado + nuevosPagos.reduce((sum, pago) => sum + pago.monto, 0);
     const totalCaja = sale.total - (sale.envio?.monto || 0);
@@ -161,7 +175,10 @@ export const addPayment = async (req, res, next) => {
     sale.pagos.push(...nuevosPagos);
     sale.auditoria.push({
       accion: "PAGO_AGREGADO",
-      detalle: { pagos: nuevosPagos }
+      detalle: {
+        pagos: nuevosPagos,
+        userId: req.header("x-user-id") || null
+      }
     });
     await sale.save();
     res.json(sale);
@@ -214,7 +231,12 @@ export const updateSale = async (req, res, next) => {
     sale.estado = sale.saldoPendiente === 0 ? "PAGADA" : "PENDIENTE";
     sale.auditoria.push({
       accion: "ACTUALIZADA",
-      detalle: { total, recargo: sale.recargo, envio: sale.envio }
+      detalle: {
+        total,
+        recargo: sale.recargo,
+        envio: sale.envio,
+        userId: req.header("x-user-id") || null
+      }
     });
 
     await sale.save();
@@ -241,7 +263,7 @@ export const markCadeteRendido = async (req, res, next) => {
 
 export const listSales = async (req, res, next) => {
   try {
-    const { status, date, customer } = req.query;
+    const { status, date, startDate, endDate, customer, page = 1, limit = 20 } = req.query;
     const filter = {};
     if (status) {
       filter.estado = status;
@@ -249,11 +271,32 @@ export const listSales = async (req, res, next) => {
     if (date) {
       filter.fechaHora = { $gte: startOfDay(date), $lte: endOfDay(date) };
     }
+    if (startDate || endDate) {
+      filter.fechaHora = {
+        ...(startDate ? { $gte: startOfDay(startDate) } : {}),
+        ...(endDate ? { $lte: endOfDay(endDate) } : {})
+      };
+    }
     if (customer) {
       filter.customerNombreSnapshot = new RegExp(customer, "i");
     }
-    const sales = await Sale.find(filter).sort({ fechaHora: -1 }).limit(100);
-    res.json(sales);
+    const pageNumber = Math.max(Number(page) || 1, 1);
+    const limitNumber = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const [sales, total] = await Promise.all([
+      Sale.find(filter)
+        .sort({ fechaHora: -1 })
+        .skip((pageNumber - 1) * limitNumber)
+        .limit(limitNumber),
+      Sale.countDocuments(filter)
+    ]);
+    res.json({
+      data: sales,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total
+      }
+    });
   } catch (error) {
     next(error);
   }

@@ -7,6 +7,8 @@ import salesRouter from "./routes/sales.js";
 import reportsRouter from "./routes/reports.js";
 import cashClosuresRouter from "./routes/cashClosures.js";
 import creditNotesRouter from "./routes/creditNotes.js";
+import usersRouter from "./routes/users.js";
+import authRouter from "./routes/auth.js";
 import { notFoundHandler, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -25,6 +27,8 @@ app.use("/api/sales", salesRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/cash-closures", cashClosuresRouter);
 app.use("/api/credit-notes", creditNotesRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

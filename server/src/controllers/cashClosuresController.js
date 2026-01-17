@@ -1,8 +1,9 @@
 import CashClosure from "../models/CashClosure.js";
+import CreditNote from "../models/CreditNote.js";
 import Sale from "../models/Sale.js";
 import { endOfDay, startOfDay } from "../utils/normalize.js";
 
-const buildTotals = (sales) => {
+const buildTotals = (sales, notes = []) => {
   const totalesPorMetodo = {};
   const totalesPorCuenta = {};
 
@@ -16,9 +17,22 @@ const buildTotals = (sales) => {
     });
   });
 
-  const totalVentas = sales.reduce((sum, sale) => sum + (sale.total - (sale.envio?.monto || 0)), 0);
+  notes.forEach((note) => {
+    const sign = note.tipo === "CREDITO" ? -1 : 1;
+    totalesPorMetodo[note.metodo] = (totalesPorMetodo[note.metodo] || 0) + sign * note.monto;
+    if (note.metodo === "TRANSFERENCIA" && note.cuentaTransferencia) {
+      totalesPorCuenta[note.cuentaTransferencia] =
+        (totalesPorCuenta[note.cuentaTransferencia] || 0) + sign * note.monto;
+    }
+  });
 
-  return { totalesPorMetodo, totalesPorCuenta, totalVentas };
+  const totalVentas = sales.reduce((sum, sale) => sum + (sale.total - (sale.envio?.monto || 0)), 0);
+  const totalNotas = notes.reduce(
+    (sum, note) => sum + (note.tipo === "CREDITO" ? -note.monto : note.monto),
+    0
+  );
+
+  return { totalesPorMetodo, totalesPorCuenta, totalVentas: totalVentas + totalNotas };
 };
 
 export const createCashClosure = async (req, res, next) => {
@@ -31,7 +45,8 @@ export const createCashClosure = async (req, res, next) => {
     const start = startOfDay(fecha);
     const end = endOfDay(fecha);
     const sales = await Sale.find({ fechaHora: { $gte: start, $lte: end } });
-    const { totalesPorMetodo, totalesPorCuenta, totalVentas } = buildTotals(sales);
+    const notes = await CreditNote.find({ fechaHora: { $gte: start, $lte: end } });
+    const { totalesPorMetodo, totalesPorCuenta, totalVentas } = buildTotals(sales, notes);
     const cantidadVentas = sales.length;
     const diferencia =
       typeof efectivoContado === "number"

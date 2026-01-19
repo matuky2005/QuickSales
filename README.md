@@ -34,7 +34,7 @@ MONGODB_URI=mongodb://127.0.0.1:27017/quicksales
 
 ### client/.env
 ```
-VITE_API_URL=http://localhost:4000
+VITE_API_URL=http://127.0.0.1:4000
 ```
 
 ## Seed (datos de ejemplo)

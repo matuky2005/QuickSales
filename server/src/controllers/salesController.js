@@ -16,6 +16,33 @@ const calculateTotals = (items, recargo, envio) => {
   return { subtotalItems, montoCalculado, total, envioMonto };
 };
 
+const enrichSalesItems = async (sales) => {
+  const productIds = new Set();
+  sales.forEach((sale) => {
+    (sale.items || []).forEach((item) => {
+      if (item.productId) {
+        productIds.add(item.productId.toString());
+      }
+    });
+  });
+  if (!productIds.size) {
+    return sales;
+  }
+  const products = await Product.find({ _id: { $in: Array.from(productIds) } }).lean();
+  const productMap = new Map(products.map((product) => [product._id.toString(), product]));
+  return sales.map((sale) => ({
+    ...sale,
+    items: (sale.items || []).map((item) => {
+      const product = item.productId ? productMap.get(item.productId.toString()) : null;
+      return {
+        ...item,
+        marca: item.marca || product?.marca || "",
+        atributos: item.atributos?.length ? item.atributos : product?.atributos || []
+      };
+    })
+  }));
+};
+
 export const createSale = async (req, res, next) => {
   try {
     const {
@@ -298,11 +325,13 @@ export const listSales = async (req, res, next) => {
       Sale.find(filter)
         .sort({ fechaHora: -1 })
         .skip((pageNumber - 1) * limitNumber)
-        .limit(limitNumber),
+        .limit(limitNumber)
+        .lean(),
       Sale.countDocuments(filter)
     ]);
+    const enrichedSales = await enrichSalesItems(sales);
     res.json({
-      data: sales,
+      data: enrichedSales,
       pagination: {
         page: pageNumber,
         limit: limitNumber,

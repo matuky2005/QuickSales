@@ -44,12 +44,11 @@ export const createOrGetProduct = async (req, res, next) => {
 export const listProducts = async (req, res, next) => {
   try {
     const query = normalizeText(req.query.query || "");
-    if (!query) {
-      return res.json([]);
-    }
-    const products = await Product.find({ descripcion: buildContainsMatch(query) })
+    const filter = query ? { descripcion: buildContainsMatch(query) } : {};
+    const limit = query ? 10 : 200;
+    const products = await Product.find(filter)
       .sort({ descripcion: 1 })
-      .limit(10);
+      .limit(limit);
     res.json(products);
   } catch (error) {
     next(error);

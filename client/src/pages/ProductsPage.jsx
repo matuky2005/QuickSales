@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiFetch } from "../utils/api.js";
 
 const ProductsPage = () => {
@@ -11,9 +11,11 @@ const ProductsPage = () => {
   const [status, setStatus] = useState("");
 
   const buscar = async () => {
-    if (!query.trim()) return;
     try {
-      const data = await apiFetch(`/api/products?query=${encodeURIComponent(query)}`);
+      const params = query.trim()
+        ? `?query=${encodeURIComponent(query)}`
+        : "";
+      const data = await apiFetch(`/api/products${params}`);
       setProducts(data);
     } catch (error) {
       setStatus(error.message);
@@ -45,6 +47,10 @@ const ProductsPage = () => {
       setStatus(error.message);
     }
   };
+
+  useEffect(() => {
+    buscar();
+  }, []);
 
   return (
     <div className="container">

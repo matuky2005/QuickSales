@@ -22,6 +22,10 @@ const SalePage = () => {
   const [atributosInput, setAtributosInput] = useState("");
   const [status, setStatus] = useState("");
   const [sugerencias, setSugerencias] = useState([]);
+  const [clienteSugerencias, setClienteSugerencias] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [confirmVenta, setConfirmVenta] = useState(false);
 
   const descripcionRef = useRef(null);
   const clienteRef = useRef(null);
@@ -69,7 +73,7 @@ const SalePage = () => {
     descripcionRef.current?.focus();
   };
 
-  const addItem = async () => {
+  const addItem = () => {
     const descripcionSnapshot = descripcion.trim();
     if (!descripcionSnapshot) {
       return;
@@ -80,41 +84,35 @@ const SalePage = () => {
       setStatus("Cantidad o precio inválido.");
       return;
     }
-    try {
-      const product = await apiFetch("/api/products", {
-        method: "POST",
-        body: JSON.stringify({
-          descripcion: descripcionSnapshot,
-          precioSugerido: precioNum,
-          marca: marca.trim(),
-          atributos: atributosInput
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean)
-        })
-      });
-      const subtotal = Math.round(cantidadNum * precioNum);
-      setItems((prev) => [
-        ...prev,
-        {
-          productId: product._id,
-          descripcionSnapshot: product.descripcion,
-          cantidad: cantidadNum,
-          precioUnitario: precioNum,
-          subtotal
-        }
-      ]);
-      setSelectedIndex(items.length);
-      setDescripcion("");
-      setCantidad(1);
-      setPrecioUnitario(product.precioSugerido || 0);
-      setMarca("");
-      setAtributosInput("");
-      descripcionRef.current?.focus();
-      setStatus("Ítem agregado.");
-    } catch (error) {
-      setStatus(error.message);
-    }
+    const atributos = selectedProduct?.atributos?.length
+      ? selectedProduct.atributos
+      : atributosInput
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+    const subtotal = Math.round(cantidadNum * precioNum);
+    setItems((prev) => [
+      ...prev,
+      {
+        productId: selectedProduct?._id,
+        descripcionSnapshot: selectedProduct?.descripcion || descripcionSnapshot,
+        cantidad: cantidadNum,
+        precioUnitario: precioNum,
+        subtotal,
+        marca: selectedProduct?.marca || marca.trim(),
+        atributos
+      }
+    ]);
+    setSelectedIndex(items.length);
+    setDescripcion("");
+    setCantidad(1);
+    setPrecioUnitario(0);
+    setMarca("");
+    setAtributosInput("");
+    setSelectedProduct(null);
+    setSugerencias([]);
+    descripcionRef.current?.focus();
+    setStatus("Ítem agregado.");
   };
 
   const addPago = () => {
@@ -173,9 +171,26 @@ const SalePage = () => {
     }
   };
 
+  const solicitarConfirmacion = () => {
+    if (!items.length) {
+      setStatus("Agregá al menos un ítem antes de guardar.");
+      return;
+    }
+    setConfirmVenta(true);
+  };
+
+  const confirmarVenta = async () => {
+    setConfirmVenta(false);
+    await guardarVenta();
+  };
+
   const crearCliente = async () => {
     const nombre = clienteNombre.trim();
     if (!nombre) return;
+    if (selectedCustomer) {
+      setStatus("Cliente seleccionado.");
+      return;
+    }
     try {
       await apiFetch("/api/customers", {
         method: "POST",
@@ -225,7 +240,7 @@ const SalePage = () => {
       }
       if (event.ctrlKey && event.key === "Enter") {
         event.preventDefault();
-        guardarVenta();
+        solicitarConfirmacion();
       }
     };
     window.addEventListener("keydown", handler);
@@ -246,6 +261,7 @@ const SalePage = () => {
         );
         if (exactMatch) {
           setPrecioUnitario(exactMatch.precioSugerido || 0);
+          setSelectedProduct(exactMatch);
         }
       } catch (error) {
         setSugerencias([]);
@@ -253,6 +269,45 @@ const SalePage = () => {
     };
     loadSuggestions();
   }, [descripcion]);
+
+  useEffect(() => {
+    const loadCustomerSuggestions = async () => {
+      if (!clienteNombre.trim()) {
+        setClienteSugerencias([]);
+        return;
+      }
+      try {
+        const data = await apiFetch(`/api/customers?query=${encodeURIComponent(clienteNombre)}`);
+        setClienteSugerencias(data);
+        const exactMatch = data.find(
+          (item) => item.nombre.toLowerCase() === clienteNombre.trim().toLowerCase()
+        );
+        if (exactMatch) {
+          setSelectedCustomer(exactMatch);
+        }
+      } catch (error) {
+        setClienteSugerencias([]);
+      }
+    };
+    loadCustomerSuggestions();
+  }, [clienteNombre]);
+
+  const seleccionarProducto = (product) => {
+    setSelectedProduct(product);
+    setDescripcion(product.descripcion);
+    setPrecioUnitario(product.precioSugerido || 0);
+    setMarca(product.marca || "");
+    setAtributosInput((product.atributos || []).join(", "));
+    setSugerencias([]);
+    descripcionRef.current?.focus();
+  };
+
+  const seleccionarCliente = (customer) => {
+    setSelectedCustomer(customer);
+    setClienteNombre(customer.nombre);
+    setClienteSugerencias([]);
+    clienteRef.current?.focus();
+  };
 
   return (
     <div className="container">
@@ -269,7 +324,10 @@ const SalePage = () => {
             <input
               ref={descripcionRef}
               value={descripcion}
-              onChange={(event) => setDescripcion(event.target.value)}
+              onChange={(event) => {
+                setDescripcion(event.target.value);
+                setSelectedProduct(null);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
@@ -280,7 +338,20 @@ const SalePage = () => {
             />
           </label>
           {sugerencias.length > 0 && (
-            <div className="helper">Sugerencias: {sugerencias.map((p) => p.descripcion).join(" · ")}</div>
+            <ul className="suggestions-list">
+              {sugerencias.map((producto) => (
+                <li key={producto._id}>
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => seleccionarProducto(producto)}
+                  >
+                    <span>{producto.descripcion}</span>
+                    <span className="helper">$ {producto.precioSugerido || 0}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
         <div>
@@ -357,7 +428,10 @@ const SalePage = () => {
             <input
               ref={clienteRef}
               value={clienteNombre}
-              onChange={(event) => setClienteNombre(event.target.value)}
+              onChange={(event) => {
+                setClienteNombre(event.target.value);
+                setSelectedCustomer(null);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
@@ -367,6 +441,21 @@ const SalePage = () => {
               placeholder="Nombre del cliente"
             />
           </label>
+          {clienteSugerencias.length > 0 && (
+            <ul className="suggestions-list">
+              {clienteSugerencias.map((cliente) => (
+                <li key={cliente._id}>
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => seleccionarCliente(cliente)}
+                  >
+                    <span>{cliente.nombre}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="stack">
           <label>
@@ -517,9 +606,31 @@ const SalePage = () => {
       </div>
 
       <div className="inline" style={{ marginTop: 16 }}>
-        <button onClick={guardarVenta}>Guardar venta (Ctrl+Enter)</button>
+        <button onClick={solicitarConfirmacion}>Guardar venta (Ctrl+Enter)</button>
         <button className="ghost" onClick={resetVenta}>Limpiar</button>
       </div>
+
+      {confirmVenta && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal">
+            <h3>Confirmar venta</h3>
+            <ul className="modal-items">
+              {items.map((item, index) => (
+                <li key={`${item.descripcionSnapshot}-${index}`}>
+                  {item.descripcionSnapshot} · {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                </li>
+              ))}
+            </ul>
+            <div className="modal-total">
+              Total: {total} · Total en caja: {totalCobrarCaja}
+            </div>
+            <div className="modal-actions">
+              <button className="ghost" onClick={() => setConfirmVenta(false)}>Volver</button>
+              <button onClick={confirmarVenta}>Confirmar venta</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

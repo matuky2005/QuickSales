@@ -86,13 +86,25 @@ export const createSale = async (req, res, next) => {
       if (!product) {
         product = await Product.findOne({ descripcion: buildExactMatch(item.descripcionSnapshot) });
       }
+      const marca = normalizeText(item.marca || "");
+      const atributos = Array.isArray(item.atributos)
+        ? item.atributos.map((atributo) => normalizeText(atributo)).filter(Boolean)
+        : [];
       if (!product) {
         product = await Product.create({
           descripcion: item.descripcionSnapshot,
-          precioSugerido: item.precioUnitario
+          precioSugerido: item.precioUnitario,
+          marca,
+          atributos
         });
       } else {
         product.precioSugerido = item.precioUnitario;
+        if (marca) {
+          product.marca = marca;
+        }
+        if (atributos.length) {
+          product.atributos = atributos;
+        }
         await product.save();
       }
       mappedItems.push({

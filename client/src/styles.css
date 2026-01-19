@@ -192,6 +192,11 @@ button.ghost {
   padding: 8px 10px;
 }
 
+.suggestions-list button.is-active {
+  border-color: #60a5fa;
+  background: rgba(37, 99, 235, 0.15);
+}
+
 .stack {
   display: flex;
   flex-direction: column;

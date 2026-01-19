@@ -227,7 +227,11 @@ const SalesListPage = () => {
             <ul>
               {selectedSale.items.map((item, index) => (
                 <li key={`${item.descripcionSnapshot}-${index}`}>
-                  {item.descripcionSnapshot} · {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                  {item.descripcionSnapshot}
+                  {item.marca ? ` · ${item.marca}` : ""}
+                  {item.atributos?.length ? ` · ${item.atributos.join(", ")}` : ""}
+                  {" · "}
+                  {item.cantidad} x {item.precioUnitario} = {item.subtotal}
                 </li>
               ))}
             </ul>

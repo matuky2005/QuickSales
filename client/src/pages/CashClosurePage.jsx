@@ -128,6 +128,7 @@ const CashClosurePage = () => {
                 <th>Total</th>
                 <th>Saldo</th>
                 <th>Cadete</th>
+                <th>Items</th>
               </tr>
             </thead>
             <tbody>
@@ -148,6 +149,19 @@ const CashClosurePage = () => {
                         Marcar rendido
                       </button>
                     )}
+                  </td>
+                  <td>
+                    <ul className="helper" style={{ margin: 0, paddingLeft: 16 }}>
+                      {venta.items.map((item, index) => (
+                        <li key={`${venta._id}-${index}`}>
+                          {item.descripcionSnapshot}
+                          {item.marca ? ` · ${item.marca}` : ""}
+                          {item.atributos?.length ? ` · ${item.atributos.join(", ")}` : ""}
+                          {" · "}
+                          {item.cantidad} x {item.precioUnitario}
+                        </li>
+                      ))}
+                    </ul>
                   </td>
                 </tr>
               ))}

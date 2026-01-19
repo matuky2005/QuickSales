@@ -26,6 +26,8 @@ const SalePage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [confirmVenta, setConfirmVenta] = useState(false);
+  const [productSuggestionIndex, setProductSuggestionIndex] = useState(-1);
+  const [customerSuggestionIndex, setCustomerSuggestionIndex] = useState(-1);
 
   const descripcionRef = useRef(null);
   const clienteRef = useRef(null);
@@ -111,6 +113,7 @@ const SalePage = () => {
     setAtributosInput("");
     setSelectedProduct(null);
     setSugerencias([]);
+    setProductSuggestionIndex(-1);
     descripcionRef.current?.focus();
     setStatus("Ítem agregado.");
   };
@@ -256,6 +259,7 @@ const SalePage = () => {
       try {
         const data = await apiFetch(`/api/products?query=${encodeURIComponent(descripcion)}`);
         setSugerencias(data);
+        setProductSuggestionIndex(data.length ? 0 : -1);
         const exactMatch = data.find(
           (item) => item.descripcion.toLowerCase() === descripcion.trim().toLowerCase()
         );
@@ -265,6 +269,7 @@ const SalePage = () => {
         }
       } catch (error) {
         setSugerencias([]);
+        setProductSuggestionIndex(-1);
       }
     };
     loadSuggestions();
@@ -279,6 +284,7 @@ const SalePage = () => {
       try {
         const data = await apiFetch(`/api/customers?query=${encodeURIComponent(clienteNombre)}`);
         setClienteSugerencias(data);
+        setCustomerSuggestionIndex(data.length ? 0 : -1);
         const exactMatch = data.find(
           (item) => item.nombre.toLowerCase() === clienteNombre.trim().toLowerCase()
         );
@@ -287,6 +293,7 @@ const SalePage = () => {
         }
       } catch (error) {
         setClienteSugerencias([]);
+        setCustomerSuggestionIndex(-1);
       }
     };
     loadCustomerSuggestions();
@@ -299,6 +306,7 @@ const SalePage = () => {
     setMarca(product.marca || "");
     setAtributosInput((product.atributos || []).join(", "));
     setSugerencias([]);
+    setProductSuggestionIndex(-1);
     descripcionRef.current?.focus();
   };
 
@@ -306,6 +314,7 @@ const SalePage = () => {
     setSelectedCustomer(customer);
     setClienteNombre(customer.nombre);
     setClienteSugerencias([]);
+    setCustomerSuggestionIndex(-1);
     clienteRef.current?.focus();
   };
 
@@ -329,8 +338,24 @@ const SalePage = () => {
                 setSelectedProduct(null);
               }}
               onKeyDown={(event) => {
+                if (event.key === "ArrowDown" && sugerencias.length) {
+                  event.preventDefault();
+                  setProductSuggestionIndex((prev) =>
+                    Math.min(prev + 1, sugerencias.length - 1)
+                  );
+                  return;
+                }
+                if (event.key === "ArrowUp" && sugerencias.length) {
+                  event.preventDefault();
+                  setProductSuggestionIndex((prev) => Math.max(prev - 1, 0));
+                  return;
+                }
                 if (event.key === "Enter") {
                   event.preventDefault();
+                  if (productSuggestionIndex >= 0 && sugerencias[productSuggestionIndex]) {
+                    seleccionarProducto(sugerencias[productSuggestionIndex]);
+                    return;
+                  }
                   addItem();
                 }
               }}
@@ -339,14 +364,18 @@ const SalePage = () => {
           </label>
           {sugerencias.length > 0 && (
             <ul className="suggestions-list">
-              {sugerencias.map((producto) => (
+              {sugerencias.map((producto, index) => (
                 <li key={producto._id}>
                   <button
                     type="button"
-                    className="ghost"
+                    className={`ghost ${index === productSuggestionIndex ? "is-active" : ""}`}
                     onClick={() => seleccionarProducto(producto)}
                   >
-                    <span>{producto.descripcion}</span>
+                    <span>
+                      {producto.descripcion}
+                      {producto.marca ? ` - ${producto.marca}` : ""}
+                      {producto.atributos?.length ? ` - ${producto.atributos.join(", ")}` : ""}
+                    </span>
                     <span className="helper">$ {producto.precioSugerido || 0}</span>
                   </button>
                 </li>
@@ -433,8 +462,24 @@ const SalePage = () => {
                 setSelectedCustomer(null);
               }}
               onKeyDown={(event) => {
+                if (event.key === "ArrowDown" && clienteSugerencias.length) {
+                  event.preventDefault();
+                  setCustomerSuggestionIndex((prev) =>
+                    Math.min(prev + 1, clienteSugerencias.length - 1)
+                  );
+                  return;
+                }
+                if (event.key === "ArrowUp" && clienteSugerencias.length) {
+                  event.preventDefault();
+                  setCustomerSuggestionIndex((prev) => Math.max(prev - 1, 0));
+                  return;
+                }
                 if (event.key === "Enter") {
                   event.preventDefault();
+                  if (customerSuggestionIndex >= 0 && clienteSugerencias[customerSuggestionIndex]) {
+                    seleccionarCliente(clienteSugerencias[customerSuggestionIndex]);
+                    return;
+                  }
                   crearCliente();
                 }
               }}
@@ -443,11 +488,11 @@ const SalePage = () => {
           </label>
           {clienteSugerencias.length > 0 && (
             <ul className="suggestions-list">
-              {clienteSugerencias.map((cliente) => (
+              {clienteSugerencias.map((cliente, index) => (
                 <li key={cliente._id}>
                   <button
                     type="button"
-                    className="ghost"
+                    className={`ghost ${index === customerSuggestionIndex ? "is-active" : ""}`}
                     onClick={() => seleccionarCliente(cliente)}
                   >
                     <span>{cliente.nombre}</span>

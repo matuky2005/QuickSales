@@ -9,13 +9,20 @@ const ProductsPage = () => {
   const [marca, setMarca] = useState("");
   const [atributosInput, setAtributosInput] = useState("");
   const [status, setStatus] = useState("");
+  const [filterBrand, setFilterBrand] = useState("");
+  const [editingId, setEditingId] = useState(null);
 
   const buscar = async () => {
     try {
-      const params = query.trim()
-        ? `?query=${encodeURIComponent(query)}`
-        : "";
-      const data = await apiFetch(`/api/products${params}`);
+      const params = new URLSearchParams();
+      if (query.trim()) {
+        params.set("query", query.trim());
+      }
+      if (filterBrand.trim()) {
+        params.set("brand", filterBrand.trim());
+      }
+      const suffix = params.toString() ? `?${params.toString()}` : "";
+      const data = await apiFetch(`/api/products${suffix}`);
       setProducts(data);
     } catch (error) {
       setStatus(error.message);
@@ -25,32 +32,54 @@ const ProductsPage = () => {
   const crearProducto = async () => {
     if (!descripcion.trim()) return;
     try {
-      const product = await apiFetch("/api/products", {
-        method: "POST",
-        body: JSON.stringify({
-          descripcion: descripcion.trim(),
-          marca: marca.trim(),
-          atributos: atributosInput
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
-          precioSugerido: Number(precioSugerido || 0)
-        })
+      const payload = {
+        descripcion: descripcion.trim(),
+        marca: marca.trim(),
+        atributos: atributosInput
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        precioSugerido: Number(precioSugerido || 0)
+      };
+      const product = await apiFetch(editingId ? `/api/products/${editingId}` : "/api/products", {
+        method: editingId ? "PATCH" : "POST",
+        body: JSON.stringify(payload)
       });
       setStatus("Producto guardado.");
       setDescripcion("");
       setPrecioSugerido("");
       setMarca("");
       setAtributosInput("");
-      setProducts((prev) => [product, ...prev]);
+      setEditingId(null);
+      setProducts((prev) =>
+        prev.some((item) => item._id === product._id)
+          ? prev.map((item) => (item._id === product._id ? product : item))
+          : [product, ...prev]
+      );
     } catch (error) {
       setStatus(error.message);
     }
   };
 
+  const startEdit = (product) => {
+    setEditingId(product._id);
+    setDescripcion(product.descripcion || "");
+    setPrecioSugerido(product.precioSugerido ?? "");
+    setMarca(product.marca || "");
+    setAtributosInput((product.atributos || []).join(", "));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDescripcion("");
+    setPrecioSugerido("");
+    setMarca("");
+    setAtributosInput("");
+  };
+
   useEffect(() => {
     buscar();
-  }, []);
+  }, [filterBrand]);
 
   return (
     <div className="container">
@@ -81,11 +110,19 @@ const ProductsPage = () => {
           />
         </label>
         <div style={{ display: "flex", alignItems: "flex-end" }}>
-          <button onClick={crearProducto}>Guardar producto</button>
+          <button onClick={crearProducto}>{editingId ? "Actualizar producto" : "Guardar producto"}</button>
+          {editingId && (
+            <button className="ghost" onClick={cancelEdit}>Cancelar</button>
+          )}
         </div>
       </div>
       <div className="inline" style={{ marginTop: 16 }}>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar" />
+        <input
+          value={filterBrand}
+          onChange={(event) => setFilterBrand(event.target.value)}
+          placeholder="Marca"
+        />
         <button onClick={buscar}>Buscar</button>
       </div>
       <ul style={{ marginTop: 16 }}>
@@ -93,6 +130,9 @@ const ProductsPage = () => {
           <li key={product._id}>
             {product.descripcion} {product.marca ? `(${product.marca})` : ""} - Sugerido: {product.precioSugerido}
             {product.atributos?.length ? ` · ${product.atributos.join(", ")}` : ""}
+            <button className="ghost" style={{ marginLeft: 8 }} onClick={() => startEdit(product)}>
+              Editar
+            </button>
           </li>
         ))}
       </ul>

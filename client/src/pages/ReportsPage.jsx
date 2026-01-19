@@ -4,6 +4,7 @@ import { apiFetch } from "../utils/api.js";
 const ReportsPage = () => {
   const [date, setDate] = useState("");
   const [report, setReport] = useState(null);
+  const [reportDetail, setReportDetail] = useState(false);
   const [brandDate, setBrandDate] = useState("");
   const [brandStartDate, setBrandStartDate] = useState("");
   const [brandEndDate, setBrandEndDate] = useState("");
@@ -47,10 +48,28 @@ const ReportsPage = () => {
 
   return (
     <div className="container">
+      {report && (
+        <div className="print-only">
+          <h2>Reporte diario</h2>
+          <div>Fecha: {date}</div>
+          <div>Detalle: {reportDetail ? "Por venta" : "Resumen"}</div>
+        </div>
+      )}
       <h2>Reporte diario</h2>
-      <div className="inline" style={{ marginTop: 16 }}>
+      <div className="inline no-print" style={{ marginTop: 16 }}>
         <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
         <button onClick={loadReport}>Buscar</button>
+        <label className="inline">
+          <input
+            type="checkbox"
+            checked={reportDetail}
+            onChange={(event) => setReportDetail(event.target.checked)}
+          />
+          Ver detalle por venta
+        </label>
+        <button className="secondary" onClick={() => window.print()} disabled={!report}>
+          Imprimir
+        </button>
       </div>
       {status && <div className="alert">{status}</div>}
       {report && (
@@ -70,13 +89,30 @@ const ReportsPage = () => {
           </div>
           <div>
             <strong>Ventas</strong>
-            <ul>
-              {report.ventas.map((venta) => (
-                <li key={venta._id}>
-                  {new Date(venta.fechaHora).toLocaleTimeString()} - {venta.customerNombreSnapshot || "Sin cliente"} - {venta.total}
-                </li>
-              ))}
-            </ul>
+            {reportDetail ? (
+              <ul>
+                {report.ventas.map((venta) => (
+                  <li key={venta._id}>
+                    {new Date(venta.fechaHora).toLocaleTimeString()} - {venta.customerNombreSnapshot || "Sin cliente"} - {venta.total}
+                    <ul>
+                      {venta.items?.map((item, index) => (
+                        <li key={`${venta._id}-${index}`}>
+                          {item.descripcionSnapshot} · {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul>
+                {report.ventas.map((venta) => (
+                  <li key={venta._id}>
+                    {new Date(venta.fechaHora).toLocaleTimeString()} - {venta.customerNombreSnapshot || "Sin cliente"} - {venta.total}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

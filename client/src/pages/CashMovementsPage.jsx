@@ -56,10 +56,17 @@ const CashMovementsPage = () => {
 
   return (
     <div className="container">
+      <div className="print-only">
+        <h2>Movimientos de caja</h2>
+        <div>
+          Período: {filters.startDate || "-"} al {filters.endDate || "-"}
+        </div>
+        {filters.descripcion && <div>Filtro descripción: {filters.descripcion}</div>}
+      </div>
       <h2>Movimientos de caja</h2>
       {status && <div className="alert">{status}</div>}
 
-      <div className="grid grid-3" style={{ marginTop: 16 }}>
+      <div className="grid grid-3 no-print" style={{ marginTop: 16 }}>
         <label>
           Tipo
           <select
@@ -102,15 +109,15 @@ const CashMovementsPage = () => {
           />
         </label>
       </div>
-      <div className="inline" style={{ marginTop: 16 }}>
+      <div className="inline no-print" style={{ marginTop: 16 }}>
         <button onClick={submitMovement}>Registrar</button>
         <button className="secondary no-print" onClick={() => window.print()}>
           Imprimir movimientos
         </button>
       </div>
 
-      <h3 style={{ marginTop: 24 }}>Buscar movimientos</h3>
-      <div className="grid grid-3">
+      <h3 className="no-print" style={{ marginTop: 24 }}>Buscar movimientos</h3>
+      <div className="grid grid-3 no-print">
         <label>
           Desde
           <input
@@ -135,7 +142,7 @@ const CashMovementsPage = () => {
           />
         </label>
       </div>
-      <div className="inline" style={{ marginTop: 16 }}>
+      <div className="inline no-print" style={{ marginTop: 16 }}>
         <button className="ghost" onClick={loadMovements}>Buscar</button>
       </div>
 

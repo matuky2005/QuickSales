@@ -10,6 +10,7 @@ const CustomersPage = () => {
   const [statement, setStatement] = useState(null);
   const [statementStartDate, setStatementStartDate] = useState("");
   const [statementEndDate, setStatementEndDate] = useState("");
+  const [statementDetail, setStatementDetail] = useState(false);
 
   const buscar = async () => {
     try {
@@ -95,7 +96,7 @@ const CustomersPage = () => {
 
       <div className="stack" style={{ marginTop: 24 }}>
         <h3>Estado de cuenta</h3>
-        <div className="grid grid-3">
+        <div className="grid grid-3 no-print">
           <label>
             Desde
             <input
@@ -128,20 +129,55 @@ const CustomersPage = () => {
               Imprimir
             </button>
           </div>
+          <label className="inline">
+            <input
+              type="checkbox"
+              checked={statementDetail}
+              onChange={(event) => setStatementDetail(event.target.checked)}
+            />
+            Ver detalle por venta
+          </label>
         </div>
+        {statement && (
+          <div className="print-only">
+            <h3>Estado de cuenta</h3>
+            <div>Cliente: {statement.customer.nombre}</div>
+            <div>
+              Período: {statementStartDate || "-"} al {statementEndDate || "-"}
+            </div>
+            <div>Detalle: {statementDetail ? "Por venta" : "Resumen"}</div>
+          </div>
+        )}
         {statement && (
           <div className="stack" style={{ marginTop: 12 }}>
             <div className="badge">Cliente: {statement.customer.nombre}</div>
             <div>Total: {statement.total}</div>
             <div>Total cobrado: {statement.totalCobrado}</div>
             <div>Saldo pendiente: {statement.saldoPendiente}</div>
-            <ul>
-              {statement.sales.map((sale) => (
-                <li key={sale._id}>
-                  {new Date(sale.fechaHora).toLocaleString()} - Total {sale.total} - Saldo {sale.saldoPendiente}
-                </li>
-              ))}
-            </ul>
+            {statementDetail ? (
+              <ul>
+                {statement.sales.map((sale) => (
+                  <li key={sale._id}>
+                    {new Date(sale.fechaHora).toLocaleString()} - Total {sale.total} - Saldo {sale.saldoPendiente}
+                    <ul>
+                      {sale.items?.map((item, index) => (
+                        <li key={`${sale._id}-${index}`}>
+                          {item.descripcionSnapshot} · {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul>
+                {statement.sales.map((sale) => (
+                  <li key={sale._id}>
+                    {new Date(sale.fechaHora).toLocaleString()} - Total {sale.total} - Saldo {sale.saldoPendiente}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>

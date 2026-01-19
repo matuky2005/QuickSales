@@ -217,6 +217,10 @@ button.ghost {
   font-size: 13px;
 }
 
+.print-only {
+  display: none;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -275,6 +279,10 @@ button.ghost {
   nav,
   button {
     display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 
   main {

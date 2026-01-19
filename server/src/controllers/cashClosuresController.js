@@ -72,7 +72,10 @@ export const createCashClosure = async (req, res, next) => {
 
     const start = startOfDay(fecha);
     const end = endOfDay(fecha);
-    const sales = await Sale.find({ fechaHora: { $gte: start, $lte: end } }).lean();
+    const sales = await Sale.find({
+      fechaHora: { $gte: start, $lte: end },
+      estado: { $ne: "CANCELADA" }
+    }).lean();
     const notes = await CreditNote.find({ fechaHora: { $gte: start, $lte: end } });
     const enrichedSales = await enrichSalesItems(sales);
     const { totalesPorMetodo, totalesPorCuenta, totalVentas } = buildTotals(enrichedSales, notes);
@@ -128,7 +131,10 @@ export const getCashClosure = async (req, res, next) => {
     if (detail === "true") {
       const start = startOfDay(date);
       const end = endOfDay(date);
-      const ventas = await Sale.find({ fechaHora: { $gte: start, $lte: end } })
+      const ventas = await Sale.find({
+        fechaHora: { $gte: start, $lte: end },
+        estado: { $ne: "CANCELADA" }
+      })
         .sort({ fechaHora: 1 })
         .lean();
       const enrichedSales = await enrichSalesItems(ventas);

@@ -47,7 +47,7 @@ const auditSchema = new mongoose.Schema(
   {
     accion: {
       type: String,
-      enum: ["CREADA", "ACTUALIZADA", "PAGO_AGREGADO"],
+      enum: ["CREADA", "ACTUALIZADA", "PAGO_AGREGADO", "CANCELADA"],
       required: true
     },
     detalle: { type: Object },
@@ -67,7 +67,7 @@ const saleSchema = new mongoose.Schema(
     total: { type: Number, required: true, min: 0 },
     totalCobrado: { type: Number, required: true, min: 0 },
     saldoPendiente: { type: Number, required: true, min: 0 },
-    estado: { type: String, enum: ["PENDIENTE", "PAGADA"], default: "PENDIENTE" },
+    estado: { type: String, enum: ["PENDIENTE", "PAGADA", "CANCELADA"], default: "PENDIENTE" },
     cadeteMontoPendiente: { type: Number, required: true, min: 0 },
     cadeteRendidoAt: { type: Date },
     cierreCajaId: { type: mongoose.Schema.Types.ObjectId, ref: "CashClosure" },

@@ -11,7 +11,10 @@ export const getDailyReport = async (req, res, next) => {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
-    const sales = await Sale.find({ fechaHora: { $gte: start, $lte: end } }).sort({ fechaHora: 1 });
+    const sales = await Sale.find({
+      fechaHora: { $gte: start, $lte: end },
+      estado: { $ne: "CANCELADA" }
+    }).sort({ fechaHora: 1 });
 
     const totalVendido = sales.reduce((sum, sale) => sum + sale.total, 0);
     const totalCobrado = sales.reduce((sum, sale) => sum + (sale.totalCobrado || 0), 0);
@@ -53,7 +56,10 @@ export const getBrandReport = async (req, res, next) => {
     const rangeStart = date ? startOfDay(date) : startOfDay(startDate);
     const rangeEnd = date ? endOfDay(date) : endOfDay(endDate || startDate);
 
-    const sales = await Sale.find({ fechaHora: { $gte: rangeStart, $lte: rangeEnd } }).lean();
+    const sales = await Sale.find({
+      fechaHora: { $gte: rangeStart, $lte: rangeEnd },
+      estado: { $ne: "CANCELADA" }
+    }).lean();
     const productIds = new Set();
     sales.forEach((sale) => {
       (sale.items || []).forEach((item) => {

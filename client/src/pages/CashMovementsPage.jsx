@@ -104,6 +104,9 @@ const CashMovementsPage = () => {
       </div>
       <div className="inline" style={{ marginTop: 16 }}>
         <button onClick={submitMovement}>Registrar</button>
+        <button className="secondary no-print" onClick={() => window.print()}>
+          Imprimir movimientos
+        </button>
       </div>
 
       <h3 style={{ marginTop: 24 }}>Buscar movimientos</h3>

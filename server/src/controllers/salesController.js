@@ -300,12 +300,43 @@ export const markCadeteRendido = async (req, res, next) => {
   }
 };
 
+export const cancelSale = async (req, res, next) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: "sale not found" });
+    }
+    if (sale.estado === "CANCELADA") {
+      return res.status(409).json({ message: "sale already canceled" });
+    }
+    if (sale.estado === "PAGADA") {
+      return res.status(400).json({ message: "paid sale cannot be canceled" });
+    }
+    sale.estado = "CANCELADA";
+    sale.saldoPendiente = 0;
+    sale.totalCobrado = 0;
+    sale.pagos = [];
+    sale.auditoria.push({
+      accion: "CANCELADA",
+      detalle: {
+        userId: req.header("x-user-id") || null
+      }
+    });
+    await sale.save();
+    res.json(sale);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const listSales = async (req, res, next) => {
   try {
     const { status, date, startDate, endDate, customer, page = 1, limit = 20 } = req.query;
     const filter = {};
     if (status) {
       filter.estado = status;
+    } else {
+      filter.estado = { $ne: "CANCELADA" };
     }
     if (date) {
       filter.fechaHora = { $gte: startOfDay(date), $lte: endOfDay(date) };

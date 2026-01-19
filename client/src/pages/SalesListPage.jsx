@@ -122,6 +122,21 @@ const SalesListPage = () => {
     }
   };
 
+  const cancelarVenta = async () => {
+    if (!selectedSale) return;
+    if (!window.confirm("¿Cancelar esta venta pendiente?")) return;
+    try {
+      const updated = await apiFetch(`/api/sales/${selectedSale._id}/cancel`, {
+        method: "PATCH"
+      });
+      setSelectedSale(updated);
+      setStatusMessage("Venta cancelada.");
+      loadSales(pagination.page);
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
   useEffect(() => {
     loadSales();
   }, []);
@@ -148,6 +163,7 @@ const SalesListPage = () => {
             <option value="">Todas</option>
             <option value="PENDIENTE">Pendiente</option>
             <option value="PAGADA">Pagada</option>
+            <option value="CANCELADA">Cancelada</option>
           </select>
         </label>
         <label>
@@ -214,6 +230,11 @@ const SalesListPage = () => {
       {selectedSale && (
         <div className="grid" style={{ marginTop: 24 }}>
           <h3>Detalle</h3>
+          {selectedSale.estado === "PENDIENTE" && (
+            <div className="inline" style={{ marginBottom: 8 }}>
+              <button className="ghost" onClick={cancelarVenta}>Cancelar venta</button>
+            </div>
+          )}
           <div className="grid grid-3">
             <div>Cliente: {selectedSale.customerNombreSnapshot || "Sin cliente"}</div>
             <div>Total: {selectedSale.total}</div>

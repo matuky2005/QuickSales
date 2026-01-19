@@ -81,6 +81,15 @@ const ProductsPage = () => {
     buscar();
   }, [filterBrand]);
 
+  const groupedByBrand = products.reduce((acc, product) => {
+    const brandKey = product.marca || "Sin marca";
+    if (!acc[brandKey]) {
+      acc[brandKey] = [];
+    }
+    acc[brandKey].push(product);
+    return acc;
+  }, {});
+
   return (
     <div className="container">
       <h2>Productos</h2>
@@ -136,6 +145,23 @@ const ProductsPage = () => {
           </li>
         ))}
       </ul>
+
+      <div className="stack" style={{ marginTop: 24 }}>
+        <h3>Productos por marca</h3>
+        {Object.entries(groupedByBrand).map(([brand, items]) => (
+          <div key={brand}>
+            <strong>{brand}</strong>
+            <ul>
+              {items.map((product) => (
+                <li key={product._id}>
+                  {product.descripcion} - {product.precioSugerido}
+                  {product.atributos?.length ? ` · ${product.atributos.join(", ")}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

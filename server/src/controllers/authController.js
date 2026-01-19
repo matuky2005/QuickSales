@@ -1,8 +1,14 @@
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import { normalizeText } from "../utils/normalize.js";
 
 export const login = async (req, res, next) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        message: "La base de datos no está disponible. Verificá MongoDB e intentá de nuevo."
+      });
+    }
     const username = normalizeText(req.body.username);
     const password = req.body.password;
     if (!username || !password) {

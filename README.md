@@ -38,11 +38,12 @@ VITE_API_URL=http://127.0.0.1:4000
 ```
 
 ## Seed (datos de ejemplo)
-Incluye 5 ventas de prueba.
+Incluye 5 ventas de prueba y usuarios de ejemplo (por defecto `matias / 1023`).
 ```bash
 cd server
 npm run seed
 ```
+> Nota: asegurate de tener MongoDB en ejecución antes de iniciar el backend o el seed.
 
 ## Atajos de teclado (venta)
 - **F2**: enfocar descripción de producto.

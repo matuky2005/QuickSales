@@ -6,7 +6,8 @@ export const login = async (req, res, next) => {
   try {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({
-        message: "La base de datos no está disponible. Verificá MongoDB e intentá de nuevo."
+        message:
+          "La base de datos no está disponible. Iniciá MongoDB y ejecutá el seed si todavía no cargaste usuarios."
       });
     }
     const username = normalizeText(req.body.username);

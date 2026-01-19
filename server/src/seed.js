@@ -7,10 +7,17 @@ import User from "./models/User.js";
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/quicksales";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/quicksales";
 
 const seed = async () => {
-  await mongoose.connect(MONGODB_URI);
+  try {
+    await mongoose.connect(MONGODB_URI);
+  } catch (error) {
+    console.error("No se pudo conectar a MongoDB para ejecutar el seed.");
+    console.error("Verificá que MongoDB esté en ejecución y la URI sea correcta.");
+    console.error(`URI actual: ${MONGODB_URI}`);
+    throw error;
+  }
   await Promise.all([
     Product.deleteMany({}),
     Customer.deleteMany({}),
@@ -149,6 +156,6 @@ const seed = async () => {
 };
 
 seed().catch((error) => {
-  console.error(error);
+  console.error("Seed failed:", error.message);
   process.exit(1);
 });

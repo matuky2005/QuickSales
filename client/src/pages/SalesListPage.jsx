@@ -129,6 +129,9 @@ const SalesListPage = () => {
   return (
     <div className="container">
       <h2>Ventas</h2>
+      <p className="helper">
+        Seleccioná una venta para ver su detalle, imputar pagos o registrar notas de crédito/débito.
+      </p>
       {statusMessage && <div className="alert">{statusMessage}</div>}
       <div className="grid grid-3" style={{ marginTop: 16 }}>
         <label>
@@ -292,6 +295,7 @@ const SalesListPage = () => {
             </div>
           </div>
 
+          <h4 style={{ marginTop: 16 }}>Notas de crédito/débito</h4>
           <div className="grid grid-3">
             <label>
               Tipo nota

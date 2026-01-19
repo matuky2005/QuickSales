@@ -258,7 +258,7 @@ const SalePage = () => {
     <div className="container">
       <h2>Nueva venta</h2>
       <p className="helper">
-        Atajos: F2 producto, F4 cliente, F6 pago, Ctrl+Enter guardar, Esc cancelar.
+        Atajos: F2 producto, Enter agrega ítem, F4 cliente, F6 pago, Ctrl+Enter guardar, Esc cancelar.
       </p>
       {status && <div className="alert">{status}</div>}
 
@@ -318,6 +318,9 @@ const SalePage = () => {
               onChange={(event) => setPrecioUnitario(event.target.value)}
             />
           </label>
+          <div style={{ marginTop: 12 }}>
+            <button className="secondary" onClick={addItem}>Agregar ítem</button>
+          </div>
         </div>
       </div>
 

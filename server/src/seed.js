@@ -14,7 +14,10 @@ const seed = async () => {
     await mongoose.connect(MONGODB_URI);
   } catch (error) {
     console.error("No se pudo conectar a MongoDB para ejecutar el seed.");
-    console.error("Verificá que MongoDB esté en ejecución y la URI sea correcta.");
+    console.error(
+      "Este comando requiere MongoDB en ejecución (local o remoto)."
+    );
+    console.error("Verificá que el servicio esté iniciado y la URI sea correcta.");
     console.error(`URI actual: ${MONGODB_URI}`);
     throw error;
   }
@@ -157,5 +160,6 @@ const seed = async () => {
 
 seed().catch((error) => {
   console.error("Seed failed:", error.message);
+  console.error("Sugerencia: iniciá MongoDB y reintentá el comando.");
   process.exit(1);
 });

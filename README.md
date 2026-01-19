@@ -4,7 +4,7 @@ Sistema POS minimalista orientado a velocidad y uso 100% con teclado.
 
 ## Requisitos
 - Node.js 18+
-- MongoDB local o remoto
+- MongoDB local o remoto (en ejecución)
 
 ## Instalación
 

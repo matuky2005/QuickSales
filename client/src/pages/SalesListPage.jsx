@@ -16,6 +16,7 @@ const SalesListPage = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editItems, setEditItems] = useState([]);
+  const [editCustomerName, setEditCustomerName] = useState("");
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [paymentForm, setPaymentForm] = useState({
     metodo: "EFECTIVO",
@@ -62,6 +63,7 @@ const SalesListPage = () => {
     setSelectedSale(sale);
     setIsEditing(false);
     setEditItems([]);
+    setEditCustomerName("");
     loadNotes(sale._id);
   };
 
@@ -147,6 +149,7 @@ const SalesListPage = () => {
   const startEdit = () => {
     if (!selectedSale) return;
     setIsEditing(true);
+    setEditCustomerName(selectedSale.customerNombreSnapshot || "");
     setEditItems(
       selectedSale.items.map((item) => ({
         ...item,
@@ -158,6 +161,7 @@ const SalesListPage = () => {
   const cancelEdit = () => {
     setIsEditing(false);
     setEditItems([]);
+    setEditCustomerName("");
   };
 
   const updateEditItem = (index, field, value) => {
@@ -202,6 +206,7 @@ const SalesListPage = () => {
             ? item.atributosInput.split(",").map((atributo) => atributo.trim()).filter(Boolean)
             : item.atributos || []
         })),
+        customerNombreSnapshot: editCustomerName.trim() || "",
         recargo: selectedSale.recargo,
         envio: selectedSale.envio
       };
@@ -212,6 +217,7 @@ const SalesListPage = () => {
       setSelectedSale(updated);
       setIsEditing(false);
       setEditItems([]);
+      setEditCustomerName("");
       setStatusMessage("Venta actualizada.");
       loadSales(pagination.page);
     } catch (error) {
@@ -356,7 +362,18 @@ const SalesListPage = () => {
             )}
           </div>
           <div className="grid grid-3">
-            <div>Cliente: {selectedSale.customerNombreSnapshot || "Sin cliente"}</div>
+            <div>
+              Cliente:{" "}
+              {isEditing ? (
+                <input
+                  value={editCustomerName}
+                  onChange={(event) => setEditCustomerName(event.target.value)}
+                  placeholder="Nombre del cliente"
+                />
+              ) : (
+                selectedSale.customerNombreSnapshot || "Sin cliente"
+              )}
+            </div>
             <div>Total: {selectedSale.total}</div>
             <div>Saldo pendiente: {selectedSale.saldoPendiente}</div>
             <div>Estado: {selectedSale.estado}</div>

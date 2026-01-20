@@ -223,7 +223,12 @@ export const updateSale = async (req, res, next) => {
     if (!sale) {
       return res.status(404).json({ message: "sale not found" });
     }
-    const { items = sale.items, recargo = sale.recargo, envio = sale.envio } = req.body;
+    const {
+      items = sale.items,
+      recargo = sale.recargo,
+      envio = sale.envio,
+      customerNombreSnapshot
+    } = req.body;
     if (!items.length) {
       return res.status(400).json({ message: "items are required" });
     }
@@ -260,7 +265,26 @@ export const updateSale = async (req, res, next) => {
       envio
     );
 
+    let customerId = sale.customerId;
+    let customerNombreSnapshotValue = sale.customerNombreSnapshot;
+    if (customerNombreSnapshot !== undefined) {
+      const normalizedName = normalizeText(customerNombreSnapshot);
+      if (normalizedName) {
+        let customer = await Customer.findOne({ nombre: buildExactMatch(normalizedName) });
+        if (!customer) {
+          customer = await Customer.create({ nombre: normalizedName });
+        }
+        customerId = customer._id;
+        customerNombreSnapshotValue = normalizedName;
+      } else {
+        customerId = undefined;
+        customerNombreSnapshotValue = undefined;
+      }
+    }
+
     sale.items = normalizedItems;
+    sale.customerId = customerId;
+    sale.customerNombreSnapshot = customerNombreSnapshotValue;
     sale.recargo = {
       tipo: recargo.tipo || "fijo",
       valor: Number(recargo.valor || 0),

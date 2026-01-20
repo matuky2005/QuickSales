@@ -30,6 +30,7 @@ const SalePage = () => {
   const [productSuggestionIndex, setProductSuggestionIndex] = useState(-1);
   const [customerSuggestionIndex, setCustomerSuggestionIndex] = useState(-1);
   const [transferAccounts, setTransferAccounts] = useState([]);
+  const [productSuggestionTouched, setProductSuggestionTouched] = useState(false);
 
   const descripcionRef = useRef(null);
   const clienteRef = useRef(null);
@@ -116,6 +117,7 @@ const SalePage = () => {
     setSelectedProduct(null);
     setSugerencias([]);
     setProductSuggestionIndex(-1);
+    setProductSuggestionTouched(false);
     descripcionRef.current?.focus();
     setStatus("Ítem agregado.");
   };
@@ -280,7 +282,8 @@ const SalePage = () => {
       try {
         const data = await apiFetch(`/api/products?query=${encodeURIComponent(descripcion)}`);
         setSugerencias(data);
-        setProductSuggestionIndex(data.length ? 0 : -1);
+        setProductSuggestionIndex(-1);
+        setProductSuggestionTouched(false);
         const exactMatch = data.find(
           (item) => item.descripcion.toLowerCase() === descripcion.trim().toLowerCase()
         );
@@ -327,6 +330,7 @@ const SalePage = () => {
     setAtributosInput((product.atributos || []).join(", "));
     setSugerencias([]);
     setProductSuggestionIndex(-1);
+    setProductSuggestionTouched(false);
     descripcionRef.current?.focus();
   };
 
@@ -360,19 +364,26 @@ const SalePage = () => {
               onKeyDown={(event) => {
                 if (event.key === "ArrowDown" && sugerencias.length) {
                   event.preventDefault();
-                  setProductSuggestionIndex((prev) =>
-                    Math.min(prev + 1, sugerencias.length - 1)
-                  );
+                  setProductSuggestionTouched(true);
+                  setProductSuggestionIndex((prev) => {
+                    if (prev < 0) return 0;
+                    return Math.min(prev + 1, sugerencias.length - 1);
+                  });
                   return;
                 }
                 if (event.key === "ArrowUp" && sugerencias.length) {
                   event.preventDefault();
+                  setProductSuggestionTouched(true);
                   setProductSuggestionIndex((prev) => Math.max(prev - 1, 0));
                   return;
                 }
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  if (productSuggestionIndex >= 0 && sugerencias[productSuggestionIndex]) {
+                  if (
+                    productSuggestionTouched &&
+                    productSuggestionIndex >= 0 &&
+                    sugerencias[productSuggestionIndex]
+                  ) {
                     seleccionarProducto(sugerencias[productSuggestionIndex]);
                     return;
                   }

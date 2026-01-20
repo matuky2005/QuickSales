@@ -60,10 +60,14 @@ export const createSale = async (req, res, next) => {
 
     const normalizedItems = items.map((item) => {
       const descripcionSnapshot = normalizeText(item.descripcionSnapshot || item.descripcion || "");
+      const marca = normalizeText(item.marca || "");
+      const atributos = Array.isArray(item.atributos)
+        ? item.atributos.map((atributo) => normalizeText(atributo)).filter(Boolean)
+        : [];
       const cantidad = Number(item.cantidad);
       const precioUnitario = Number(item.precioUnitario);
       const subtotal = Math.round(cantidad * precioUnitario);
-      return { ...item, descripcionSnapshot, cantidad, precioUnitario, subtotal };
+      return { ...item, descripcionSnapshot, marca, atributos, cantidad, precioUnitario, subtotal };
     });
 
     for (const item of normalizedItems) {
@@ -111,27 +115,14 @@ export const createSale = async (req, res, next) => {
         product = await Product.findById(item.productId);
       }
       if (!product) {
-        product = await Product.findOne({ descripcion: buildExactMatch(item.descripcionSnapshot) });
-      }
-      const marca = normalizeText(item.marca || "");
-      const atributos = Array.isArray(item.atributos)
-        ? item.atributos.map((atributo) => normalizeText(atributo)).filter(Boolean)
-        : [];
-      if (!product) {
         product = await Product.create({
           descripcion: item.descripcionSnapshot,
           precioSugerido: item.precioUnitario,
-          marca,
-          atributos
+          marca: item.marca || "",
+          atributos: item.atributos || []
         });
       } else {
         product.precioSugerido = item.precioUnitario;
-        if (marca) {
-          product.marca = marca;
-        }
-        if (atributos.length) {
-          product.atributos = atributos;
-        }
         await product.save();
       }
       mappedItems.push({

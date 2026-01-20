@@ -89,13 +89,14 @@ const SalePage = () => {
       setStatus("Cantidad o precio inválido.");
       return;
     }
-    const atributos = selectedProduct?.atributos?.length
-      ? selectedProduct.atributos
-      : atributosInput
+    const atributos = atributosInput.trim()
+      ? atributosInput
           .split(",")
           .map((item) => item.trim())
-          .filter(Boolean);
+          .filter(Boolean)
+      : selectedProduct?.atributos || [];
     const subtotal = Math.round(cantidadNum * precioNum);
+    const marcaSnapshot = marca.trim() || selectedProduct?.marca || "";
     setItems((prev) => [
       ...prev,
       {
@@ -104,7 +105,7 @@ const SalePage = () => {
         cantidad: cantidadNum,
         precioUnitario: precioNum,
         subtotal,
-        marca: selectedProduct?.marca || marca.trim(),
+        marca: marcaSnapshot,
         atributos
       }
     ]);
@@ -417,7 +418,13 @@ const SalePage = () => {
         <div>
           <label>
             Marca
-            <input value={marca} onChange={(event) => setMarca(event.target.value)} />
+            <input
+              value={marca}
+              onChange={(event) => {
+                setMarca(event.target.value);
+                setSelectedProduct(null);
+              }}
+            />
           </label>
         </div>
         <div>
@@ -425,7 +432,10 @@ const SalePage = () => {
             Atributos (coma)
             <input
               value={atributosInput}
-              onChange={(event) => setAtributosInput(event.target.value)}
+              onChange={(event) => {
+                setAtributosInput(event.target.value);
+                setSelectedProduct(null);
+              }}
               placeholder="ej: 1kg, frutilla"
             />
           </label>

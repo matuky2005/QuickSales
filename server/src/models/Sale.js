@@ -4,6 +4,8 @@ const saleItemSchema = new mongoose.Schema(
   {
     productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     descripcionSnapshot: { type: String, required: true },
+    marca: { type: String, default: "" },
+    atributos: { type: [String], default: [] },
     cantidad: { type: Number, required: true, min: 1 },
     precioUnitario: { type: Number, required: true, min: 0 },
     subtotal: { type: Number, required: true, min: 0 }

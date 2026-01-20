@@ -13,6 +13,8 @@ const SalesListPage = () => {
   const [selectedSale, setSelectedSale] = useState(null);
   const [notes, setNotes] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editItems, setEditItems] = useState([]);
   const [paymentForm, setPaymentForm] = useState({
     metodo: "EFECTIVO",
     monto: "",
@@ -56,6 +58,8 @@ const SalesListPage = () => {
 
   const handleSelectSale = (sale) => {
     setSelectedSale(sale);
+    setIsEditing(false);
+    setEditItems([]);
     loadNotes(sale._id);
   };
 
@@ -117,6 +121,58 @@ const SalesListPage = () => {
       });
       setStatusMessage("Nota registrada.");
       loadNotes(selectedSale._id);
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
+  const startEdit = () => {
+    if (!selectedSale) return;
+    setIsEditing(true);
+    setEditItems(
+      selectedSale.items.map((item) => ({
+        ...item
+      }))
+    );
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditItems([]);
+  };
+
+  const updateEditItem = (index, field, value) => {
+    setEditItems((prev) =>
+      prev.map((item, idx) =>
+        idx === index
+          ? {
+              ...item,
+              [field]: field === "cantidad" || field === "precioUnitario"
+                ? Number(value)
+                : value
+            }
+          : item
+      )
+    );
+  };
+
+  const saveEdit = async () => {
+    if (!selectedSale) return;
+    try {
+      const payload = {
+        items: editItems,
+        recargo: selectedSale.recargo,
+        envio: selectedSale.envio
+      };
+      const updated = await apiFetch(`/api/sales/${selectedSale._id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload)
+      });
+      setSelectedSale(updated);
+      setIsEditing(false);
+      setEditItems([]);
+      setStatusMessage("Venta actualizada.");
+      loadSales(pagination.page);
     } catch (error) {
       setStatusMessage(error.message);
     }
@@ -230,11 +286,23 @@ const SalesListPage = () => {
       {selectedSale && (
         <div className="grid" style={{ marginTop: 24 }}>
           <h3>Detalle</h3>
-          {selectedSale.estado === "PENDIENTE" && (
-            <div className="inline" style={{ marginBottom: 8 }}>
+          <div className="inline" style={{ marginBottom: 8 }}>
+            <button className="ghost" onClick={startEdit} disabled={isEditing}>
+              Editar venta
+            </button>
+            {isEditing && (
+              <>
+                <button className="secondary" onClick={saveEdit}>Guardar cambios</button>
+                <button className="ghost" onClick={cancelEdit}>Cancelar edición</button>
+              </>
+            )}
+            {selectedSale.estado === "PENDIENTE" && (
               <button className="ghost" onClick={cancelarVenta}>Cancelar venta</button>
-            </div>
-          )}
+            )}
+            {selectedSale.cierreCajaAt && (
+              <span className="helper">Cierre de caja aplicado</span>
+            )}
+          </div>
           <div className="grid grid-3">
             <div>Cliente: {selectedSale.customerNombreSnapshot || "Sin cliente"}</div>
             <div>Total: {selectedSale.total}</div>
@@ -245,17 +313,59 @@ const SalesListPage = () => {
 
           <div>
             <strong>Items</strong>
-            <ul>
-              {selectedSale.items.map((item, index) => (
-                <li key={`${item.descripcionSnapshot}-${index}`}>
-                  {item.descripcionSnapshot}
-                  {item.marca ? ` · ${item.marca}` : ""}
-                  {item.atributos?.length ? ` · ${item.atributos.join(", ")}` : ""}
-                  {" · "}
-                  {item.cantidad} x {item.precioUnitario} = {item.subtotal}
-                </li>
-              ))}
-            </ul>
+            {isEditing ? (
+              <table className="table" style={{ marginTop: 8 }}>
+                <thead>
+                  <tr>
+                    <th>Descripción</th>
+                    <th>Cant.</th>
+                    <th>Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {editItems.map((item, index) => (
+                    <tr key={`${item.descripcionSnapshot}-${index}`}>
+                      <td>
+                        <input
+                          value={item.descripcionSnapshot}
+                          onChange={(event) =>
+                            updateEditItem(index, "descripcionSnapshot", event.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={item.cantidad}
+                          onChange={(event) => updateEditItem(index, "cantidad", event.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={item.precioUnitario}
+                          onChange={(event) =>
+                            updateEditItem(index, "precioUnitario", event.target.value)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <ul>
+                {selectedSale.items.map((item, index) => (
+                  <li key={`${item.descripcionSnapshot}-${index}`}>
+                    {item.descripcionSnapshot}
+                    {item.marca ? ` · ${item.marca}` : ""}
+                    {item.atributos?.length ? ` · ${item.atributos.join(", ")}` : ""}
+                    {" · "}
+                    {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>

@@ -274,6 +274,26 @@ button.ghost {
 }
 
 @media print {
+  body,
+  main,
+  .container {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .helper,
+  .badge,
+  .alert {
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  .table th,
+  .table td {
+    color: #000 !important;
+    border-bottom: 1px solid #000 !important;
+  }
+
   header,
   .no-print,
   nav,

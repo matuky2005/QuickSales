@@ -286,7 +286,6 @@ const SalePage = () => {
         );
         if (exactMatch) {
           setPrecioUnitario(exactMatch.precioSugerido || 0);
-          setSelectedProduct(exactMatch);
         }
       } catch (error) {
         setSugerencias([]);

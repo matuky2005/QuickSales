@@ -4,6 +4,7 @@ import { apiFetch } from "../utils/api.js";
 const initialRecargo = { tipo: "fijo", valor: 0 };
 
 const SalePage = () => {
+  const transferAccountsKey = "qs-transfer-accounts";
   const [descripcion, setDescripcion] = useState("");
   const [cantidad, setCantidad] = useState(1);
   const [precioUnitario, setPrecioUnitario] = useState(0);
@@ -28,6 +29,7 @@ const SalePage = () => {
   const [confirmVenta, setConfirmVenta] = useState(false);
   const [productSuggestionIndex, setProductSuggestionIndex] = useState(-1);
   const [customerSuggestionIndex, setCustomerSuggestionIndex] = useState(-1);
+  const [transferAccounts, setTransferAccounts] = useState([]);
 
   const descripcionRef = useRef(null);
   const clienteRef = useRef(null);
@@ -137,6 +139,14 @@ const SalePage = () => {
     }
     if (metodoPago === "TRANSFERENCIA") {
       nuevoPago.cuentaTransferencia = cuentaTransferencia || "Cuenta";
+      const trimmedAccount = cuentaTransferencia.trim();
+      if (trimmedAccount) {
+        setTransferAccounts((prev) => {
+          const next = prev.includes(trimmedAccount) ? prev : [...prev, trimmedAccount];
+          localStorage.setItem(transferAccountsKey, JSON.stringify(next));
+          return next;
+        });
+      }
     }
     setPagos((prev) => [...prev, nuevoPago]);
     setMontoPago(0);
@@ -207,6 +217,17 @@ const SalePage = () => {
 
   useEffect(() => {
     descripcionRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(transferAccountsKey);
+    if (stored) {
+      try {
+        setTransferAccounts(JSON.parse(stored));
+      } catch {
+        setTransferAccounts([]);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -607,7 +628,13 @@ const SalePage = () => {
                   value={cuentaTransferencia}
                   onChange={(event) => setCuentaTransferencia(event.target.value)}
                   placeholder="Alias / banco"
+                  list="transfer-accounts-sale"
                 />
+                <datalist id="transfer-accounts-sale">
+                  {transferAccounts.map((account) => (
+                    <option key={account} value={account} />
+                  ))}
+                </datalist>
               </label>
             </div>
           )}

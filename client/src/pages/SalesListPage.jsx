@@ -4,6 +4,7 @@ import { apiFetch } from "../utils/api.js";
 const paymentMethods = ["EFECTIVO", "TRANSFERENCIA", "TARJETA", "QR"];
 
 const SalesListPage = () => {
+  const transferAccountsKey = "qs-transfer-accounts";
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState("");
@@ -15,6 +16,7 @@ const SalesListPage = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editItems, setEditItems] = useState([]);
+  const [transferAccounts, setTransferAccounts] = useState([]);
   const [paymentForm, setPaymentForm] = useState({
     metodo: "EFECTIVO",
     monto: "",
@@ -69,6 +71,14 @@ const SalesListPage = () => {
       setStatusMessage("La cuenta de transferencia es obligatoria.");
       return;
     }
+    if (paymentForm.metodo === "TRANSFERENCIA" && paymentForm.cuentaTransferencia.trim()) {
+      const trimmedAccount = paymentForm.cuentaTransferencia.trim();
+      setTransferAccounts((prev) => {
+        const next = prev.includes(trimmedAccount) ? prev : [...prev, trimmedAccount];
+        localStorage.setItem(transferAccountsKey, JSON.stringify(next));
+        return next;
+      });
+    }
     try {
       const payload = {
         pagos: [
@@ -98,6 +108,14 @@ const SalesListPage = () => {
     if (noteForm.metodo === "TRANSFERENCIA" && !noteForm.cuentaTransferencia) {
       setStatusMessage("La cuenta de transferencia es obligatoria.");
       return;
+    }
+    if (noteForm.metodo === "TRANSFERENCIA" && noteForm.cuentaTransferencia.trim()) {
+      const trimmedAccount = noteForm.cuentaTransferencia.trim();
+      setTransferAccounts((prev) => {
+        const next = prev.includes(trimmedAccount) ? prev : [...prev, trimmedAccount];
+        localStorage.setItem(transferAccountsKey, JSON.stringify(next));
+        return next;
+      });
     }
     try {
       const payload = {
@@ -195,6 +213,17 @@ const SalesListPage = () => {
 
   useEffect(() => {
     loadSales();
+  }, []);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(transferAccountsKey);
+    if (stored) {
+      try {
+        setTransferAccounts(JSON.parse(stored));
+      } catch {
+        setTransferAccounts([]);
+      }
+    }
   }, []);
 
   return (
@@ -401,7 +430,13 @@ const SalesListPage = () => {
                     onChange={(event) =>
                       setPaymentForm({ ...paymentForm, cuentaTransferencia: event.target.value })
                     }
+                    list="transfer-accounts-sales"
                   />
+                  <datalist id="transfer-accounts-sales">
+                    {transferAccounts.map((account) => (
+                      <option key={account} value={account} />
+                    ))}
+                  </datalist>
                 </label>
               )}
               {paymentForm.metodo === "TARJETA" && (
@@ -461,7 +496,13 @@ const SalesListPage = () => {
                   onChange={(event) =>
                     setNoteForm({ ...noteForm, cuentaTransferencia: event.target.value })
                   }
+                  list="transfer-accounts-notes"
                 />
+                <datalist id="transfer-accounts-notes">
+                  {transferAccounts.map((account) => (
+                    <option key={account} value={account} />
+                  ))}
+                </datalist>
               </label>
             )}
             <label>

@@ -98,3 +98,38 @@ export const getBrandReport = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getCustomerReport = async (req, res, next) => {
+  try {
+    const { date, startDate, endDate, customerId } = req.query;
+    if (!customerId) {
+      return res.status(400).json({ message: "customerId is required" });
+    }
+    if (!date && !startDate && !endDate) {
+      return res.status(400).json({ message: "date or startDate/endDate are required" });
+    }
+    const rangeStart = date ? startOfDay(date) : startOfDay(startDate);
+    const rangeEnd = date ? endOfDay(date) : endOfDay(endDate || startDate);
+
+    const sales = await Sale.find({
+      fechaHora: { $gte: rangeStart, $lte: rangeEnd },
+      customerId,
+      estado: { $ne: "CANCELADA" }
+    }).lean();
+    const total = sales.reduce((sum, sale) => sum + sale.total, 0);
+    const totalCobrado = sales.reduce((sum, sale) => sum + (sale.totalCobrado || 0), 0);
+    const saldoPendiente = sales.reduce((sum, sale) => sum + (sale.saldoPendiente || 0), 0);
+
+    res.json({
+      fecha: date || null,
+      rango: date ? null : { startDate, endDate: endDate || startDate },
+      customerId,
+      total,
+      totalCobrado,
+      saldoPendiente,
+      ventas: sales
+    });
+  } catch (error) {
+    next(error);
+  }
+};

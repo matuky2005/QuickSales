@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiFetch } from "../utils/api.js";
 
 const ReportsPage = () => {
@@ -10,6 +10,11 @@ const ReportsPage = () => {
   const [brandEndDate, setBrandEndDate] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
   const [brandReport, setBrandReport] = useState(null);
+  const [reportMode, setReportMode] = useState("marca");
+  const [brands, setBrands] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [customerId, setCustomerId] = useState("");
+  const [customerReport, setCustomerReport] = useState(null);
   const [status, setStatus] = useState("");
 
   const loadReport = async () => {
@@ -45,6 +50,49 @@ const ReportsPage = () => {
       setStatus(error.message);
     }
   };
+
+  const loadCustomerReport = async () => {
+    if (!customerId) return;
+    if (!brandDate && !brandStartDate) return;
+    const params = new URLSearchParams();
+    params.set("customerId", customerId);
+    if (brandDate) {
+      params.set("date", brandDate);
+    } else {
+      params.set("startDate", brandStartDate);
+      if (brandEndDate) {
+        params.set("endDate", brandEndDate);
+      }
+    }
+    try {
+      const data = await apiFetch(`/api/reports/by-customer?${params.toString()}`);
+      setCustomerReport(data);
+      setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const [brandData, customerData] = await Promise.all([
+          apiFetch("/api/products/brands"),
+          apiFetch("/api/customers")
+        ]);
+        setBrands(brandData);
+        setCustomers(customerData);
+      } catch (error) {
+        setStatus(error.message);
+      }
+    };
+    loadOptions();
+  }, []);
+
+  useEffect(() => {
+    setBrandReport(null);
+    setCustomerReport(null);
+  }, [reportMode]);
 
   return (
     <div className="container">
@@ -121,6 +169,13 @@ const ReportsPage = () => {
         <h2>Reporte por marca</h2>
         <div className="grid grid-3">
           <label>
+            Tipo de reporte
+            <select value={reportMode} onChange={(event) => setReportMode(event.target.value)}>
+              <option value="marca">Por marca</option>
+              <option value="cliente">Por cliente</option>
+            </select>
+          </label>
+          <label>
             Fecha
             <input type="date" value={brandDate} onChange={(event) => setBrandDate(event.target.value)} />
           </label>
@@ -140,19 +195,34 @@ const ReportsPage = () => {
               onChange={(event) => setBrandEndDate(event.target.value)}
             />
           </label>
-          <label>
-            Marca
-            <input
-              value={brandFilter}
-              onChange={(event) => setBrandFilter(event.target.value)}
-              placeholder="Ej: Ultratech"
-            />
-          </label>
+          {reportMode === "marca" ? (
+            <label>
+              Marca
+              <select value={brandFilter} onChange={(event) => setBrandFilter(event.target.value)}>
+                <option value="">Todas</option>
+                {brands.map((brand) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <label>
+              Cliente
+              <select value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
+                <option value="">Seleccionar</option>
+                {customers.map((customer) => (
+                  <option key={customer._id} value={customer._id}>{customer.nombre}</option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
         <div className="inline">
-          <button onClick={loadBrandReport}>Buscar</button>
+          <button onClick={reportMode === "marca" ? loadBrandReport : loadCustomerReport}>
+            Buscar
+          </button>
         </div>
-        {brandReport && (
+        {reportMode === "marca" && brandReport && (
           <div className="stack" style={{ marginTop: 12 }}>
             {brandReport.marca && (
               <div className="badge">Marca filtrada: {brandReport.marca}</div>
@@ -161,6 +231,20 @@ const ReportsPage = () => {
               {brandReport.marcas.map((marca) => (
                 <li key={marca.marca}>
                   {marca.marca}: {marca.total} · Cantidad: {marca.cantidad}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {reportMode === "cliente" && customerReport && (
+          <div className="stack" style={{ marginTop: 12 }}>
+            <div>Total: {customerReport.total}</div>
+            <div>Total cobrado: {customerReport.totalCobrado}</div>
+            <div>Saldo pendiente: {customerReport.saldoPendiente}</div>
+            <ul>
+              {customerReport.ventas.map((venta) => (
+                <li key={venta._id}>
+                  {new Date(venta.fechaHora).toLocaleTimeString()} - {venta.total}
                 </li>
               ))}
             </ul>

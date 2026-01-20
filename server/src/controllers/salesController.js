@@ -233,13 +233,28 @@ export const updateSale = async (req, res, next) => {
       return res.status(404).json({ message: "sale not found" });
     }
     const { items = sale.items, recargo = sale.recargo, envio = sale.envio } = req.body;
+    if (!items.length) {
+      return res.status(400).json({ message: "items are required" });
+    }
 
     const normalizedItems = items.map((item) => {
       const descripcionSnapshot = normalizeText(item.descripcionSnapshot || item.descripcion || "");
+      const marca = normalizeText(item.marca || "");
+      const atributos = Array.isArray(item.atributos)
+        ? item.atributos.map((atributo) => normalizeText(atributo)).filter(Boolean)
+        : [];
       const cantidad = Number(item.cantidad);
       const precioUnitario = Number(item.precioUnitario);
       const subtotal = Math.round(cantidad * precioUnitario);
-      return { ...item, descripcionSnapshot, cantidad, precioUnitario, subtotal };
+      return {
+        ...item,
+        descripcionSnapshot,
+        marca,
+        atributos,
+        cantidad,
+        precioUnitario,
+        subtotal
+      };
     });
 
     for (const item of normalizedItems) {

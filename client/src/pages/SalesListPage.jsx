@@ -149,7 +149,8 @@ const SalesListPage = () => {
     setIsEditing(true);
     setEditItems(
       selectedSale.items.map((item) => ({
-        ...item
+        ...item,
+        atributosInput: item.atributos?.join(", ") || ""
       }))
     );
   };
@@ -174,11 +175,33 @@ const SalesListPage = () => {
     );
   };
 
+  const addEditItem = () => {
+    setEditItems((prev) => [
+      ...prev,
+      {
+        descripcionSnapshot: "",
+        cantidad: 1,
+        precioUnitario: 0,
+        marca: "",
+        atributosInput: ""
+      }
+    ]);
+  };
+
+  const removeEditItem = (index) => {
+    setEditItems((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   const saveEdit = async () => {
     if (!selectedSale) return;
     try {
       const payload = {
-        items: editItems,
+        items: editItems.map((item) => ({
+          ...item,
+          atributos: item.atributosInput
+            ? item.atributosInput.split(",").map((atributo) => atributo.trim()).filter(Boolean)
+            : item.atributos || []
+        })),
         recargo: selectedSale.recargo,
         envio: selectedSale.envio
       };
@@ -343,45 +366,73 @@ const SalesListPage = () => {
           <div>
             <strong>Items</strong>
             {isEditing ? (
-              <table className="table" style={{ marginTop: 8 }}>
-                <thead>
-                  <tr>
-                    <th>Descripción</th>
-                    <th>Cant.</th>
-                    <th>Precio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {editItems.map((item, index) => (
-                    <tr key={`${item.descripcionSnapshot}-${index}`}>
-                      <td>
-                        <input
-                          value={item.descripcionSnapshot}
-                          onChange={(event) =>
-                            updateEditItem(index, "descripcionSnapshot", event.target.value)
-                          }
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          value={item.cantidad}
-                          onChange={(event) => updateEditItem(index, "cantidad", event.target.value)}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          value={item.precioUnitario}
-                          onChange={(event) =>
-                            updateEditItem(index, "precioUnitario", event.target.value)
-                          }
-                        />
-                      </td>
+              <>
+                <table className="table" style={{ marginTop: 8 }}>
+                  <thead>
+                    <tr>
+                      <th>Descripción</th>
+                      <th>Marca</th>
+                      <th>Atributos</th>
+                      <th>Cant.</th>
+                      <th>Precio</th>
+                      <th></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {editItems.map((item, index) => (
+                      <tr key={`${item.descripcionSnapshot}-${index}`}>
+                        <td>
+                          <input
+                            value={item.descripcionSnapshot}
+                            onChange={(event) =>
+                              updateEditItem(index, "descripcionSnapshot", event.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            value={item.marca || ""}
+                            onChange={(event) => updateEditItem(index, "marca", event.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            value={item.atributosInput || ""}
+                            onChange={(event) =>
+                              updateEditItem(index, "atributosInput", event.target.value)
+                            }
+                            placeholder="ej: 1kg, frutilla"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={item.cantidad}
+                            onChange={(event) => updateEditItem(index, "cantidad", event.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={item.precioUnitario}
+                            onChange={(event) =>
+                              updateEditItem(index, "precioUnitario", event.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <button className="ghost" onClick={() => removeEditItem(index)}>
+                            Quitar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="inline" style={{ marginTop: 8 }}>
+                  <button className="secondary" onClick={addEditItem}>Agregar ítem</button>
+                </div>
+              </>
             ) : (
               <ul>
                 {selectedSale.items.map((item, index) => (

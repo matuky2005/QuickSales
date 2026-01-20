@@ -100,3 +100,13 @@ export const updateProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const listBrands = async (req, res, next) => {
+  try {
+    const brands = await Product.distinct("marca");
+    const cleaned = brands.filter((brand) => brand && brand.trim()).sort();
+    res.json(cleaned);
+  } catch (error) {
+    next(error);
+  }
+};

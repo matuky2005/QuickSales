@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import app from "./app.js";
+import Product from "./models/Product.js";
 
 dotenv.config();
 
@@ -10,6 +11,17 @@ const RETRY_DELAY_MS = 5000;
 
 let isConnecting = false;
 
+const ensureProductIndexes = async () => {
+  try {
+    await Product.collection.dropIndex("descripcion_1");
+    console.log("Dropped legacy unique index descripcion_1 on products");
+  } catch (error) {
+    if (error?.codeName !== "IndexNotFound") {
+      console.warn("Failed to drop legacy product index:", error.message);
+    }
+  }
+};
+
 const connectWithRetry = async () => {
   if (isConnecting) {
     return;
@@ -18,6 +30,7 @@ const connectWithRetry = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
     console.log("MongoDB connected");
+    await ensureProductIndexes();
     isConnecting = false;
   } catch (error) {
     console.error("MongoDB connection error:", error);

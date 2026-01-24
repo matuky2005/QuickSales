@@ -27,6 +27,7 @@ const SalePage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [confirmVenta, setConfirmVenta] = useState(false);
+  const [confirmacionCopiada, setConfirmacionCopiada] = useState(false);
   const [productSuggestionIndex, setProductSuggestionIndex] = useState(-1);
   const [customerSuggestionIndex, setCustomerSuggestionIndex] = useState(-1);
   const [transferAccounts, setTransferAccounts] = useState([]);
@@ -206,24 +207,25 @@ const SalePage = () => {
     const lineas = items.map((item) => {
       const partes = [
         item.descripcionSnapshot,
-        item.marca ? `Marca: ${item.marca}` : null,
-        item.atributos?.length ? `Atributos: ${item.atributos.join(", ")}` : null,
-        `Cant: ${item.cantidad}`,
-        `Precio: ${item.precioUnitario}`,
-        `Subtotal: ${item.subtotal}`
+        item.marca || null,
+        item.atributos?.length ? item.atributos.join(", ") : null,
+        `${item.cantidad} x ${item.precioUnitario} = ${item.subtotal}`
       ].filter(Boolean);
-      return partes.join(" · ");
+      return partes.join(" - ");
     });
     const resumen = [
       "Confirmación de venta",
       ...lineas,
-      `Total: ${total}`,
-      `Total en caja: ${totalCobrarCaja}`
+      `Total: ${total}`
     ].join("\n");
     try {
       await navigator.clipboard.writeText(resumen);
+      setConfirmacionCopiada(true);
       setStatus("Confirmación copiada al portapapeles.");
-      setTimeout(() => setStatus(""), 2000);
+      setTimeout(() => {
+        setConfirmacionCopiada(false);
+        setStatus("");
+      }, 2000);
     } catch (error) {
       setStatus("No se pudo copiar la confirmación.");
       setTimeout(() => setStatus(""), 2000);
@@ -251,6 +253,12 @@ const SalePage = () => {
   useEffect(() => {
     descripcionRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (confirmVenta) {
+      setConfirmacionCopiada(false);
+    }
+  }, [confirmVenta]);
 
   useEffect(() => {
     const stored = localStorage.getItem(transferAccountsKey);
@@ -776,8 +784,11 @@ const SalePage = () => {
               ))}
             </ul>
             <div className="modal-total">
-              Total: {total} · Total en caja: {totalCobrarCaja}
+              Total: {total}
             </div>
+            {confirmacionCopiada && (
+              <div className="helper">Confirmación copiada al portapapeles.</div>
+            )}
             <div className="modal-actions">
               <button className="ghost" onClick={() => setConfirmVenta(false)}>Volver</button>
               <button className="secondary" onClick={copiarConfirmacion}>Copiar</button>

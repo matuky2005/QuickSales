@@ -13,6 +13,9 @@ const ProductsPage = () => {
   const [editingId, setEditingId] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const importInputRef = useRef(null);
+  const [brands, setBrands] = useState([]);
+  const [exportBrand, setExportBrand] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const buscar = async () => {
     try {
@@ -24,8 +27,12 @@ const ProductsPage = () => {
         params.set("brand", filterBrand.trim());
       }
       const suffix = params.toString() ? `?${params.toString()}` : "";
-      const data = await apiFetch(`/api/products${suffix}`);
+      const [data, brandData] = await Promise.all([
+        apiFetch(`/api/products${suffix}`),
+        apiFetch("/api/products/brands")
+      ]);
       setProducts(data);
+      setBrands(brandData);
     } catch (error) {
       setStatus(error.message);
     }
@@ -48,6 +55,7 @@ const ProductsPage = () => {
         body: JSON.stringify(payload)
       });
       setStatus("Producto guardado.");
+      setShowForm(false);
       setDescripcion("");
       setPrecioSugerido("");
       setMarca("");
@@ -64,6 +72,7 @@ const ProductsPage = () => {
   };
 
   const startEdit = (product) => {
+    setShowForm(true);
     setEditingId(product._id);
     setDescripcion(product.descripcion || "");
     setPrecioSugerido(product.precioSugerido ?? "");
@@ -77,6 +86,7 @@ const ProductsPage = () => {
     setPrecioSugerido("");
     setMarca("");
     setAtributosInput("");
+    setShowForm(false);
   };
 
   const buildCsvValue = (value) => {
@@ -89,7 +99,10 @@ const ProductsPage = () => {
 
   const exportCsv = () => {
     const headers = ["id", "descripcion", "marca", "atributos", "precioSugerido"];
-    const rows = products.map((product) => [
+    const filteredProducts = exportBrand
+      ? products.filter((product) => product.marca === exportBrand)
+      : products;
+    const rows = filteredProducts.map((product) => [
       product._id,
       product.descripcion || "",
       product.marca || "",
@@ -189,8 +202,11 @@ const ProductsPage = () => {
   };
 
   useEffect(() => {
-    buscar();
-  }, [filterBrand]);
+    const delay = setTimeout(() => {
+      buscar();
+    }, 300);
+    return () => clearTimeout(delay);
+  }, [filterBrand, query]);
 
   const groupedByBrand = products.reduce((acc, product) => {
     const brandKey = product.marca || "Sin marca";
@@ -205,45 +221,60 @@ const ProductsPage = () => {
     <div className="container">
       <h2>Productos</h2>
       {status && <div className="alert">{status}</div>}
-      <div className="grid grid-3" style={{ marginTop: 16 }}>
-        <label>
-          Descripción
-          <input value={descripcion} onChange={(event) => setDescripcion(event.target.value)} />
-        </label>
-        <label>
-          Marca
-          <input value={marca} onChange={(event) => setMarca(event.target.value)} />
-        </label>
-        <label>
-          Atributos (coma)
-          <input
-            value={atributosInput}
-            onChange={(event) => setAtributosInput(event.target.value)}
-          />
-        </label>
-        <label>
-          Precio sugerido
-          <input
-            type="number"
-            value={precioSugerido}
-            onChange={(event) => setPrecioSugerido(event.target.value)}
-          />
-        </label>
-        <div style={{ display: "flex", alignItems: "flex-end" }}>
-          <button onClick={crearProducto}>{editingId ? "Actualizar producto" : "Guardar producto"}</button>
-          {editingId && (
-            <button className="ghost" onClick={cancelEdit}>Cancelar</button>
-          )}
-        </div>
-      </div>
       <div className="inline" style={{ marginTop: 16 }}>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar" />
-        <input
-          value={filterBrand}
-          onChange={(event) => setFilterBrand(event.target.value)}
-          placeholder="Marca"
-        />
+        <select value={filterBrand} onChange={(event) => setFilterBrand(event.target.value)}>
+          <option value="">Todas las marcas</option>
+          {brands.map((brand) => (
+            <option key={brand} value={brand}>{brand}</option>
+          ))}
+        </select>
         <button onClick={buscar}>Buscar</button>
+        <button className="secondary" onClick={() => setShowForm(true)}>Nuevo producto</button>
+      </div>
+      {showForm && (
+        <div className="grid grid-3" style={{ marginTop: 16 }}>
+          <label>
+            Descripción
+            <input value={descripcion} onChange={(event) => setDescripcion(event.target.value)} />
+          </label>
+          <label>
+            Marca
+            <input list="brands-list" value={marca} onChange={(event) => setMarca(event.target.value)} />
+            <datalist id="brands-list">
+              {brands.map((brand) => (
+                <option key={brand} value={brand} />
+              ))}
+            </datalist>
+          </label>
+          <label>
+            Atributos (coma)
+            <input
+              value={atributosInput}
+              onChange={(event) => setAtributosInput(event.target.value)}
+            />
+          </label>
+          <label>
+            Precio sugerido
+            <input
+              type="number"
+              value={precioSugerido}
+              onChange={(event) => setPrecioSugerido(event.target.value)}
+            />
+          </label>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+            <button onClick={crearProducto}>{editingId ? "Actualizar producto" : "Guardar producto"}</button>
+            <button className="ghost" onClick={cancelEdit}>Cancelar</button>
+          </div>
+        </div>
+      )}
+      <div className="inline" style={{ marginTop: 16 }}>
+        <select value={exportBrand} onChange={(event) => setExportBrand(event.target.value)}>
+          <option value="">Exportar todas las marcas</option>
+          {brands.map((brand) => (
+            <option key={brand} value={brand}>{brand}</option>
+          ))}
+        </select>
         <button className="secondary" onClick={exportCsv}>Exportar CSV</button>
         <button
           className="secondary"
@@ -265,17 +296,35 @@ const ProductsPage = () => {
       <div className="helper" style={{ marginTop: 8 }}>
         Exportá para obtener el formato. Usá separador “;” y atributos separados por “|”.
       </div>
-      <ul style={{ marginTop: 16 }}>
-        {products.map((product) => (
-          <li key={product._id}>
-            {product.descripcion} {product.marca ? `(${product.marca})` : ""} - Sugerido: {product.precioSugerido}
-            {product.atributos?.length ? ` · ${product.atributos.join(", ")}` : ""}
-            <button className="ghost" style={{ marginLeft: 8 }} onClick={() => startEdit(product)}>
-              Editar
-            </button>
-          </li>
-        ))}
-      </ul>
+      <table className="table" style={{ marginTop: 16 }}>
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Marca</th>
+            <th>Atributos</th>
+            <th>Precio sugerido</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((product) => (
+            <tr key={product._id}>
+              <td>{product.descripcion}</td>
+              <td>{product.marca || "Sin marca"}</td>
+              <td>{product.atributos?.length ? product.atributos.join(", ") : "-"}</td>
+              <td>{product.precioSugerido}</td>
+              <td>
+                <button className="ghost" onClick={() => startEdit(product)}>Editar</button>
+              </td>
+            </tr>
+          ))}
+          {products.length === 0 && (
+            <tr>
+              <td colSpan="5" className="helper">Sin productos para mostrar.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
       <div className="stack" style={{ marginTop: 24 }}>
         <h3>Productos por marca</h3>

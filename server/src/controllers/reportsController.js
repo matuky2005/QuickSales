@@ -133,3 +133,67 @@ export const getCustomerReport = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getSalesItemsReport = async (req, res, next) => {
+  try {
+    const { startDate, endDate, brand, sort = "descripcion" } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "startDate and endDate are required" });
+    }
+    const brandFilter = normalizeText(brand || "");
+    const rangeStart = startOfDay(startDate);
+    const rangeEnd = endOfDay(endDate);
+
+    const sales = await Sale.find({
+      fechaHora: { $gte: rangeStart, $lte: rangeEnd },
+      estado: { $ne: "CANCELADA" }
+    }).lean();
+
+    const totalsMap = new Map();
+    sales.forEach((sale) => {
+      (sale.items || []).forEach((item) => {
+        const descripcion = normalizeText(item.descripcionSnapshot || "");
+        const marca = normalizeText(item.marca || "") || "Sin marca";
+        const atributos = Array.isArray(item.atributos)
+          ? item.atributos.map((atributo) => normalizeText(atributo)).filter(Boolean)
+          : [];
+        if (brandFilter && !buildContainsMatch(brandFilter).test(marca)) {
+          return;
+        }
+        const key = `${descripcion}||${marca}||${atributos.join("|")}`;
+        if (!totalsMap.has(key)) {
+          totalsMap.set(key, {
+            descripcion,
+            marca,
+            atributos,
+            cantidad: 0,
+            importe: 0
+          });
+        }
+        const entry = totalsMap.get(key);
+        entry.cantidad += Number(item.cantidad || 0);
+        entry.importe += Number(item.subtotal || 0);
+      });
+    });
+
+    const items = Array.from(totalsMap.values());
+    items.sort((a, b) => {
+      if (sort === "cantidad") {
+        return b.cantidad - a.cantidad;
+      }
+      if (sort === "importe") {
+        return b.importe - a.importe;
+      }
+      return a.descripcion.localeCompare(b.descripcion, "es", { sensitivity: "base" });
+    });
+
+    res.json({
+      rango: { startDate, endDate },
+      marca: brandFilter || null,
+      orden: sort,
+      items
+    });
+  } catch (error) {
+    next(error);
+  }
+};

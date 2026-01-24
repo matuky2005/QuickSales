@@ -15,6 +15,11 @@ const ReportsPage = () => {
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState("");
   const [customerReport, setCustomerReport] = useState(null);
+  const [salesStartDate, setSalesStartDate] = useState("");
+  const [salesEndDate, setSalesEndDate] = useState("");
+  const [salesBrand, setSalesBrand] = useState("");
+  const [salesSort, setSalesSort] = useState("descripcion");
+  const [salesItemsReport, setSalesItemsReport] = useState(null);
   const [status, setStatus] = useState("");
 
   const loadReport = async () => {
@@ -67,6 +72,24 @@ const ReportsPage = () => {
     try {
       const data = await apiFetch(`/api/reports/by-customer?${params.toString()}`);
       setCustomerReport(data);
+      setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const loadSalesItemsReport = async () => {
+    if (!salesStartDate || !salesEndDate) return;
+    const params = new URLSearchParams();
+    params.set("startDate", salesStartDate);
+    params.set("endDate", salesEndDate);
+    params.set("sort", salesSort);
+    if (salesBrand) {
+      params.set("brand", salesBrand);
+    }
+    try {
+      const data = await apiFetch(`/api/reports/sales-items?${params.toString()}`);
+      setSalesItemsReport(data);
       setStatus("");
     } catch (error) {
       setStatus(error.message);
@@ -248,6 +271,84 @@ const ReportsPage = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="stack" style={{ marginTop: 24 }}>
+        <h2>Listado de ventas por producto</h2>
+        <div className="grid grid-3">
+          <label>
+            Desde
+            <input
+              type="date"
+              value={salesStartDate}
+              onChange={(event) => setSalesStartDate(event.target.value)}
+            />
+          </label>
+          <label>
+            Hasta
+            <input
+              type="date"
+              value={salesEndDate}
+              onChange={(event) => setSalesEndDate(event.target.value)}
+            />
+          </label>
+          <label>
+            Marca
+            <select value={salesBrand} onChange={(event) => setSalesBrand(event.target.value)}>
+              <option value="">Todas</option>
+              {brands.map((brand) => (
+                <option key={brand} value={brand}>{brand}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Ordenar por
+            <select value={salesSort} onChange={(event) => setSalesSort(event.target.value)}>
+              <option value="descripcion">Descripción (A-Z)</option>
+              <option value="cantidad">Cantidad (mayor a menor)</option>
+              <option value="importe">Importe (mayor a menor)</option>
+            </select>
+          </label>
+        </div>
+        <div className="inline">
+          <button onClick={loadSalesItemsReport}>Buscar</button>
+        </div>
+        {salesItemsReport && (
+          <div className="stack" style={{ marginTop: 12 }}>
+            <div className="helper">
+              {salesItemsReport.marca ? `Marca: ${salesItemsReport.marca}` : "Todas las marcas"} ·
+              {" "}
+              {salesItemsReport.rango.startDate} a {salesItemsReport.rango.endDate}
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th>Marca</th>
+                  <th>Atributos</th>
+                  <th>Cantidad</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesItemsReport.items.map((item, index) => (
+                  <tr key={`${item.descripcion}-${item.marca}-${index}`}>
+                    <td>{item.descripcion}</td>
+                    <td>{item.marca}</td>
+                    <td>{item.atributos?.length ? item.atributos.join(", ") : "-"}</td>
+                    <td>{item.cantidad}</td>
+                    <td>{item.importe}</td>
+                  </tr>
+                ))}
+                {salesItemsReport.items.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="helper">Sin datos para el período seleccionado.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

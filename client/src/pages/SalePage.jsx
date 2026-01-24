@@ -13,6 +13,7 @@ const SalePage = () => {
   const [clienteNombre, setClienteNombre] = useState("");
   const [recargo, setRecargo] = useState(initialRecargo);
   const [envio, setEnvio] = useState({ monto: 0, cobro: "INCLUIDO" });
+  const [paraEnviar, setParaEnviar] = useState(false);
   const [pagos, setPagos] = useState([]);
   const [pagoEnElMomento, setPagoEnElMomento] = useState(true);
   const [metodoPago, setMetodoPago] = useState("EFECTIVO");
@@ -69,6 +70,7 @@ const SalePage = () => {
     setClienteNombre("");
     setRecargo(initialRecargo);
     setEnvio({ monto: 0, cobro: "INCLUIDO" });
+    setParaEnviar(false);
     setPagos([]);
     setPagoEnElMomento(true);
     setMetodoPago("EFECTIVO");
@@ -583,6 +585,9 @@ const SalePage = () => {
               placeholder="Nombre del cliente"
             />
           </label>
+          {!clienteNombre.trim() && (
+            <div className="helper">Sin cliente asignado.</div>
+          )}
           {clienteSugerencias.length > 0 && (
             <ul className="suggestions-list">
               {clienteSugerencias.map((cliente, index) => (
@@ -630,10 +635,10 @@ const SalePage = () => {
         <label className="inline">
           <input
             type="checkbox"
-            checked={pagoEnElMomento}
-            onChange={(event) => setPagoEnElMomento(event.target.checked)}
+            checked={!pagoEnElMomento}
+            onChange={(event) => setPagoEnElMomento(!event.target.checked)}
           />
-          Pago en el momento
+          Pago pendiente
         </label>
         {!pagoEnElMomento && (
           <div className="helper">La venta se guardará como pendiente.</div>
@@ -641,6 +646,14 @@ const SalePage = () => {
       </div>
 
       <div className="grid grid-3" style={{ marginTop: 16 }}>
+        <label className="inline">
+          <input
+            type="checkbox"
+            checked={paraEnviar}
+            onChange={(event) => setParaEnviar(event.target.checked)}
+          />
+          Para enviar
+        </label>
         <div className="stack">
           <label>
             Envío
@@ -761,6 +774,9 @@ const SalePage = () => {
           Total cobrado: {totalPagos} · Saldo pendiente: {saldoPendiente}
           {envio.cobro === "CADETE" ? ` · Cadete debe rendir: ${montoEnvio}` : ""}
         </div>
+        {saldoPendiente > 0 && (
+          <div className="helper">Atención: hay saldo pendiente.</div>
+        )}
       </div>
 
       <div className="inline" style={{ marginTop: 16 }}>

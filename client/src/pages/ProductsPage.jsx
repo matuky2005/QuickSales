@@ -121,6 +121,18 @@ const ProductsPage = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportTemplateCsv = () => {
+    const headers = ["id", "descripcion", "marca", "atributos", "precioSugerido"];
+    const content = headers.map(buildCsvValue).join(";") + "\n";
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "productos-plantilla.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const parseCsvLine = (line) => {
     const result = [];
     let current = "";
@@ -276,6 +288,7 @@ const ProductsPage = () => {
           ))}
         </select>
         <button className="secondary" onClick={exportCsv}>Exportar CSV</button>
+        <button className="secondary" onClick={exportTemplateCsv}>Exportar plantilla</button>
         <button
           className="secondary"
           onClick={() => importInputRef.current?.click()}

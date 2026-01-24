@@ -243,7 +243,15 @@ const SalePage = () => {
       }
       if (event.key === "F3") {
         event.preventDefault();
-        setProductSearchEnabled(true);
+        setProductSearchEnabled((prev) => {
+          const next = !prev;
+          if (!next) {
+            setSugerencias([]);
+            setProductSuggestionIndex(-1);
+            setProductSuggestionTouched(false);
+          }
+          return next;
+        });
         descripcionRef.current?.focus();
       }
       if (event.key === "F4") {

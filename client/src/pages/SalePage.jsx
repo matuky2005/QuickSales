@@ -202,6 +202,34 @@ const SalePage = () => {
     await guardarVenta();
   };
 
+  const copiarConfirmacion = async () => {
+    const lineas = items.map((item) => {
+      const partes = [
+        item.descripcionSnapshot,
+        item.marca ? `Marca: ${item.marca}` : null,
+        item.atributos?.length ? `Atributos: ${item.atributos.join(", ")}` : null,
+        `Cant: ${item.cantidad}`,
+        `Precio: ${item.precioUnitario}`,
+        `Subtotal: ${item.subtotal}`
+      ].filter(Boolean);
+      return partes.join(" · ");
+    });
+    const resumen = [
+      "Confirmación de venta",
+      ...lineas,
+      `Total: ${total}`,
+      `Total en caja: ${totalCobrarCaja}`
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(resumen);
+      setStatus("Confirmación copiada al portapapeles.");
+      setTimeout(() => setStatus(""), 2000);
+    } catch (error) {
+      setStatus("No se pudo copiar la confirmación.");
+      setTimeout(() => setStatus(""), 2000);
+    }
+  };
+
   const crearCliente = async () => {
     const nombre = clienteNombre.trim();
     if (!nombre) return;
@@ -752,6 +780,7 @@ const SalePage = () => {
             </div>
             <div className="modal-actions">
               <button className="ghost" onClick={() => setConfirmVenta(false)}>Volver</button>
+              <button className="secondary" onClick={copiarConfirmacion}>Copiar</button>
               <button onClick={confirmarVenta}>Confirmar venta</button>
             </div>
           </div>

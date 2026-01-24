@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../utils/api.js";
 
 const ProductsPage = () => {
@@ -11,6 +11,8 @@ const ProductsPage = () => {
   const [status, setStatus] = useState("");
   const [filterBrand, setFilterBrand] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const importInputRef = useRef(null);
 
   const buscar = async () => {
     try {
@@ -77,6 +79,115 @@ const ProductsPage = () => {
     setAtributosInput("");
   };
 
+  const buildCsvValue = (value) => {
+    const stringValue = String(value ?? "");
+    if (stringValue.includes(";") || stringValue.includes("\"") || stringValue.includes("\n")) {
+      return `"${stringValue.replace(/"/g, "\"\"")}"`;
+    }
+    return stringValue;
+  };
+
+  const exportCsv = () => {
+    const headers = ["id", "descripcion", "marca", "atributos", "precioSugerido"];
+    const rows = products.map((product) => [
+      product._id,
+      product.descripcion || "",
+      product.marca || "",
+      (product.atributos || []).join("|"),
+      product.precioSugerido ?? 0
+    ]);
+    const content = [headers, ...rows]
+      .map((row) => row.map(buildCsvValue).join(";"))
+      .join("\n");
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "productos.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const parseCsvLine = (line) => {
+    const result = [];
+    let current = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i += 1) {
+      const char = line[i];
+      if (char === "\"") {
+        if (inQuotes && line[i + 1] === "\"") {
+          current += "\"";
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ";" && !inQuotes) {
+        result.push(current);
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    result.push(current);
+    return result.map((value) => value.trim());
+  };
+
+  const parseAttributes = (value) => {
+    if (!value) return [];
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    const separator = trimmed.includes("|") ? "|" : ",";
+    return trimmed
+      .split(separator)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
+  const importCsv = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter((line) => line.trim());
+      if (!lines.length) {
+        setStatus("El archivo está vacío.");
+        return;
+      }
+      const headers = parseCsvLine(lines[0]).map((header) => header.toLowerCase());
+      const findIndex = (name) => headers.indexOf(name);
+      const idIndex = findIndex("id");
+      const descripcionIndex = findIndex("descripcion");
+      const marcaIndex = findIndex("marca");
+      const atributosIndex = findIndex("atributos");
+      const precioIndex = findIndex("preciosugerido");
+
+      for (const line of lines.slice(1)) {
+        const values = parseCsvLine(line);
+        const descripcionValue = values[descripcionIndex]?.trim();
+        if (!descripcionValue) continue;
+        const payload = {
+          descripcion: descripcionValue,
+          marca: values[marcaIndex]?.trim() || "",
+          atributos: parseAttributes(values[atributosIndex] || ""),
+          precioSugerido: Number(values[precioIndex] || 0)
+        };
+        const idValue = idIndex >= 0 ? values[idIndex]?.trim() : "";
+        await apiFetch(idValue ? `/api/products/${idValue}` : "/api/products", {
+          method: idValue ? "PATCH" : "POST",
+          body: JSON.stringify(payload)
+        });
+      }
+      setStatus("Importación completada.");
+      buscar();
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setIsImporting(false);
+      event.target.value = "";
+    }
+  };
+
   useEffect(() => {
     buscar();
   }, [filterBrand]);
@@ -133,6 +244,26 @@ const ProductsPage = () => {
           placeholder="Marca"
         />
         <button onClick={buscar}>Buscar</button>
+        <button className="secondary" onClick={exportCsv}>Exportar CSV</button>
+        <button
+          className="secondary"
+          onClick={() => importInputRef.current?.click()}
+          disabled={isImporting}
+        >
+          {isImporting ? "Importando..." : "Importar CSV"}
+        </button>
+        <label style={{ display: "none" }}>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".csv"
+            onChange={importCsv}
+            disabled={isImporting}
+          />
+        </label>
+      </div>
+      <div className="helper" style={{ marginTop: 8 }}>
+        Exportá para obtener el formato. Usá separador “;” y atributos separados por “|”.
       </div>
       <ul style={{ marginTop: 16 }}>
         {products.map((product) => (

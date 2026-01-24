@@ -606,6 +606,16 @@ const SalePage = () => {
               <option value="CADETE">Cadete lleva/cobra</option>
             </select>
           </label>
+          {envio.cobro === "CADETE" ? (
+            <div className="helper">
+              Si el cliente transfiere el envío, cargá ese pago aquí y el monto quedará como
+              “Cadete debe rendir” para descontar en la rendición.
+            </div>
+          ) : (
+            <div className="helper">
+              El envío se cobra en caja junto con el resto de la venta.
+            </div>
+          )}
         </div>
         <div className="stack">
           <label>
@@ -709,7 +719,11 @@ const SalePage = () => {
             <ul className="modal-items">
               {items.map((item, index) => (
                 <li key={`${item.descripcionSnapshot}-${index}`}>
-                  {item.descripcionSnapshot} · {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                  {item.descripcionSnapshot}
+                  {item.marca ? ` · ${item.marca}` : ""}
+                  {item.atributos?.length ? ` · ${item.atributos.join(", ")}` : ""}
+                  {" · "}
+                  {item.cantidad} x {item.precioUnitario} = {item.subtotal}
                 </li>
               ))}
             </ul>

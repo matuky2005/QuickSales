@@ -1,5 +1,5 @@
 import Product from "../models/Product.js";
-import { buildContainsMatch, buildExactMatch, normalizeText } from "../utils/normalize.js";
+import { buildContainsMatch, normalizeText } from "../utils/normalize.js";
 
 export const createOrGetProduct = async (req, res, next) => {
   try {
@@ -14,26 +14,12 @@ export const createOrGetProduct = async (req, res, next) => {
       return res.status(400).json({ message: "descripcion is required" });
     }
 
-    let product = await Product.findOne({ descripcion: buildExactMatch(descripcion) });
-    if (!product) {
-      product = await Product.create({
-        descripcion,
-        marca,
-        atributos,
-        precioSugerido: Math.max(precioSugerido, 0)
-      });
-    } else {
-      if (marca) {
-        product.marca = marca;
-      }
-      if (atributos.length) {
-        product.atributos = atributos;
-      }
-      if (precioSugerido >= 0) {
-        product.precioSugerido = Math.max(precioSugerido, 0);
-      }
-      await product.save();
-    }
+    const product = await Product.create({
+      descripcion,
+      marca,
+      atributos,
+      precioSugerido: Math.max(precioSugerido, 0)
+    });
 
     res.status(201).json(product);
   } catch (error) {
@@ -78,10 +64,6 @@ export const updateProduct = async (req, res, next) => {
     }
 
     if (descripcion && descripcion !== product.descripcion) {
-      const existing = await Product.findOne({ descripcion: buildExactMatch(descripcion) });
-      if (existing && existing._id.toString() !== product._id.toString()) {
-        return res.status(409).json({ message: "descripcion already exists" });
-      }
       product.descripcion = descripcion;
     }
     if (marca) {

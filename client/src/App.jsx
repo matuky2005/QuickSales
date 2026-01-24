@@ -68,6 +68,10 @@ const App = () => {
           <Route path="/clientes" element={<CustomersPage />} />
         </Routes>
       </main>
+      <footer className="app-footer">
+        <span>© {new Date().getFullYear()} Matias Lazarte</span>
+        <span>381215745 · matiaslazarte13@hotmail.com</span>
+      </footer>
     </div>
   );
 };

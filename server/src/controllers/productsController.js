@@ -1,5 +1,22 @@
 import Product from "../models/Product.js";
-import { buildContainsMatch, normalizeText } from "../utils/normalize.js";
+import { buildContainsMatch, buildExactMatch, normalizeText } from "../utils/normalize.js";
+
+const buildDuplicateQuery = ({ descripcion, marca, atributos }) => {
+  const base = {
+    descripcion: buildExactMatch(descripcion),
+    marca: buildExactMatch(marca)
+  };
+  if (!atributos.length) {
+    return { ...base, atributos: { $size: 0 } };
+  }
+  return {
+    ...base,
+    atributos: {
+      $all: atributos,
+      $size: atributos.length
+    }
+  };
+};
 
 export const createOrGetProduct = async (req, res, next) => {
   try {
@@ -12,6 +29,11 @@ export const createOrGetProduct = async (req, res, next) => {
 
     if (!descripcion) {
       return res.status(400).json({ message: "descripcion is required" });
+    }
+
+    const duplicate = await Product.findOne(buildDuplicateQuery({ descripcion, marca, atributos }));
+    if (duplicate) {
+      return res.status(409).json({ message: "product already exists" });
     }
 
     const product = await Product.create({
@@ -63,17 +85,25 @@ export const updateProduct = async (req, res, next) => {
       return res.status(404).json({ message: "product not found" });
     }
 
-    if (descripcion && descripcion !== product.descripcion) {
+    if (descripcion) {
       product.descripcion = descripcion;
     }
-    if (marca) {
-      product.marca = marca;
-    }
-    if (atributos.length) {
-      product.atributos = atributos;
-    }
+    product.marca = marca;
+    product.atributos = atributos;
     if (!Number.isNaN(precioSugerido)) {
       product.precioSugerido = Math.max(precioSugerido, 0);
+    }
+
+    const duplicate = await Product.findOne({
+      ...buildDuplicateQuery({
+        descripcion: product.descripcion,
+        marca: product.marca,
+        atributos: product.atributos
+      }),
+      _id: { $ne: product._id }
+    });
+    if (duplicate) {
+      return res.status(409).json({ message: "product already exists" });
     }
 
     await product.save();

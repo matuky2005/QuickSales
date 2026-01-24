@@ -122,7 +122,7 @@ const ProductsPage = () => {
   };
 
   const exportTemplateCsv = () => {
-    const headers = ["id", "descripcion", "marca", "atributos", "precioSugerido"];
+    const headers = ["descripcion", "marca", "atributos", "precioSugerido"];
     const content = headers.map(buildCsvValue).join(";") + "\n";
     const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -181,7 +181,6 @@ const ProductsPage = () => {
       }
       const headers = parseCsvLine(lines[0]).map((header) => header.toLowerCase());
       const findIndex = (name) => headers.indexOf(name);
-      const idIndex = findIndex("id");
       const descripcionIndex = findIndex("descripcion");
       const marcaIndex = findIndex("marca");
       const atributosIndex = findIndex("atributos");
@@ -197,9 +196,8 @@ const ProductsPage = () => {
           atributos: parseAttributes(values[atributosIndex] || ""),
           precioSugerido: Number(values[precioIndex] || 0)
         };
-        const idValue = idIndex >= 0 ? values[idIndex]?.trim() : "";
-        await apiFetch(idValue ? `/api/products/${idValue}` : "/api/products", {
-          method: idValue ? "PATCH" : "POST",
+        await apiFetch("/api/products", {
+          method: "POST",
           body: JSON.stringify(payload)
         });
       }

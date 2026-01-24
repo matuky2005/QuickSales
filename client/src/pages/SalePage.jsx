@@ -31,6 +31,7 @@ const SalePage = () => {
   const [customerSuggestionIndex, setCustomerSuggestionIndex] = useState(-1);
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [productSuggestionTouched, setProductSuggestionTouched] = useState(false);
+  const [productSearchEnabled, setProductSearchEnabled] = useState(false);
 
   const descripcionRef = useRef(null);
   const clienteRef = useRef(null);
@@ -119,6 +120,7 @@ const SalePage = () => {
     setSugerencias([]);
     setProductSuggestionIndex(-1);
     setProductSuggestionTouched(false);
+    setProductSearchEnabled(false);
     descripcionRef.current?.focus();
     setStatus("Ítem agregado.");
   };
@@ -239,6 +241,11 @@ const SalePage = () => {
         event.preventDefault();
         descripcionRef.current?.focus();
       }
+      if (event.key === "F3") {
+        event.preventDefault();
+        setProductSearchEnabled(true);
+        descripcionRef.current?.focus();
+      }
       if (event.key === "F4") {
         event.preventDefault();
         clienteRef.current?.focus();
@@ -276,7 +283,7 @@ const SalePage = () => {
 
   useEffect(() => {
     const loadSuggestions = async () => {
-      if (!descripcion.trim()) {
+      if (!productSearchEnabled || !descripcion.trim()) {
         setSugerencias([]);
         return;
       }
@@ -297,7 +304,7 @@ const SalePage = () => {
       }
     };
     loadSuggestions();
-  }, [descripcion]);
+  }, [descripcion, productSearchEnabled]);
 
   useEffect(() => {
     const loadCustomerSuggestions = async () => {
@@ -332,6 +339,7 @@ const SalePage = () => {
     setSugerencias([]);
     setProductSuggestionIndex(-1);
     setProductSuggestionTouched(false);
+    setProductSearchEnabled(false);
     descripcionRef.current?.focus();
   };
 
@@ -347,7 +355,8 @@ const SalePage = () => {
     <div className="container">
       <h2>Nueva venta</h2>
       <p className="helper">
-        Atajos: F2 producto, Enter agrega ítem, F4 cliente, F6 pago, Ctrl+Enter guardar, Esc cancelar.
+        Atajos: F2 producto, F3 buscar producto, Enter agrega ítem, F4 cliente, F6 pago,
+        Ctrl+Enter guardar, Esc cancelar.
       </p>
       {status && <div className="alert">{status}</div>}
 
@@ -361,6 +370,9 @@ const SalePage = () => {
               onChange={(event) => {
                 setDescripcion(event.target.value);
                 setSelectedProduct(null);
+                if (!productSearchEnabled) {
+                  setSugerencias([]);
+                }
               }}
               onKeyDown={(event) => {
                 if (event.key === "ArrowDown" && sugerencias.length) {

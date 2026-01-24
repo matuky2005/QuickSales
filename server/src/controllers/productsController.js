@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import Sale from "../models/Sale.js";
 import { buildContainsMatch, buildExactMatch, normalizeText } from "../utils/normalize.js";
 
 const buildDuplicateQuery = ({ descripcion, marca, atributos }) => {
@@ -40,7 +41,8 @@ export const createOrGetProduct = async (req, res, next) => {
       descripcion,
       marca,
       atributos,
-      precioSugerido: Math.max(precioSugerido, 0)
+      precioSugerido: Math.max(precioSugerido, 0),
+      active: true
     });
 
     res.status(201).json(product);
@@ -59,6 +61,9 @@ export const listProducts = async (req, res, next) => {
     }
     if (brand) {
       filter.marca = buildContainsMatch(brand);
+    }
+    if (req.query.includeInactive !== "true") {
+      filter.active = { $ne: false };
     }
     const limit = query ? 10 : 200;
     const products = await Product.find(filter)
@@ -118,6 +123,43 @@ export const listBrands = async (req, res, next) => {
     const brands = await Product.distinct("marca");
     const cleaned = brands.filter((brand) => brand && brand.trim()).sort();
     res.json(cleaned);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const setProductStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { active } = req.body;
+    if (typeof active !== "boolean") {
+      return res.status(400).json({ message: "active must be boolean" });
+    }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "product not found" });
+    }
+    product.active = active;
+    await product.save();
+    res.json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteProduct = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "product not found" });
+    }
+    const hasSales = await Sale.exists({ "items.productId": product._id });
+    if (hasSales) {
+      return res.status(409).json({ message: "product has sales and cannot be deleted" });
+    }
+    await product.deleteOne();
+    res.status(204).end();
   } catch (error) {
     next(error);
   }

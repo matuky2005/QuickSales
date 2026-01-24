@@ -26,6 +26,7 @@ const ProductsPage = () => {
       if (filterBrand.trim()) {
         params.set("brand", filterBrand.trim());
       }
+      params.set("includeInactive", "true");
       const suffix = params.toString() ? `?${params.toString()}` : "";
       const [data, brandData] = await Promise.all([
         apiFetch(`/api/products${suffix}`),
@@ -87,6 +88,28 @@ const ProductsPage = () => {
     setMarca("");
     setAtributosInput("");
     setShowForm(false);
+  };
+
+  const toggleProductStatus = async (product) => {
+    try {
+      const updated = await apiFetch(`/api/products/${product._id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ active: !product.active })
+      });
+      setProducts((prev) => prev.map((item) => (item._id === updated._id ? updated : item)));
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const removeProduct = async (product) => {
+    if (!window.confirm("¿Eliminar este producto?")) return;
+    try {
+      await apiFetch(`/api/products/${product._id}`, { method: "DELETE" });
+      setProducts((prev) => prev.filter((item) => item._id !== product._id));
+    } catch (error) {
+      setStatus(error.message);
+    }
   };
 
   const buildCsvValue = (value) => {
@@ -314,6 +337,7 @@ const ProductsPage = () => {
             <th>Marca</th>
             <th>Atributos</th>
             <th>Precio sugerido</th>
+            <th>Estado</th>
             <th></th>
           </tr>
         </thead>
@@ -325,13 +349,20 @@ const ProductsPage = () => {
               <td>{product.atributos?.length ? product.atributos.join(", ") : "-"}</td>
               <td>{product.precioSugerido}</td>
               <td>
+                {product.active === false ? "Suspendido" : "Activo"}
+              </td>
+              <td>
                 <button className="ghost" onClick={() => startEdit(product)}>Editar</button>
+                <button className="ghost" onClick={() => toggleProductStatus(product)}>
+                  {product.active === false ? "Reactivar" : "Suspender"}
+                </button>
+                <button className="ghost" onClick={() => removeProduct(product)}>Eliminar</button>
               </td>
             </tr>
           ))}
           {products.length === 0 && (
             <tr>
-              <td colSpan="5" className="helper">Sin productos para mostrar.</td>
+              <td colSpan="6" className="helper">Sin productos para mostrar.</td>
             </tr>
           )}
         </tbody>
@@ -346,6 +377,7 @@ const ProductsPage = () => {
               {items.map((product) => (
                 <li key={product._id}>
                   {product.descripcion} - {product.precioSugerido}
+                  {product.active === false ? " · Suspendido" : ""}
                   {product.atributos?.length ? ` · ${product.atributos.join(", ")}` : ""}
                 </li>
               ))}

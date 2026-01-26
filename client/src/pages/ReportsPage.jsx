@@ -1,0 +1,217 @@
+import React, { useEffect, useState } from "react";
+import { apiFetch } from "../utils/api.js";
+
+const ReportsPage = () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(today);
+  const [report, setReport] = useState(null);
+  const [reportDetail, setReportDetail] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [salesStartDate, setSalesStartDate] = useState(today);
+  const [salesEndDate, setSalesEndDate] = useState(today);
+  const [salesBrand, setSalesBrand] = useState("");
+  const [salesSort, setSalesSort] = useState("descripcion");
+  const [salesItemsReport, setSalesItemsReport] = useState(null);
+  const [status, setStatus] = useState("");
+
+  const loadReport = async () => {
+    if (!date) return;
+    try {
+      const data = await apiFetch(`/api/reports/daily?date=${date}`);
+      setReport(data);
+      setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const loadSalesItemsReport = async () => {
+    if (!salesStartDate || !salesEndDate) return;
+    const params = new URLSearchParams();
+    params.set("startDate", salesStartDate);
+    params.set("endDate", salesEndDate);
+    params.set("sort", salesSort);
+    if (salesBrand) {
+      params.set("brand", salesBrand);
+    }
+    try {
+      const data = await apiFetch(`/api/reports/sales-items?${params.toString()}`);
+      setSalesItemsReport(data);
+      setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const [brandData] = await Promise.all([apiFetch("/api/products/brands")]);
+        setBrands(brandData);
+      } catch (error) {
+        setStatus(error.message);
+      }
+    };
+    loadOptions();
+  }, []);
+
+  return (
+    <div className="container">
+      {report && (
+        <div className="print-only">
+          <h2>Reporte diario</h2>
+          <div>Fecha: {date}</div>
+          <div>Detalle: {reportDetail ? "Por venta" : "Resumen"}</div>
+        </div>
+      )}
+      <h2>Reporte diario</h2>
+      <div className="inline no-print" style={{ marginTop: 16 }}>
+        <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        <button onClick={loadReport}>Buscar</button>
+        <label className="inline">
+          <input
+            type="checkbox"
+            checked={reportDetail}
+            onChange={(event) => setReportDetail(event.target.checked)}
+          />
+          Ver detalle por venta
+        </label>
+        <button className="secondary" onClick={() => window.print()} disabled={!report}>
+          Imprimir
+        </button>
+      </div>
+      {status && <div className="alert">{status}</div>}
+      {report && (
+        <div className="stack" style={{ marginTop: 16 }}>
+          <div className="badge">Total: {report.totalVendido}</div>
+          <div>Cobrado en caja: {report.totalCobrado}</div>
+          <div>Saldo pendiente: {report.saldoPendiente}</div>
+          <div>Envío por rendir (cadete): {report.totalEnvioCadete}</div>
+          <div>Ventas: {report.cantidadVentas}</div>
+          <div>
+            <strong>Totales por método</strong>
+            <ul>
+              {Object.entries(report.totalesPorMetodo).map(([metodo, total]) => (
+                <li key={metodo}>{metodo}: {total}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <strong>Ventas</strong>
+            {reportDetail ? (
+              <ul>
+                {report.ventas.map((venta) => (
+                  <li key={venta._id}>
+                    {new Date(venta.fechaHora).toLocaleTimeString()} - {venta.customerNombreSnapshot || "Sin cliente"} - {venta.total}
+                    <ul>
+                      {venta.items?.map((item, index) => (
+                        <li key={`${venta._id}-${index}`}>
+                          {item.descripcionSnapshot} · {item.cantidad} x {item.precioUnitario} = {item.subtotal}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul>
+                {report.ventas.map((venta) => (
+                  <li key={venta._id}>
+                    {new Date(venta.fechaHora).toLocaleTimeString()} - {venta.customerNombreSnapshot || "Sin cliente"} - {venta.total}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="stack" style={{ marginTop: 24 }}>
+        <h2>Listado de ventas por producto</h2>
+        <div className="grid grid-3">
+          <label>
+            Desde
+            <input
+              type="date"
+              value={salesStartDate}
+              onChange={(event) => setSalesStartDate(event.target.value)}
+            />
+          </label>
+          <label>
+            Hasta
+            <input
+              type="date"
+              value={salesEndDate}
+              onChange={(event) => setSalesEndDate(event.target.value)}
+            />
+          </label>
+          <label>
+            Marca
+            <select value={salesBrand} onChange={(event) => setSalesBrand(event.target.value)}>
+              <option value="">Todas</option>
+              {brands.map((brand) => (
+                <option key={brand} value={brand}>{brand}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Ordenar por
+            <select value={salesSort} onChange={(event) => setSalesSort(event.target.value)}>
+              <option value="descripcion">Descripción (A-Z)</option>
+              <option value="cantidad">Cantidad (mayor a menor)</option>
+              <option value="importe">Importe (mayor a menor)</option>
+            </select>
+          </label>
+        </div>
+        <div className="inline">
+          <button onClick={loadSalesItemsReport}>Buscar</button>
+          <button
+            className="secondary"
+            onClick={() => window.print()}
+            disabled={!salesItemsReport}
+          >
+            Imprimir
+          </button>
+        </div>
+        {salesItemsReport && (
+          <div className="stack" style={{ marginTop: 12 }}>
+            <div className="helper">
+              {salesItemsReport.marca ? `Marca: ${salesItemsReport.marca}` : "Todas las marcas"} ·
+              {" "}
+              {salesItemsReport.rango.startDate} a {salesItemsReport.rango.endDate}
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th>Marca</th>
+                  <th>Atributos</th>
+                  <th>Cantidad</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesItemsReport.items.map((item, index) => (
+                  <tr key={`${item.descripcion}-${item.marca}-${index}`}>
+                    <td>{item.descripcion}</td>
+                    <td>{item.marca}</td>
+                    <td>{item.atributos?.length ? item.atributos.join(", ") : "-"}</td>
+                    <td>{item.cantidad}</td>
+                    <td>{item.importe}</td>
+                  </tr>
+                ))}
+                {salesItemsReport.items.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="helper">Sin datos para el período seleccionado.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ReportsPage;

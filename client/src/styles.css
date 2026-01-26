@@ -161,6 +161,15 @@ button.ghost {
   border-collapse: collapse;
 }
 
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper .table {
+  min-width: 640px;
+}
+
 .table th, .table td {
   padding: 10px;
   border-bottom: 1px solid #1f2937;

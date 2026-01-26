@@ -209,22 +209,31 @@ const ProductsPage = () => {
       const atributosIndex = findIndex("atributos");
       const precioIndex = findIndex("preciosugerido");
 
+      const items = [];
       for (const line of lines.slice(1)) {
         const values = parseCsvLine(line);
         const descripcionValue = values[descripcionIndex]?.trim();
         if (!descripcionValue) continue;
-        const payload = {
+        items.push({
           descripcion: descripcionValue,
           marca: values[marcaIndex]?.trim() || "",
           atributos: parseAttributes(values[atributosIndex] || ""),
           precioSugerido: Number(values[precioIndex] || 0)
-        };
-        await apiFetch("/api/products", {
-          method: "POST",
-          body: JSON.stringify(payload)
         });
       }
-      setStatus("Importación completada.");
+      if (!items.length) {
+        setStatus("No se encontraron productos válidos para importar.");
+        return;
+      }
+      const response = await apiFetch("/api/products/import", {
+        method: "POST",
+        body: JSON.stringify({ items })
+      });
+      const { summary } = response;
+      setStatus(
+        `Importación completada. Creados: ${summary.created}, actualizados: ${summary.updated}, ` +
+        `sin cambios: ${summary.unchanged}, omitidos: ${summary.skipped}.`
+      );
       buscar();
     } catch (error) {
       setStatus(error.message);
@@ -330,43 +339,45 @@ const ProductsPage = () => {
       <div className="helper" style={{ marginTop: 8 }}>
         Exportá para obtener el formato. Usá separador “;” y atributos separados por “|”.
       </div>
-      <table className="table" style={{ marginTop: 16 }}>
-        <thead>
-          <tr>
-            <th>Descripción</th>
-            <th>Marca</th>
-            <th>Atributos</th>
-            <th>Precio sugerido</th>
-            <th>Estado</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product._id}>
-              <td>{product.descripcion}</td>
-              <td>{product.marca || "Sin marca"}</td>
-              <td>{product.atributos?.length ? product.atributos.join(", ") : "-"}</td>
-              <td>{product.precioSugerido}</td>
-              <td>
-                {product.active === false ? "Suspendido" : "Activo"}
-              </td>
-              <td>
-                <button className="ghost" onClick={() => startEdit(product)}>Editar</button>
-                <button className="ghost" onClick={() => toggleProductStatus(product)}>
-                  {product.active === false ? "Reactivar" : "Suspender"}
-                </button>
-                <button className="ghost" onClick={() => removeProduct(product)}>Eliminar</button>
-              </td>
-            </tr>
-          ))}
-          {products.length === 0 && (
+      <div className="table-wrapper" style={{ marginTop: 16 }}>
+        <table className="table">
+          <thead>
             <tr>
-              <td colSpan="6" className="helper">Sin productos para mostrar.</td>
+              <th>Descripción</th>
+              <th>Marca</th>
+              <th>Atributos</th>
+              <th>Precio sugerido</th>
+              <th>Estado</th>
+              <th></th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product._id}>
+                <td>{product.descripcion}</td>
+                <td>{product.marca || "Sin marca"}</td>
+                <td>{product.atributos?.length ? product.atributos.join(", ") : "-"}</td>
+                <td>{product.precioSugerido}</td>
+                <td>
+                  {product.active === false ? "Suspendido" : "Activo"}
+                </td>
+                <td>
+                  <button className="ghost" onClick={() => startEdit(product)}>Editar</button>
+                  <button className="ghost" onClick={() => toggleProductStatus(product)}>
+                    {product.active === false ? "Reactivar" : "Suspender"}
+                  </button>
+                  <button className="ghost" onClick={() => removeProduct(product)}>Eliminar</button>
+                </td>
+              </tr>
+            ))}
+            {products.length === 0 && (
+              <tr>
+                <td colSpan="6" className="helper">Sin productos para mostrar.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       <div className="stack" style={{ marginTop: 24 }}>
         <h3>Productos por marca</h3>

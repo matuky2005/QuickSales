@@ -164,3 +164,52 @@ export const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const importProducts = async (req, res, next) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "items are required" });
+    }
+    const summary = { created: 0, updated: 0, unchanged: 0, skipped: 0 };
+    for (const rawItem of items) {
+      const descripcion = normalizeText(rawItem.descripcion || "");
+      const marca = normalizeText(rawItem.marca || "");
+      const atributos = Array.isArray(rawItem.atributos)
+        ? rawItem.atributos.map((item) => normalizeText(item)).filter(Boolean)
+        : [];
+      const precioSugerido = Number(rawItem.precioSugerido ?? 0);
+
+      if (!descripcion) {
+        summary.skipped += 1;
+        continue;
+      }
+
+      const existing = await Product.findOne(buildDuplicateQuery({ descripcion, marca, atributos }));
+      if (existing) {
+        const nextPrecio = Math.max(precioSugerido, 0);
+        if (existing.precioSugerido !== nextPrecio) {
+          existing.precioSugerido = nextPrecio;
+          await existing.save();
+          summary.updated += 1;
+        } else {
+          summary.unchanged += 1;
+        }
+        continue;
+      }
+
+      await Product.create({
+        descripcion,
+        marca,
+        atributos,
+        precioSugerido: Math.max(precioSugerido, 0),
+        active: true
+      });
+      summary.created += 1;
+    }
+
+    res.json({ summary });
+  } catch (error) {
+    next(error);
+  }
+};

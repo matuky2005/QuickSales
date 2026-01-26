@@ -227,7 +227,8 @@ export const updateSale = async (req, res, next) => {
       items = sale.items,
       recargo = sale.recargo,
       envio = sale.envio,
-      customerNombreSnapshot
+      customerNombreSnapshot,
+      pagos
     } = req.body;
     if (!items.length) {
       return res.status(400).json({ message: "items are required" });
@@ -296,6 +297,25 @@ export const updateSale = async (req, res, next) => {
     };
     sale.total = total;
     const totalCaja = total - envioMonto;
+
+    if (Array.isArray(pagos)) {
+      const pagosNormalizados = pagos.map((pago) => ({
+        ...pago,
+        monto: Number(pago.monto || 0)
+      }));
+      for (const pago of pagosNormalizados) {
+        if (pago.metodo === "TRANSFERENCIA" && !pago.cuentaTransferencia) {
+          return res.status(400).json({ message: "cuentaTransferencia is required for transfer" });
+        }
+      }
+      const totalCobrado = pagosNormalizados.reduce((sum, pago) => sum + pago.monto, 0);
+      if (Math.round(totalCobrado) > Math.round(totalCaja)) {
+        return res.status(400).json({ message: "payments total cannot exceed sale total" });
+      }
+      sale.pagos = pagosNormalizados;
+      sale.totalCobrado = Math.round(totalCobrado);
+    }
+
     sale.saldoPendiente = Math.max(Math.round(totalCaja - sale.totalCobrado), 0);
     sale.estado = sale.saldoPendiente === 0 ? "PAGADA" : "PENDIENTE";
     sale.auditoria.push({

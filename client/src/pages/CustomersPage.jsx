@@ -11,6 +11,8 @@ const CustomersPage = () => {
   const [statementStartDate, setStatementStartDate] = useState("");
   const [statementEndDate, setStatementEndDate] = useState("");
   const [statementDetail, setStatementDetail] = useState(false);
+  const [initialDebtAmount, setInitialDebtAmount] = useState("");
+  const [initialDebtDescription, setInitialDebtDescription] = useState("Saldo inicial");
 
   const buscar = async () => {
     try {
@@ -53,6 +55,30 @@ const CustomersPage = () => {
       setStatement(data);
       setSelectedCustomer(customer);
       setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const createInitialDebt = async () => {
+    if (!selectedCustomer) return;
+    const monto = Number(initialDebtAmount || 0);
+    if (monto <= 0) {
+      setStatus("Monto inválido para deuda inicial.");
+      return;
+    }
+    try {
+      await apiFetch(`/api/customers/${selectedCustomer._id}/initial-debt`, {
+        method: "POST",
+        body: JSON.stringify({
+          monto,
+          descripcion: initialDebtDescription.trim() || "Saldo inicial"
+        })
+      });
+      setStatus("Deuda inicial registrada.");
+      setInitialDebtAmount("");
+      setInitialDebtDescription("Saldo inicial");
+      loadStatement(selectedCustomer);
     } catch (error) {
       setStatus(error.message);
     }
@@ -178,6 +204,36 @@ const CustomersPage = () => {
                 ))}
               </ul>
             )}
+          </div>
+        )}
+        {selectedCustomer && (
+          <div className="stack" style={{ marginTop: 16 }}>
+            <h4>Deuda inicial</h4>
+            <div className="grid grid-3">
+              <label>
+                Descripción
+                <input
+                  value={initialDebtDescription}
+                  onChange={(event) => setInitialDebtDescription(event.target.value)}
+                />
+              </label>
+              <label>
+                Monto
+                <input
+                  type="number"
+                  value={initialDebtAmount}
+                  onChange={(event) => setInitialDebtAmount(event.target.value)}
+                />
+              </label>
+              <div style={{ display: "flex", alignItems: "flex-end" }}>
+                <button className="secondary" onClick={createInitialDebt}>
+                  Registrar deuda
+                </button>
+              </div>
+            </div>
+            <div className="helper">
+              Genera una venta pendiente para registrar pagos a cuenta y reflejar el saldo.
+            </div>
           </div>
         )}
       </div>

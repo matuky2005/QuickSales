@@ -3,6 +3,8 @@ import { apiFetch } from "../utils/api.js";
 
 const initialRecargo = { tipo: "fijo", valor: 0 };
 
+const paymentMethods = ["EFECTIVO", "TRANSFERENCIA", "TARJETA", "QR"];
+
 const SalePage = () => {
   const transferAccountsKey = "qs-transfer-accounts";
   const [descripcion, setDescripcion] = useState("");
@@ -160,6 +162,23 @@ const SalePage = () => {
     setMontoPago(0);
     setCuentaTransferencia("");
     montoPagoRef.current?.focus();
+  };
+
+  const updatePago = (index, field, value) => {
+    setPagos((prev) =>
+      prev.map((pago, idx) =>
+        idx === index
+          ? {
+              ...pago,
+              [field]: field === "monto" ? Number(value) : value
+            }
+          : pago
+      )
+    );
+  };
+
+  const removePago = (index) => {
+    setPagos((prev) => prev.filter((_, idx) => idx !== index));
   };
 
   const eliminarItemSeleccionado = () => {
@@ -701,10 +720,9 @@ const SalePage = () => {
             <label>
               Método
               <select ref={pagoRef} value={metodoPago} onChange={(event) => setMetodoPago(event.target.value)}>
-                <option value="EFECTIVO">EFECTIVO</option>
-                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                <option value="TARJETA">TARJETA</option>
-                <option value="QR">QR</option>
+                {paymentMethods.map((method) => (
+                  <option key={method} value={method}>{method}</option>
+                ))}
               </select>
             </label>
           </div>
@@ -760,15 +778,71 @@ const SalePage = () => {
         </div>
 
         {pagos.length > 0 && (
-          <ul>
-            {pagos.map((pago, index) => (
-              <li key={`${pago.metodo}-${index}`}>
-                {pago.metodo} - {pago.monto}
-                {pago.tipoTarjeta ? ` (${pago.tipoTarjeta})` : ""}
-                {pago.cuentaTransferencia ? ` (${pago.cuentaTransferencia})` : ""}
-              </li>
-            ))}
-          </ul>
+          <table className="table" style={{ marginTop: 8 }}>
+            <thead>
+              <tr>
+                <th>Método</th>
+                <th>Monto</th>
+                <th>Cuenta</th>
+                <th>Tipo tarjeta</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {pagos.map((pago, index) => (
+                <tr key={`${pago.metodo}-${index}`}>
+                  <td>
+                    <select
+                      value={pago.metodo}
+                      onChange={(event) => updatePago(index, "metodo", event.target.value)}
+                    >
+                      {paymentMethods.map((method) => (
+                        <option key={method} value={method}>{method}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      value={pago.monto}
+                      onChange={(event) => updatePago(index, "monto", event.target.value)}
+                    />
+                  </td>
+                  <td>
+                    {pago.metodo === "TRANSFERENCIA" ? (
+                      <input
+                        value={pago.cuentaTransferencia || ""}
+                        onChange={(event) =>
+                          updatePago(index, "cuentaTransferencia", event.target.value)
+                        }
+                        list="transfer-accounts-sale"
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td>
+                    {pago.metodo === "TARJETA" ? (
+                      <select
+                        value={pago.tipoTarjeta || "credito"}
+                        onChange={(event) => updatePago(index, "tipoTarjeta", event.target.value)}
+                      >
+                        <option value="credito">Crédito</option>
+                        <option value="debito">Débito</option>
+                      </select>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td>
+                    <button className="ghost" onClick={() => removePago(index)}>
+                      Quitar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
         <div className="helper">
           Total cobrado: {totalPagos} · Saldo pendiente: {saldoPendiente}

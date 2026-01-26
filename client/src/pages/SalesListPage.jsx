@@ -17,6 +17,7 @@ const SalesListPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editItems, setEditItems] = useState([]);
   const [editCustomerName, setEditCustomerName] = useState("");
+  const [editPagos, setEditPagos] = useState([]);
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [paymentForm, setPaymentForm] = useState({
     metodo: "EFECTIVO",
@@ -64,6 +65,7 @@ const SalesListPage = () => {
     setIsEditing(false);
     setEditItems([]);
     setEditCustomerName("");
+    setEditPagos([]);
     loadNotes(sale._id);
   };
 
@@ -156,12 +158,14 @@ const SalesListPage = () => {
         atributosInput: item.atributos?.join(", ") || ""
       }))
     );
+    setEditPagos(selectedSale.pagos.map((pago) => ({ ...pago })));
   };
 
   const cancelEdit = () => {
     setIsEditing(false);
     setEditItems([]);
     setEditCustomerName("");
+    setEditPagos([]);
   };
 
   const updateEditItem = (index, field, value) => {
@@ -196,6 +200,30 @@ const SalesListPage = () => {
     setEditItems((prev) => prev.filter((_, idx) => idx !== index));
   };
 
+  const updateEditPago = (index, field, value) => {
+    setEditPagos((prev) =>
+      prev.map((pago, idx) =>
+        idx === index
+          ? {
+              ...pago,
+              [field]: field === "monto" ? Number(value) : value
+            }
+          : pago
+      )
+    );
+  };
+
+  const addEditPago = () => {
+    setEditPagos((prev) => [
+      ...prev,
+      { metodo: "EFECTIVO", monto: 0, cuentaTransferencia: "", tipoTarjeta: "credito" }
+    ]);
+  };
+
+  const removeEditPago = (index) => {
+    setEditPagos((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   const saveEdit = async () => {
     if (!selectedSale) return;
     try {
@@ -207,6 +235,7 @@ const SalesListPage = () => {
             : item.atributos || []
         })),
         customerNombreSnapshot: editCustomerName.trim() || "",
+        pagos: editPagos,
         recargo: selectedSale.recargo,
         envio: selectedSale.envio
       };
@@ -218,6 +247,7 @@ const SalesListPage = () => {
       setIsEditing(false);
       setEditItems([]);
       setEditCustomerName("");
+      setEditPagos([]);
       setStatusMessage("Venta actualizada.");
       loadSales(pagination.page);
     } catch (error) {
@@ -467,14 +497,93 @@ const SalesListPage = () => {
 
           <div>
             <strong>Pagos</strong>
-            <ul>
-              {selectedSale.pagos.map((pago, index) => (
-                <li key={`${pago.metodo}-${index}`}>
-                  {pago.metodo} - {pago.monto}
-                  {pago.cuentaTransferencia ? ` (${pago.cuentaTransferencia})` : ""}
-                </li>
-              ))}
-            </ul>
+            {isEditing ? (
+              <>
+                <table className="table" style={{ marginTop: 8 }}>
+                  <thead>
+                    <tr>
+                      <th>Método</th>
+                      <th>Monto</th>
+                      <th>Cuenta</th>
+                      <th>Tipo tarjeta</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editPagos.map((pago, index) => (
+                      <tr key={`${pago.metodo}-${index}`}>
+                        <td>
+                          <select
+                            value={pago.metodo}
+                            onChange={(event) =>
+                              updateEditPago(index, "metodo", event.target.value)
+                            }
+                          >
+                            {paymentMethods.map((method) => (
+                              <option key={method} value={method}>{method}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={pago.monto}
+                            onChange={(event) =>
+                              updateEditPago(index, "monto", event.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          {pago.metodo === "TRANSFERENCIA" ? (
+                            <input
+                              value={pago.cuentaTransferencia || ""}
+                              onChange={(event) =>
+                                updateEditPago(index, "cuentaTransferencia", event.target.value)
+                              }
+                              list="transfer-accounts-sales"
+                            />
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td>
+                          {pago.metodo === "TARJETA" ? (
+                            <select
+                              value={pago.tipoTarjeta || "credito"}
+                              onChange={(event) =>
+                                updateEditPago(index, "tipoTarjeta", event.target.value)
+                              }
+                            >
+                              <option value="credito">Crédito</option>
+                              <option value="debito">Débito</option>
+                            </select>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td>
+                          <button className="ghost" onClick={() => removeEditPago(index)}>
+                            Quitar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="inline" style={{ marginTop: 8 }}>
+                  <button className="secondary" onClick={addEditPago}>Agregar pago</button>
+                </div>
+              </>
+            ) : (
+              <ul>
+                {selectedSale.pagos.map((pago, index) => (
+                  <li key={`${pago.metodo}-${index}`}>
+                    {pago.metodo} - {pago.monto}
+                    {pago.cuentaTransferencia ? ` (${pago.cuentaTransferencia})` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="grid grid-3">

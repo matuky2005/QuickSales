@@ -24,6 +24,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/exchange-rates", exchangeRatesRouter);
 app.use("/api", requireUser);
 app.use("/api/products", productsRouter);
 app.use("/api/customers", customersRouter);
@@ -33,7 +34,6 @@ app.use("/api/cash-closures", cashClosuresRouter);
 app.use("/api/credit-notes", creditNotesRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/cash-movements", cashMovementsRouter);
-app.use("/api/exchange-rates", exchangeRatesRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

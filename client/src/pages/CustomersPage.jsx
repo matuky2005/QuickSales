@@ -8,11 +8,14 @@ const CustomersPage = () => {
   const [status, setStatus] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [statement, setStatement] = useState(null);
+  const [overview, setOverview] = useState(null);
   const [statementStartDate, setStatementStartDate] = useState("");
   const [statementEndDate, setStatementEndDate] = useState("");
   const [statementDetail, setStatementDetail] = useState(false);
   const [initialDebtAmount, setInitialDebtAmount] = useState("");
   const [initialDebtDescription, setInitialDebtDescription] = useState("Saldo inicial");
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editName, setEditName] = useState("");
 
   const buscar = async () => {
     try {
@@ -54,7 +57,65 @@ const CustomersPage = () => {
       const data = await apiFetch(`/api/customers/${customer._id}/statement?${params.toString()}`);
       setStatement(data);
       setSelectedCustomer(customer);
+      setOverview(null);
       setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const loadOverview = async (customer) => {
+    if (!customer) return;
+    try {
+      const data = await apiFetch(`/api/customers/${customer._id}/overview`);
+      setOverview(data);
+      setSelectedCustomer(customer);
+      setStatement(null);
+      setStatus("");
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const startEdit = (customer) => {
+    setEditingCustomer(customer);
+    setEditName(customer.nombre || "");
+  };
+
+  const cancelEdit = () => {
+    setEditingCustomer(null);
+    setEditName("");
+  };
+
+  const updateCustomer = async () => {
+    if (!editingCustomer) return;
+    try {
+      const updated = await apiFetch(`/api/customers/${editingCustomer._id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ nombre: editName.trim() })
+      });
+      setCustomers((prev) => prev.map((item) => (item._id === updated._id ? updated : item)));
+      if (selectedCustomer?._id === updated._id) {
+        setSelectedCustomer(updated);
+      }
+      setStatus("Cliente actualizado.");
+      cancelEdit();
+    } catch (error) {
+      setStatus(error.message);
+    }
+  };
+
+  const deleteCustomer = async (customer) => {
+    if (!window.confirm("¿Eliminar este cliente?")) return;
+    try {
+      await apiFetch(`/api/customers/${customer._id}`, { method: "DELETE" });
+      setCustomers((prev) => prev.filter((item) => item._id !== customer._id));
+      if (selectedCustomer?._id === customer._id) {
+        setSelectedCustomer(null);
+        setStatement(null);
+        setOverview(null);
+      }
+      setStatus("Cliente eliminado.");
     } catch (error) {
       setStatus(error.message);
     }
@@ -101,6 +162,18 @@ const CustomersPage = () => {
           <button onClick={crearCliente}>Guardar cliente</button>
         </div>
       </div>
+      {editingCustomer && (
+        <div className="grid grid-3" style={{ marginTop: 16 }}>
+          <label>
+            Editar nombre
+            <input value={editName} onChange={(event) => setEditName(event.target.value)} />
+          </label>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+            <button className="secondary" onClick={updateCustomer}>Actualizar</button>
+            <button className="ghost" onClick={cancelEdit}>Cancelar</button>
+          </div>
+        </div>
+      )}
       <div className="inline" style={{ marginTop: 16 }}>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar" />
         <button onClick={buscar}>Buscar</button>
@@ -115,6 +188,27 @@ const CustomersPage = () => {
               onClick={() => loadStatement(customer)}
             >
               Ver estado de cuenta
+            </button>
+            <button
+              className="ghost"
+              style={{ marginLeft: 8 }}
+              onClick={() => loadOverview(customer)}
+            >
+              Ver resumen
+            </button>
+            <button
+              className="ghost"
+              style={{ marginLeft: 8 }}
+              onClick={() => startEdit(customer)}
+            >
+              Editar
+            </button>
+            <button
+              className="ghost"
+              style={{ marginLeft: 8 }}
+              onClick={() => deleteCustomer(customer)}
+            >
+              Eliminar
             </button>
           </li>
         ))}
@@ -164,6 +258,22 @@ const CustomersPage = () => {
             Ver detalle por venta
           </label>
         </div>
+        {overview && (
+          <div className="stack" style={{ marginTop: 12 }}>
+            <div className="badge">Cliente: {overview.customer.nombre}</div>
+            <div>Total: {overview.total}</div>
+            <div>Total cobrado: {overview.totalCobrado}</div>
+            <div>Saldo pendiente: {overview.saldoPendiente}</div>
+            <strong>Últimas compras</strong>
+            <ul>
+              {overview.ultimasVentas.map((sale) => (
+                <li key={sale._id}>
+                  {new Date(sale.fechaHora).toLocaleString()} - Total {sale.total} - Saldo {sale.saldoPendiente}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {statement && (
           <div className="print-only">
             <h3>Estado de cuenta</h3>

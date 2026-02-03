@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 import CashMovementsPage from "./pages/CashMovementsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
+import RemitosPage from "./pages/RemitosPage.jsx";
 
 const App = () => {
   const location = useLocation();
@@ -44,6 +45,7 @@ const App = () => {
             <span className="nav-label">Venta</span>
             <NavLink to="/venta">Nueva</NavLink>
             <NavLink to="/ventas">Listado</NavLink>
+            <NavLink to="/remitos">Remitos</NavLink>
           </div>
           <div className="nav-group">
             <span className="nav-label">Caja</span>
@@ -76,6 +78,7 @@ const App = () => {
           <Route path="/reportes" element={<ReportsPage />} />
           <Route path="/cierre-caja" element={<CashClosurePage />} />
           <Route path="/ventas" element={<SalesListPage />} />
+          <Route path="/remitos" element={<RemitosPage />} />
           <Route path="/movimientos" element={<CashMovementsPage />} />
           <Route path="/usuarios" element={<UsersPage />} />
           <Route path="/login" element={<LoginPage />} />

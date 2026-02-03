@@ -66,6 +66,84 @@ export const getCustomerStatement = async (req, res, next) => {
   }
 };
 
+export const getCustomerOverview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({ message: "customer not found" });
+    }
+    const sales = await Sale.find({
+      customerId: id,
+      estado: { $ne: "CANCELADA" }
+    })
+      .sort({ fechaHora: -1 })
+      .limit(5)
+      .lean();
+    const totals = await Sale.find({
+      customerId: id,
+      estado: { $ne: "CANCELADA" }
+    }).lean();
+    const total = totals.reduce((sum, sale) => sum + sale.total, 0);
+    const totalCobrado = totals.reduce((sum, sale) => sum + (sale.totalCobrado || 0), 0);
+    const saldoPendiente = totals.reduce((sum, sale) => sum + (sale.saldoPendiente || 0), 0);
+
+    res.json({
+      customer: { _id: customer._id, nombre: customer.nombre },
+      total,
+      totalCobrado,
+      saldoPendiente,
+      ultimasVentas: sales
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCustomer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const nombre = normalizeText(req.body.nombre || "");
+    if (!nombre) {
+      return res.status(400).json({ message: "nombre is required" });
+    }
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({ message: "customer not found" });
+    }
+    const duplicate = await Customer.findOne({
+      nombre: buildExactMatch(nombre),
+      _id: { $ne: customer._id }
+    });
+    if (duplicate) {
+      return res.status(409).json({ message: "customer already exists" });
+    }
+    customer.nombre = nombre;
+    await customer.save();
+    res.json(customer);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCustomer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({ message: "customer not found" });
+    }
+    const hasSales = await Sale.exists({ customerId: customer._id });
+    if (hasSales) {
+      return res.status(409).json({ message: "customer has sales and cannot be deleted" });
+    }
+    await customer.deleteOne();
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createInitialDebt = async (req, res, next) => {
   try {
     const { id } = req.params;

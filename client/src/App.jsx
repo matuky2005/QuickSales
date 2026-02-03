@@ -9,6 +9,7 @@ import SalesListPage from "./pages/SalesListPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 import CashMovementsPage from "./pages/CashMovementsPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
 
 const App = () => {
   const location = useLocation();
@@ -55,6 +56,7 @@ const App = () => {
             <NavLink to="/productos">Productos</NavLink>
             <NavLink to="/clientes">Clientes</NavLink>
             <NavLink to="/usuarios">Usuarios</NavLink>
+            <NavLink to="/configuraciones">Configuraciones</NavLink>
           </div>
           <button
             className="ghost"
@@ -79,6 +81,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/productos" element={<ProductsPage />} />
           <Route path="/clientes" element={<CustomersPage />} />
+          <Route path="/configuraciones" element={<SettingsPage />} />
         </Routes>
       </main>
       <footer className="app-footer">

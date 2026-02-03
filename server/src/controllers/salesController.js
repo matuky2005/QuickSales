@@ -337,7 +337,8 @@ export const updateSale = async (req, res, next) => {
     if (Array.isArray(pagos)) {
       const pagosNormalizados = pagos.map((pago) => ({
         ...pago,
-        monto: Number(pago.monto || 0)
+        monto: Number(pago.monto || 0),
+        fechaHora: pago.fechaHora ? new Date(pago.fechaHora) : new Date()
       }));
       for (const pago of pagosNormalizados) {
         if (pago.metodo === "TRANSFERENCIA" && !pago.cuentaTransferencia) {

@@ -56,6 +56,7 @@ const CashClosurePage = () => {
 
   const closure = closureData?.closure || closureData;
   const ventas = closureData?.ventas || [];
+  const pendingByCustomer = closureData?.pendingByCustomer || [];
 
   return (
     <div className="container">
@@ -82,7 +83,7 @@ const CashClosurePage = () => {
       {status && <div className="alert">{status}</div>}
       {closure && (
         <div className="stack" style={{ marginTop: 16 }}>
-          <div>Total ventas: {closure.totalVentas}</div>
+          <div>Total cobrado: {closure.totalVentas}</div>
           <div>Cantidad ventas: {closure.cantidadVentas}</div>
           <div>
             <strong>Totales por método</strong>
@@ -115,6 +116,18 @@ const CashClosurePage = () => {
               ))}
             </ul>
           </div>
+          {pendingByCustomer.length > 0 && (
+            <div>
+              <strong>Saldos pendientes por cliente</strong>
+              <ul>
+                {pendingByCustomer.map((item) => (
+                  <li key={item.cliente}>
+                    {item.cliente}: {item.saldoPendiente}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
       {showDetalle && ventas.length > 0 && (

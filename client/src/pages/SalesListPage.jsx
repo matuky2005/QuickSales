@@ -18,6 +18,10 @@ const SalesListPage = () => {
   const [editItems, setEditItems] = useState([]);
   const [editCustomerName, setEditCustomerName] = useState("");
   const [editPagos, setEditPagos] = useState([]);
+  const [editSearchEnabled, setEditSearchEnabled] = useState(false);
+  const [editSearchQuery, setEditSearchQuery] = useState("");
+  const [editSuggestions, setEditSuggestions] = useState([]);
+  const [editSuggestionIndex, setEditSuggestionIndex] = useState(-1);
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [paymentForm, setPaymentForm] = useState({
     metodo: "EFECTIVO",
@@ -66,6 +70,10 @@ const SalesListPage = () => {
     setEditItems([]);
     setEditCustomerName("");
     setEditPagos([]);
+    setEditSearchEnabled(false);
+    setEditSearchQuery("");
+    setEditSuggestions([]);
+    setEditSuggestionIndex(-1);
     loadNotes(sale._id);
   };
 
@@ -166,6 +174,10 @@ const SalesListPage = () => {
     setEditItems([]);
     setEditCustomerName("");
     setEditPagos([]);
+    setEditSearchEnabled(false);
+    setEditSearchQuery("");
+    setEditSuggestions([]);
+    setEditSuggestionIndex(-1);
   };
 
   const updateEditItem = (index, field, value) => {
@@ -199,6 +211,56 @@ const SalesListPage = () => {
   const removeEditItem = (index) => {
     setEditItems((prev) => prev.filter((_, idx) => idx !== index));
   };
+
+  const selectEditSuggestion = (product) => {
+    setEditItems((prev) => [
+      ...prev,
+      {
+        productId: product._id,
+        descripcionSnapshot: product.descripcion,
+        cantidad: 1,
+        precioUnitario: product.precioSugerido || 0,
+        marca: product.marca || "",
+        atributos: product.atributos || [],
+        atributosInput: (product.atributos || []).join(", ")
+      }
+    ]);
+    setEditSearchQuery("");
+    setEditSuggestions([]);
+    setEditSuggestionIndex(-1);
+    setEditSearchEnabled(false);
+  };
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const handler = (event) => {
+      if (event.key === "F3") {
+        event.preventDefault();
+        setEditSearchEnabled((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isEditing]);
+
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      if (!editSearchEnabled || !editSearchQuery.trim()) {
+        setEditSuggestions([]);
+        setEditSuggestionIndex(-1);
+        return;
+      }
+      try {
+        const data = await apiFetch(`/api/products?query=${encodeURIComponent(editSearchQuery)}`);
+        setEditSuggestions(data);
+        setEditSuggestionIndex(data.length ? 0 : -1);
+      } catch (error) {
+        setEditSuggestions([]);
+        setEditSuggestionIndex(-1);
+      }
+    };
+    loadSuggestions();
+  }, [editSearchEnabled, editSearchQuery]);
 
   const updateEditPago = (index, field, value) => {
     setEditPagos((prev) =>
@@ -414,6 +476,45 @@ const SalesListPage = () => {
             <strong>Items</strong>
             {isEditing ? (
               <>
+                <div className="grid grid-3" style={{ marginTop: 8 }}>
+                  <label>
+                    Buscar producto
+                    <div className="inline">
+                      <input
+                        value={editSearchQuery}
+                        onChange={(event) => setEditSearchQuery(event.target.value)}
+                        placeholder="Buscar por descripción, marca o atributos"
+                      />
+                      <button
+                        type="button"
+                        className="secondary"
+                        onClick={() => setEditSearchEnabled(true)}
+                      >
+                        Buscar
+                      </button>
+                    </div>
+                  </label>
+                </div>
+                {editSearchEnabled && editSuggestions.length > 0 && (
+                  <ul className="suggestions-list">
+                    {editSuggestions.map((product, index) => (
+                      <li key={product._id}>
+                        <button
+                          type="button"
+                          className={`ghost ${index === editSuggestionIndex ? "is-active" : ""}`}
+                          onClick={() => selectEditSuggestion(product)}
+                        >
+                          <span>
+                            {product.descripcion}
+                            {product.marca ? ` - ${product.marca}` : ""}
+                            {product.atributos?.length ? ` - ${product.atributos.join(", ")}` : ""}
+                          </span>
+                          <span className="helper">$ {product.precioSugerido || 0}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <table className="table" style={{ marginTop: 8 }}>
                   <thead>
                     <tr>

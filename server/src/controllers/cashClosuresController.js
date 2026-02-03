@@ -4,13 +4,19 @@ import Sale from "../models/Sale.js";
 import Product from "../models/Product.js";
 import { endOfDay, startOfDay } from "../utils/normalize.js";
 
-const buildTotals = (sales, notes = []) => {
+const buildTotals = (sales, notes = [], start, end) => {
   const totalesPorMetodo = {};
   const totalesPorCuenta = {};
+  let totalCobrado = 0;
 
   sales.forEach((sale) => {
     sale.pagos.forEach((pago) => {
+      const pagoFecha = pago.fechaHora ? new Date(pago.fechaHora) : new Date(sale.fechaHora);
+      if (pagoFecha < start || pagoFecha > end) {
+        return;
+      }
       totalesPorMetodo[pago.metodo] = (totalesPorMetodo[pago.metodo] || 0) + pago.monto;
+      totalCobrado += pago.monto;
       if (pago.metodo === "TRANSFERENCIA" && pago.cuentaTransferencia) {
         totalesPorCuenta[pago.cuentaTransferencia] =
           (totalesPorCuenta[pago.cuentaTransferencia] || 0) + pago.monto;
@@ -19,21 +25,31 @@ const buildTotals = (sales, notes = []) => {
   });
 
   notes.forEach((note) => {
+    if (note.fechaHora < start || note.fechaHora > end) {
+      return;
+    }
     const sign = note.tipo === "CREDITO" ? -1 : 1;
     totalesPorMetodo[note.metodo] = (totalesPorMetodo[note.metodo] || 0) + sign * note.monto;
     if (note.metodo === "TRANSFERENCIA" && note.cuentaTransferencia) {
       totalesPorCuenta[note.cuentaTransferencia] =
         (totalesPorCuenta[note.cuentaTransferencia] || 0) + sign * note.monto;
     }
+    totalCobrado += sign * note.monto;
   });
 
-  const totalVentas = sales.reduce((sum, sale) => sum + (sale.total - (sale.envio?.monto || 0)), 0);
-  const totalNotas = notes.reduce(
-    (sum, note) => sum + (note.tipo === "CREDITO" ? -note.monto : note.monto),
-    0
-  );
+  return { totalesPorMetodo, totalesPorCuenta, totalCobrado: Math.round(totalCobrado) };
+};
 
-  return { totalesPorMetodo, totalesPorCuenta, totalVentas: totalVentas + totalNotas };
+const buildPendingByCustomer = (sales) => {
+  const pendingMap = new Map();
+  sales.forEach((sale) => {
+    const key = sale.customerNombreSnapshot || "Sin cliente";
+    const current = pendingMap.get(key) || 0;
+    pendingMap.set(key, current + (sale.saldoPendiente || 0));
+  });
+  return Array.from(pendingMap.entries())
+    .map(([cliente, saldoPendiente]) => ({ cliente, saldoPendiente }))
+    .sort((a, b) => b.saldoPendiente - a.saldoPendiente);
 };
 
 const enrichSalesItems = async (sales) => {
@@ -73,12 +89,21 @@ export const createCashClosure = async (req, res, next) => {
     const start = startOfDay(fecha);
     const end = endOfDay(fecha);
     const sales = await Sale.find({
-      fechaHora: { $gte: start, $lte: end },
-      estado: { $ne: "CANCELADA" }
+      estado: { $ne: "CANCELADA" },
+      pagos: { $elemMatch: { fechaHora: { $gte: start, $lte: end } } }
     }).lean();
     const notes = await CreditNote.find({ fechaHora: { $gte: start, $lte: end } });
+    const pendingSales = await Sale.find({
+      estado: { $ne: "CANCELADA" },
+      saldoPendiente: { $gt: 0 }
+    }).lean();
     const enrichedSales = await enrichSalesItems(sales);
-    const { totalesPorMetodo, totalesPorCuenta, totalVentas } = buildTotals(enrichedSales, notes);
+    const { totalesPorMetodo, totalesPorCuenta, totalCobrado } = buildTotals(
+      enrichedSales,
+      notes,
+      start,
+      end
+    );
     const cantidadVentas = enrichedSales.length;
     const diferencia =
       typeof efectivoContado === "number"
@@ -94,25 +119,15 @@ export const createCashClosure = async (req, res, next) => {
       fecha,
       totalesPorMetodo,
       totalesPorCuenta,
-      totalVentas,
+      totalVentas: totalCobrado,
       cantidadVentas,
       efectivoContado,
       diferencia,
       notas
     });
+    const pendingByCustomer = buildPendingByCustomer(pendingSales);
 
-    await Sale.updateMany(
-      { fechaHora: { $gte: start, $lte: end }, cierreCajaAt: { $exists: false } },
-      {
-        $set: {
-          saldoPendiente: 0,
-          cierreCajaId: closure._id,
-          cierreCajaAt: new Date()
-        }
-      }
-    );
-
-    res.status(201).json({ closure, ventas: enrichedSales });
+    res.status(201).json({ closure, ventas: enrichedSales, pendingByCustomer });
   } catch (error) {
     next(error);
   }
@@ -132,15 +147,25 @@ export const getCashClosure = async (req, res, next) => {
       const start = startOfDay(date);
       const end = endOfDay(date);
       const ventas = await Sale.find({
-        fechaHora: { $gte: start, $lte: end },
-        estado: { $ne: "CANCELADA" }
+        estado: { $ne: "CANCELADA" },
+        pagos: { $elemMatch: { fechaHora: { $gte: start, $lte: end } } }
       })
         .sort({ fechaHora: 1 })
         .lean();
+      const pendingSales = await Sale.find({
+        estado: { $ne: "CANCELADA" },
+        saldoPendiente: { $gt: 0 }
+      }).lean();
       const enrichedSales = await enrichSalesItems(ventas);
-      return res.json({ closure, ventas: enrichedSales });
+      const pendingByCustomer = buildPendingByCustomer(pendingSales);
+      return res.json({ closure, ventas: enrichedSales, pendingByCustomer });
     }
-    res.json({ closure });
+    const pendingSales = await Sale.find({
+      estado: { $ne: "CANCELADA" },
+      saldoPendiente: { $gt: 0 }
+    }).lean();
+    const pendingByCustomer = buildPendingByCustomer(pendingSales);
+    res.json({ closure, pendingByCustomer });
   } catch (error) {
     next(error);
   }

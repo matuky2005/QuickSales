@@ -38,6 +38,7 @@ const SalePage = () => {
   const [productSearchEnabled, setProductSearchEnabled] = useState(false);
   const [exchangeRates, setExchangeRates] = useState(null);
   const [exchangeStatus, setExchangeStatus] = useState("");
+  const [exchangeSource, setExchangeSource] = useState("");
   const [exchangeType, setExchangeType] = useState(
     () => localStorage.getItem("qs-dollar-type") || "OFICIAL"
   );
@@ -401,8 +402,19 @@ const SalePage = () => {
   useEffect(() => {
     const loadRates = async () => {
       try {
+        const settings = await apiFetch("/api/settings/dolar");
+        if (settings?.oficial && settings?.blue) {
+          setExchangeRates({
+            oficial: { venta: settings.oficial },
+            blue: { venta: settings.blue }
+          });
+          setExchangeSource("Configurado manualmente");
+          setExchangeStatus("");
+          return;
+        }
         const data = await apiFetch("/api/exchange-rates/dolar");
         setExchangeRates(data);
+        setExchangeSource("Ambito");
         setExchangeStatus("");
       } catch (error) {
         setExchangeStatus("No se pudo obtener la cotización del dólar.");
@@ -498,6 +510,7 @@ const SalePage = () => {
           {exchangeRates ? (
             <div className="helper">
               Oficial: {exchangeRates.oficial?.venta ?? "-"} · Blue: {exchangeRates.blue?.venta ?? "-"}
+              {exchangeSource ? ` · ${exchangeSource}` : ""}
             </div>
           ) : (
             <div className="helper">{exchangeStatus || "Cargando cotización..."}</div>
@@ -516,47 +529,59 @@ const SalePage = () => {
         <div className="stack">
           <label>
             Descripción producto
-            <input
-              ref={descripcionRef}
-              value={descripcion}
-              onChange={(event) => {
-                setDescripcion(event.target.value);
-                setSelectedProduct(null);
-                if (!productSearchEnabled) {
-                  setSugerencias([]);
-                }
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowDown" && sugerencias.length) {
-                  event.preventDefault();
-                  setProductSuggestionTouched(true);
-                  setProductSuggestionIndex((prev) => {
-                    if (prev < 0) return 0;
-                    return Math.min(prev + 1, sugerencias.length - 1);
-                  });
-                  return;
-                }
-                if (event.key === "ArrowUp" && sugerencias.length) {
-                  event.preventDefault();
-                  setProductSuggestionTouched(true);
-                  setProductSuggestionIndex((prev) => Math.max(prev - 1, 0));
-                  return;
-                }
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  if (
-                    productSuggestionTouched &&
-                    productSuggestionIndex >= 0 &&
-                    sugerencias[productSuggestionIndex]
-                  ) {
-                    seleccionarProducto(sugerencias[productSuggestionIndex]);
+            <div className="inline">
+              <input
+                ref={descripcionRef}
+                value={descripcion}
+                onChange={(event) => {
+                  setDescripcion(event.target.value);
+                  setSelectedProduct(null);
+                  if (!productSearchEnabled) {
+                    setSugerencias([]);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowDown" && sugerencias.length) {
+                    event.preventDefault();
+                    setProductSuggestionTouched(true);
+                    setProductSuggestionIndex((prev) => {
+                      if (prev < 0) return 0;
+                      return Math.min(prev + 1, sugerencias.length - 1);
+                    });
                     return;
                   }
-                  addItem();
-                }
-              }}
-              placeholder="Ej: PROTEINA..."
-            />
+                  if (event.key === "ArrowUp" && sugerencias.length) {
+                    event.preventDefault();
+                    setProductSuggestionTouched(true);
+                    setProductSuggestionIndex((prev) => Math.max(prev - 1, 0));
+                    return;
+                  }
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    if (
+                      productSuggestionTouched &&
+                      productSuggestionIndex >= 0 &&
+                      sugerencias[productSuggestionIndex]
+                    ) {
+                      seleccionarProducto(sugerencias[productSuggestionIndex]);
+                      return;
+                    }
+                    addItem();
+                  }
+                }}
+                placeholder="Ej: PROTEINA..."
+              />
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  setProductSearchEnabled(true);
+                  descripcionRef.current?.focus();
+                }}
+              >
+                Buscar
+              </button>
+            </div>
           </label>
           {sugerencias.length > 0 && (
             <ul className="suggestions-list">

@@ -63,7 +63,7 @@ export const listProducts = async (req, res, next) => {
       filter.$or = [
         { descripcion: buildContainsMatch(query) },
         { marca: buildContainsMatch(query) },
-        { atributos: { $elemMatch: buildContainsMatch(query) } }
+        { atributos: buildContainsMatch(query) }
       ];
     }
     if (brand) {

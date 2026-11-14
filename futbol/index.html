@@ -143,6 +143,17 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
   body.is-game #game .sprint-btn{position:absolute;left:101px;bottom:23px;min-width:42px;min-height:43px;padding:3px;font-size:9px}
 }
 
+
+/* Reinicios y reglas del partido, con cancha más amplia y UI discreta */
+.set-piece-badge{position:absolute;z-index:12;top:20%;left:50%;transform:translateX(-50%);
+  max-width:86%;width:max-content;min-width:230px;background:#0b2440e8;color:#fff6cf;
+  font-weight:950;font-size:clamp(11px,2.2vw,18px);padding:12px 19px;text-align:center;
+  border:2px solid #ead688;border-radius:16px;pointer-events:none;
+  text-shadow:0 1px 3px #0008;box-shadow:0 7px 23px #0017}
+@media(orientation:landscape) and (max-height:650px){
+  body.is-game #game .set-piece-badge{top:21%;font-size:11px;max-width:50vw;min-width:190px;padding:8px 10px}
+}
+
 </style>
 </head>
 <body>
@@ -176,10 +187,10 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
   </section>
   <section class="game-shell" id="game" hidden>
     <div class="game-hud"><div class="score-teams"><span class="jersey red"></span> ROJOS</div><div class="score-mid"><div class="match-time" id="clockText">02:00</div><div class="score-big" id="scoreText">0 - 0</div></div><div class="score-teams right">AZULES <span class="jersey blue"></span></div></div>
-    <div class="game-outer"><canvas id="pitch" width="1200" height="740" class="game-canvas" aria-label="Estadio tridimensional de fútbol con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div><div class="three-error" id="threeError" hidden>No se pudo abrir el estadio 3D. Revisá la conexión a internet y actualizá Chrome.</div></div>
+    <div class="game-outer"><canvas id="pitch" width="1200" height="740" class="game-canvas" aria-label="Estadio tridimensional de fútbol con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div><div class="set-piece-badge" id="setPieceBadge" hidden>SAQUE DE BANDA</div><div class="three-error" id="threeError" hidden>No se pudo abrir el estadio 3D. Revisá la conexión a internet y actualizá Chrome.</div></div>
     <div class="power-hud" id="powerHud" hidden><span id="powerText">POTENCIA DE TIRO</span><div class="power-track"><div class="power-fill" id="powerFill"></div></div></div>
     <div class="role"><span id="roleText">Manejás a los ROJOS</span><span class="status" id="statusText">¡A JUGAR!</span></div>
-    <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>↗</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⤴</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
+    <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>⏳</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⏳</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
     <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
   <footer class="foot">Juego 3D original inspirado en el fútbol clásico. No afiliado a FIFA, PES, Konami o EA.</footer>
@@ -222,7 +233,7 @@ function createGame(){
 function restartPositions(teamKick=0){
  if(!game)return;
  game.players.forEach(p=>{const v=initial[p.index];p.x=p.team===0?v[0]:W-v[0];p.y=v[1];p.dx=p.team===0?1:-1;p.dy=0;});
- const b=game.ball;b.x=W/2;b.y=MID;b.vx=0;b.vy=0;b.h=0;b.vh=0;b.holder=teamKick===0?9:TEAM_SIZE+9;b.lock=.7;game.charges=[0,0];game.shootPrevious=[false,false];game.chargeKinds=['',''];game.restart=null;game.offsideCandidate=null;game.lastTouchTeam=teamKick;
+ const b=game.ball;b.x=W/2;b.y=MID;b.vx=0;b.vy=0;b.h=0;b.vh=0;b.holder=teamKick===0?9:TEAM_SIZE+9;b.lock=.7;game.charges=[0,0];game.shootPrevious=[false,false];game.chargeKinds=['',''];game.restart=null;game.offsideCandidate=null;game.lastTouchTeam=teamKick;setPieceBanner();
  game.selected=[9,TEAM_SIZE+9];
 }
 function setScore(){if(!game)return;$('scoreText').textContent=game.scores[0]+' - '+game.scores[1];const sec=Math.ceil(Math.max(0,game.time));$('clockText').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');}
@@ -716,12 +727,18 @@ function render(){
     m.oldX=x;m.oldZ=z;
     const running=Math.hypot(p.x-(m.prevPX===undefined?p.x:m.prevPX),p.y-(m.prevPY===undefined?p.y:m.prevPY))>.6;
     m.prevPX=p.x;m.prevPY=p.y;
-    m.motion+=running?dt*13:dt*3.1;
+    m.motion+=running?dt*(8+Math.min(8,Math.hypot(p.vx||0,p.vy||0)*.031)):dt*2.6;
     const run=running?1:.12,wave=Math.sin(m.motion)*run*.65;
-    m.legs[0].rotation.x=wave+(p.kickT>0?Math.sin((.34-p.kickT)/.34*Math.PI)*1.25:0);m.legs[1].rotation.x=-wave;
-    m.arms[0].rotation.x=-wave*.7+(p.tackleT>0?.5:0);m.arms[1].rotation.x=wave*.7;
-    m.body.position.y=running?Math.abs(Math.sin(m.motion))*.10:0;
-    m.body.rotation.y=Math.atan2(p.dx,p.dy);
+    const tackleMotion=p.tackleT>0?Math.sin(Math.PI*clamp((.52-p.tackleT)/.52,0,1)):0;
+    const kickMotion=p.kickT>0?Math.sin(Math.PI*clamp((.34-p.kickT)/.34,0,1)):0;
+    m.legs[0].rotation.x=wave+kickMotion*1.45-tackleMotion*.55;
+    m.legs[1].rotation.x=-wave+tackleMotion*.8;
+    m.arms[0].rotation.x=-wave*.8+tackleMotion*.8;m.arms[1].rotation.x=wave*.8-tackleMotion*.35;
+    m.body.position.y=running?Math.abs(Math.sin(m.motion))*.095:0;
+    m.body.rotation.z=(running?Math.cos(m.motion)*.055:0)+tackleMotion*.20;
+    m.body.rotation.x=running?-.07:-.01;
+    const facing=Math.atan2(p.dx,p.dy),rotationDelta=Math.atan2(Math.sin(facing-m.body.rotation.y),Math.cos(facing-m.body.rotation.y));
+    m.body.rotation.y+=rotationDelta*Math.min(1,dt*9);
     const selected=game.selected[p.team]===i&&!p.gk;
     m.indicator.visible=selected;m.tri.visible=selected;
     if(selected){m.tri.position.y=5.0+Math.sin(now*.006)*.25;}
@@ -757,7 +774,7 @@ function animate(now){if(mode==='menu'||mode==='lobby'){clockId=0;return;}
 function beginGame(newMode){makeAudio();mode=newMode;show('game');
   if(window.screen?.orientation?.lock){window.screen.orientation.lock('landscape').catch(()=>{});}$('resultOverlay').hidden=true;createGame();
  $('roleText').textContent=newMode==='guest'?'Manejás a los AZULES 🔵':newMode==='local'?'ROJOS (WASD) · AZULES (flechas)':'Manejás a los ROJOS 🔴';
- $('keyHelp').textContent=newMode==='local'?'Rojo: WASD / ESPACIO / Q centro / F robar / E correr · Azul: FLECHAS / ENTER / . centro / / robar':'WASD movimiento · ESPACIO (mantener y soltar) tiro · SHIFT pase · Q centro · F robar · E correr · C cambiar';
+ $('keyHelp').textContent=newMode==='local'?'ROJO: WASD mover, ESPACIO/SHIFT/Q mantener y soltar, F robar, E correr · AZUL: FLECHAS, ENTER/M/PUNTO mantener y soltar':'WASD mover · MANTENER Y SOLTAR: ESPACIO tiro, SHIFT pase, Q centro · F barrida · E pique';
  $('touchUI').hidden=newMode==='local';sfx('start');
  if(clockId)cancelAnimationFrame(clockId);lastFrame=performance.now();clockId=requestAnimationFrame(animate);
 }
@@ -772,27 +789,28 @@ function wireConnection(isHost){const c=conn;c.on('open',()=>{if(conn!==c)return
   else{toast('¡Conexión establecida! Cargando partido...');$('connectBtn').disabled=true;}
  });
  c.on('data',msg=>{if(conn!==c||!msg||typeof msg!=='object')return;
-   if(isHost){if(msg.type==='input'&&msg.input&&mode==='host'){const v=msg.input;remote={x:clamp(Number(v.x)||0,-1,1),y:clamp(Number(v.y)||0,-1,1),shootHeld:Boolean(v.shootHeld),shootTap:Boolean(v.shootTap),pass:Boolean(v.pass),cross:Boolean(v.cross),tackle:Boolean(v.tackle),sw:Boolean(v.sw),sprint:Boolean(v.sprint)};}}
+   if(isHost){if(msg.type==='input'&&msg.input&&mode==='host'){const v=msg.input;remote={x:clamp(Number(v.x)||0,-1,1),y:clamp(Number(v.y)||0,-1,1),shootHeld:Boolean(v.shootHeld),shootTap:Boolean(v.shootTap),passHeld:Boolean(v.passHeld),passTap:Boolean(v.passTap),crossHeld:Boolean(v.crossHeld),crossTap:Boolean(v.crossTap),tackle:Boolean(v.tackle),sw:Boolean(v.sw),sprint:Boolean(v.sprint)};}}
    else{if(msg.type==='begin'){duration=Number(msg.duration)||120;beginGame('guest');}
-   if(msg.type==='state'&&msg.state&&mode==='guest'){game=msg.state;setScore();if(game.goalPause>0){$('goalFlash').hidden=false;$('goalFlash').textContent='¡GOOOOL!';$('statusText').textContent='¡GOL!';}else{$('goalFlash').hidden=true;$('statusText').textContent='¡A JUGAR!';}if(game.ended&&!gameEnded)endGame();}
+   if(msg.type==='state'&&msg.state&&mode==='guest'){game=msg.state;setScore();setPieceBanner();if(game.goalPause>0){$('goalFlash').hidden=false;$('goalFlash').textContent='¡GOOOOL!';$('statusText').textContent='¡GOL!';}else{$('goalFlash').hidden=true;$('statusText').textContent='¡A JUGAR!';}if(game.ended&&!gameEnded)endGame();}
    if(msg.type==='end'&&mode==='guest'&&game){game.scores=msg.scores;endGame();}}
  });
  c.on('close',()=>{if(conn!==c)return;remote.x=0;remote.y=0;if(mode==='host'||mode==='guest'){if(game&&!game.ended){$('statusText').textContent='⚠️ El rival se desconectó';if(mode==='guest'){endGame();$('resultTitle').textContent='RIVAL DESCONECTADO';}else{$('statusText').textContent='⚠️ El rival se desconectó · Podés salir';}}}else toast('Se cerró la conexión. Volvé a intentar.',true);});
  c.on('error',()=>toast('No se pudo establecer conexión. Probá otro internet o recreá la sala.',true));
 }
 function getGuestInput(){
-  let x=Number(keys.has('KeyD'))-Number(keys.has('KeyA')),
-    y=Number(keys.has('KeyS'))-Number(keys.has('KeyW'));
-  [x,y]=normalized(x+touch.x,y+touch.y);
-  return{x,y,shootHeld:keys.has('Space')||touch.shootHeld,shootTap:pressed.has('Space')||touch.shootTap,
-    pass:pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.pass,
-    cross:pressed.has('KeyQ')||touch.cross,tackle:pressed.has('KeyF')||touch.tackle,
-    sw:pressed.has('KeyC')||touch.sw,sprint:keys.has('KeyE')||touch.sprint};
+ let x=Number(keys.has('KeyD'))-Number(keys.has('KeyA')),y=Number(keys.has('KeyS'))-Number(keys.has('KeyW'));
+ [x,y]=normalized(x+touch.x,y+touch.y);
+ return{x,y,shootHeld:keys.has('Space')||touch.shootHeld,shootTap:pressed.has('Space')||touch.shootTap,
+   passHeld:keys.has('ShiftLeft')||keys.has('ShiftRight')||touch.passHeld,
+   passTap:pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.passTap,
+   crossHeld:keys.has('KeyQ')||touch.crossHeld,crossTap:pressed.has('KeyQ')||touch.crossTap,
+   tackle:pressed.has('KeyF')||touch.tackle,sw:pressed.has('KeyC')||touch.sw,
+   sprint:keys.has('KeyE')||touch.sprint};
 }
 function sendGuestInput(now){
-  if(now-guestLastPacket<40)return;
-  guestLastPacket=now;const inp=getGuestInput();sendNetwork({type:'input',input:inp});
-  pressed.clear();touch.shootTap=false;touch.pass=false;touch.cross=false;touch.tackle=false;touch.sw=false;
+ if(now-guestLastPacket<40)return;guestLastPacket=now;
+ sendNetwork({type:'input',input:getGuestInput()});
+ pressed.clear();touch.shootTap=false;touch.passTap=false;touch.crossTap=false;touch.tackle=false;touch.sw=false;
 }
 function copyString(v){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(v).then(()=>true).catch(()=>fallbackCopy(v));return Promise.resolve(fallbackCopy(v));}
 function fallbackCopy(v){const t=document.createElement('textarea');t.value=v;t.style.position='fixed';t.style.opacity='0';document.body.append(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}t.remove();return ok;}
@@ -811,18 +829,18 @@ $('againBtn').onclick=()=>{if(mode==='host'&&conn?.open){beginGame('host');sendN
 $('timeOptions').addEventListener('click',e=>{const b=e.target.closest('[data-min]');if(!b)return;duration=Number(b.dataset.min)*60;document.querySelectorAll('[data-min]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
 window.addEventListener('keydown',e=>{if(mode==='menu'||mode==='lobby')return;const allowed=['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','ShiftLeft','ShiftRight','Enter'];if(allowed.includes(e.code))e.preventDefault();keys.add(e.code);if(!e.repeat)pressed.add(e.code)},{passive:false});
 window.addEventListener('keyup',e=>keys.delete(e.code));
-window.addEventListener('blur',()=>{keys.clear();pressed.clear();touch.x=0;touch.y=0;touch.shootHeld=false;touch.sprint=false;resetStick();});
+window.addEventListener('blur',()=>{keys.clear();pressed.clear();touch.x=0;touch.y=0;touch.shootHeld=false;touch.passHeld=false;touch.crossHeld=false;touch.sprint=false;resetStick();});
 function bindTap(id,action){
   const el=$(id);el.addEventListener('pointerdown',e=>{e.preventDefault();makeAudio();if(mode==='guest'||mode==='solo'||mode==='host')touch[action]=true;},{passive:false});
 }
 function bindHold(id,action){
   const el=$(id);let pointer=null,downAt=0;
   el.addEventListener('pointerdown',e=>{e.preventDefault();if(pointer!==null)return;pointer=e.pointerId;downAt=performance.now();makeAudio();if(mode==='guest'||mode==='solo'||mode==='host'){touch[action]=true;el.classList.add('held');}try{el.setPointerCapture(e.pointerId)}catch(_e){}},{passive:false});
-  function end(e){if(pointer!==e.pointerId)return;pointer=null;touch[action]=false;el.classList.remove('held');if(action==='shootHeld'&&performance.now()-downAt<80)touch.shootTap=true;}
+  function end(e){if(pointer!==e.pointerId)return;pointer=null;touch[action]=false;el.classList.remove('held');if(performance.now()-downAt<90){if(action==='shootHeld')touch.shootTap=true;else if(action==='passHeld')touch.passTap=true;else if(action==='crossHeld')touch.crossTap=true;}}
   el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);el.addEventListener('lostpointercapture',end);
 }
-bindHold('shootBtn','shootHeld');bindHold('sprintBtn','sprint');
-bindTap('passBtn','pass');bindTap('crossBtn','cross');bindTap('tackleBtn','tackle');bindTap('switchBtn','sw');
+bindHold('shootBtn','shootHeld');bindHold('passBtn','passHeld');bindHold('crossBtn','crossHeld');bindHold('sprintBtn','sprint');
+bindTap('tackleBtn','tackle');bindTap('switchBtn','sw');
 const joy=$('joystick'),stick=$('stick');let joyPointer=null;
 function resetStick(){stick.style.left='50%';stick.style.top='50%';}
 function moveStick(e){const box=joy.getBoundingClientRect(),cx=box.left+box.width/2,cy=box.top+box.height/2;const dx=e.clientX-cx,dy=e.clientY-cy,max=box.width*.34,d=length(dx,dy),f=d>max?max/d:1;touch.x=clamp(dx/max,-1,1);touch.y=clamp(dy/max,-1,1);if(d>max){touch.x=dx/d;touch.y=dy/d;}stick.style.left=`calc(50% + ${dx*f}px)`;stick.style.top=`calc(50% + ${dy*f}px)`;}

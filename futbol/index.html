@@ -160,6 +160,15 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
 @media(orientation:landscape) and (max-height:650px){body.is-game #game .pitch-radar{bottom:max(10px,env(safe-area-inset-bottom));width:130px;height:75px;opacity:.72}}
 @media(orientation:landscape) and (max-height:365px){body.is-game #game .pitch-radar{width:108px;height:62px}}
 
+
+/* Juego inmersivo: no activar zoom al apretar repetidamente en iOS. */
+#game, #game *, #game canvas, #game button {touch-action:none!important;-webkit-touch-callout:none}
+body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+#game button{-webkit-tap-highlight-color:transparent}
+@media(orientation:landscape) and (max-height:650px){
+ body.is-game #game .game-outer{height:100vh;height:100dvh}
+ body.is-game #game .game-canvas{width:100%!important;height:100%!important;object-fit:fill}
+}
 </style>
 </head>
 <body>
@@ -629,7 +638,7 @@ function createWorld(){
     gl3.toneMappingExposure=1.32;
     arena=new THREE.Scene();arena.background=new THREE.Color(0x91b6c1);
     arena.fog=new THREE.FogExp2(0xa4b6ad,.007);
-    cam3=new THREE.PerspectiveCamera(49,5/3,.15,290);
+    cam3=new THREE.PerspectiveCamera(43,5/3,.15,290);
     arena.add(new THREE.HemisphereLight(0xd5e9ff,0x244821,2.2));
     let sun=new THREE.DirectionalLight(0xffefd4,2.6);sun.position.set(-32,55,28);arena.add(sun);
     let ambient=new THREE.AmbientLight(0xffffff,.38);arena.add(ambient);
@@ -794,7 +803,7 @@ function resizeWorld(){
   const ratio=Math.min(window.devicePixelRatio||1,1.65);
   gl3.setPixelRatio(ratio);
   gl3.setSize(w,h,false);
-  cam3.aspect=w/h;cam3.fov=viewMode===0?49:42;cam3.updateProjectionMatrix();
+  cam3.aspect=w/h;cam3.fov=viewMode===0?43:36;cam3.updateProjectionMatrix();
 }
 function render(){
   if(!game||drawError)return;
@@ -838,9 +847,9 @@ function render(){
   const desiredX=clamp(xr(chosen.x)*.30,-12,12),desiredZ=clamp(zr(chosen.y)*.13,-5,5);
   let cx,cy,cz;
   // Cámara lateral estilo TV. Sigue el balón, no solamente al futbolista.
-  const ballFocus=clamp(xr(b.x)*.61,-31,31),depthFocus=clamp(zr(b.y)*.24,-8,8);
-  if(viewMode===0){cx=ballFocus+6;cy=45;cz=77;}
-  else{cx=ballFocus+4;cy=35;cz=58;}
+  const ballFocus=clamp(xr(b.x)*.83,-49,49),depthFocus=clamp(zr(b.y)*.34,-15,15);
+  if(viewMode===0){cx=ballFocus+2;cy=30.5;cz=46;}
+  else{cx=ballFocus+1;cy=24.5;cz=36;}
   if(!cam3.userData.ready){cam3.position.set(cx,cy,cz);cam3.userData.ready=true;}
   cam3.position.lerp(new THREE.Vector3(cx,cy,cz),clamp(dt*3.8,.02,.25));
   cam3.lookAt(ballFocus,0,depthFocus);
@@ -966,9 +975,14 @@ joy.addEventListener('pointermove',e=>{if(joyPointer===e.pointerId){e.preventDef
 function endStick(e){if(joyPointer!==e.pointerId)return;joyPointer=null;touch.x=touch.y=0;resetStick()}
 joy.addEventListener('pointerup',endStick);joy.addEventListener('pointercancel',endStick);
 window.addEventListener('pagehide',()=>{try{conn?.close()}catch(e){}});
-$('cameraBtn').onclick=()=>{viewMode=1-viewMode;cam3&&(cam3.fov=viewMode?42:49,cam3.updateProjectionMatrix());$('cameraBtn').textContent=viewMode?'📷 Cámara cerca':'📹 Cámara TV';};
+$('cameraBtn').onclick=()=>{viewMode=1-viewMode;cam3&&(cam3.fov=viewMode?36:43,cam3.updateProjectionMatrix());$('cameraBtn').textContent=viewMode?'📷 Cámara cerca':'📹 Cámara TV';};
 window.addEventListener('resize',resizeWorld);
 window.addEventListener('orientationchange',()=>setTimeout(resizeWorld,250));
+// Evitar doble toque y pellizco de zoom mientras se juega (iOS Safari/Chrome comparten WebKit).
+document.addEventListener('gesturestart',e=>{if(mode!=='menu'&&mode!=='lobby')e.preventDefault();},{passive:false});
+document.addEventListener('gesturechange',e=>{if(mode!=='menu'&&mode!=='lobby')e.preventDefault();},{passive:false});
+document.addEventListener('dblclick',e=>{if(mode!=='menu'&&mode!=='lobby'&&e.target.closest?.('#game'))e.preventDefault();},{passive:false});
+
 $('portraitOk').onclick=()=>document.body.classList.add('allow-portrait');
 // Si compartieron un enlace con ?room=123456, simplifica entrar desde el segundo celular.
 try{const params=new URL(location.href).searchParams,code=(params.get('room')||'').replace(/\D/g,'').slice(0,6);if(code.length===6){sourceCode=code;showLobby('join');$('codeInput').value=code;toast('Sala '+code+' detectada. Tocá “Unirme a la cancha” para entrar.');}}catch(e){}

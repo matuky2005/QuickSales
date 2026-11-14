@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#061524">
+  <meta name="description" content="NEPTUNO: Batalla Naval. Jugá solo, en pareja o en línea desde tu navegador.">
+  <title>NEPTUNO · Batalla Naval</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22%23061524%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2223%22%20fill%3D%22none%22%20stroke%3D%22%2330d7ce%22%20stroke-width%3D%223%22%20stroke-dasharray%3D%223%205%22%2F%3E%3Cpath%20d%3D%22M32%208v48M8%2032h48%22%20stroke%3D%22%2330d7ce%22%20stroke-opacity%3D%22.7%22%2F%3E%3Cpath%20d%3D%22m19%2035%2026-10-10%2026-4-16z%22%20fill%3D%22%23fa9863%22%2F%3E%3C%2Fsvg%3E%0A">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root{color-scheme:dark;--bg:#061522;--panel:#0d2534;--panel2:#0b2030;--line:#294756;--muted:#7e9aab;--white:#e8f4f6;--teal:#39d5cc;--orange:#ffab72;--red:#fd6b69;--blue:#478ba7;--cell:clamp(26px,4.1vw,42px)}
+*{box-sizing:border-box}html{min-height:100%;background:var(--bg)}body{margin:0;font-family:'DM Sans',sans-serif;color:var(--white);overflow-x:hidden;min-height:100vh;-webkit-tap-highlight-color:transparent}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.48}button:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:3px}a{color:var(--teal)}.background-sea{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1;background:radial-gradient(circle at 50% -30%,#183c4d 0,#061522 65%)}.background-sea:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#4b91aa09 1px,transparent 1px),linear-gradient(90deg,#4b91aa09 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 90%)}.glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.22}.glow-one{width:420px;height:420px;background:#008a97;right:-140px;top:12%}.glow-two{width:380px;height:380px;background:#244c96;left:-200px;bottom:0}.wave-lines{position:absolute;bottom:-70px;left:-30%;right:-30%;height:350px;transform:perspective(200px) rotateX(48deg);background:repeating-linear-gradient(0deg,transparent 0 26px,#2cbdc511 28px 30px);animation:seaDrift 16s linear infinite}@keyframes seaDrift{to{background-position:0 250px}}
+.app-shell{width:min(1320px,100% - 46px);min-height:100vh;margin:auto;display:flex;flex-direction:column}.site-header{height:100px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2e58675c;flex:none}.brand{padding:0;display:flex;align-items:center;gap:14px;color:inherit;border:0;background:none;text-align:left}.brand-logo{font-size:32px;border:2px solid var(--teal);width:48px;height:48px;display:grid;place-items:center;transform:rotate(45deg);color:var(--teal)}.brand-logo::first-letter{transform:rotate(-45deg)}.brand strong{display:block;font:800 30px/.9 'Barlow Condensed',sans-serif;letter-spacing:.13em}.brand small{display:block;color:var(--muted);letter-spacing:.24em;font-size:9px;margin-top:7px;font-weight:800}.header-right{display:flex;align-items:center;gap:26px}.live-label{letter-spacing:.19em;font-size:10px;font-weight:800;color:#8fa8b3}.pulse-dot{display:inline-block;width:7px;height:7px;background:var(--teal);border-radius:100%;margin-right:8px;box-shadow:0 0 13px var(--teal);animation:blinking 2s infinite}@keyframes blinking{50%{opacity:.35}}.icon-btn{background:#143243;border:1px solid #396071;color:var(--teal);width:39px;height:39px;border-radius:9px;font-size:21px}.icon-btn.off{color:#7593a4;text-decoration:line-through}.footer{display:flex;justify-content:space-between;gap:16px;font-size:9px;letter-spacing:.2em;color:#618398;border-top:1px solid #30526259;margin-top:auto;padding:24px 0}.footer b{color:var(--orange)}main{width:100%;flex:1}
+.eyebrow{font-size:11px;letter-spacing:.28em;font-weight:800;color:var(--teal);text-transform:uppercase}.eyebrow:before{content:'▰';font-size:10px;margin-right:10px}.menu-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center;padding:60px 0 30px;min-height:440px}.hero-title{font:900 clamp(64px,9.2vw,128px)/.78 'Barlow Condensed',sans-serif;letter-spacing:-.025em;margin:30px 0 22px;text-transform:uppercase}.hero-title em{font-style:normal;color:var(--teal)}.hero-description{color:#a8c0cd;max-width:460px;font-size:15px;line-height:1.75}.hero-sub{display:flex;gap:20px;color:#638b9d;font-size:10px;font-weight:800;letter-spacing:.14em;margin-top:32px}.hero-sub strong{color:var(--orange)}.hero-visual{height:360px;position:relative;isolation:isolate;display:grid;place-items:center}.sonar{width:330px;height:330px;border:1px solid #27768893;border-radius:50%;position:relative;background:repeating-radial-gradient(circle,#5cf5ee16 0 2px,transparent 2px 52px),radial-gradient(circle,#1cc7bb16,transparent 70%);box-shadow:0 0 80px #0cafbd14,inset 0 0 60px #0097a614}.sonar:before,.sonar:after{content:'';position:absolute;background:#2f8b9f59}.sonar:before{width:1px;top:0;bottom:0;left:50%}.sonar:after{height:1px;left:0;right:0;top:50%}.sonar-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,transparent 260deg,#46ded42a 335deg,transparent 360deg);animation:sweep 7s linear infinite}@keyframes sweep{to{transform:rotate(360deg)}}.hero-ship{position:absolute;width:320px;height:115px;filter:drop-shadow(0 27px 20px #010d19);transform:rotate(-26deg)}.hero-ship .hull{position:absolute;left:8%;top:41%;width:85%;height:42%;clip-path:polygon(1% 0,82% 0,100% 50%,82% 100%,1% 100%,0% 50%);background:linear-gradient(180deg,#41687c,#233e54 52%,#091d2e 53%,#183a49);border:2px solid #79c4c3}.hero-ship .deck{position:absolute;left:33%;top:47%;height:28%;width:38%;background:linear-gradient(150deg,#9bbec4,#396475);border-radius:4px;box-shadow:0 1px 0 2px #0b2030}.hero-ship .tower{position:absolute;left:46%;top:17%;height:48%;width:13%;background:linear-gradient(90deg,#4b7d89,#b4cace,#3d6776);clip-path:polygon(20% 0,80% 0,85% 100%,0 100%)}.hero-ship .cannon{position:absolute;left:65%;top:54%;width:23%;height:8%;background:var(--orange);border-radius:3px}.hero-coord{position:absolute;color:var(--teal);letter-spacing:.2em;font-size:10px;font-weight:800}.hero-coord.one{left:2%;top:12%}.hero-coord.two{right:0;bottom:8%}
+.section-heading{display:flex;align-items:end;justify-content:space-between;margin:24px 0 18px;gap:12px}.section-heading h2{font:800 27px 'Barlow Condensed',sans-serif;letter-spacing:.065em;margin:0}.section-heading span{font-size:10px;font-weight:800;color:#688fa0;letter-spacing:.19em}.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:35px}.mode-card{position:relative;overflow:hidden;text-align:left;border:1px solid #294e5f;background:linear-gradient(160deg,#102d3e,#0b1d2c);border-radius:11px;padding:25px;min-height:190px;color:inherit;transition:transform .2s,border-color .2s,background .2s}.mode-card:hover{transform:translateY(-5px);border-color:var(--teal);background:linear-gradient(160deg,#174357,#0b2533)}.mode-card .card-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:10px;border:1px solid #356576;color:var(--teal);font-size:25px;margin-bottom:24px}.mode-card h3{font:800 24px 'Barlow Condensed',sans-serif;letter-spacing:.05em;margin:0 0 8px}.mode-card p{color:#8ba9b8;font-size:12px;line-height:1.6;margin:0;max-width:245px}.mode-card .arrow{position:absolute;bottom:28px;right:28px;font-size:24px;color:var(--teal)}.tag{position:absolute;top:20px;right:20px;background:#174b53;color:#74ddd7;border-radius:5px;padding:6px 8px;font-size:9px;font-weight:900;letter-spacing:.12em}
+.panel{border:1px solid #2a5362;background:linear-gradient(148deg,#102d3c,#0b1e2c);border-radius:12px;padding:25px}.page-heading{margin:37px 0 28px;display:flex;align-items:end;justify-content:space-between;gap:18px}.page-heading h1{font:900 clamp(38px,5vw,58px)/.95 'Barlow Condensed',sans-serif;letter-spacing:.04em;margin:10px 0 0}.page-heading p{font-size:12px;color:#8eacb7;max-width:340px;line-height:1.6}.btn{padding:14px 22px;border:1px solid #3c6c79;border-radius:8px;background:#173847;color:#dff1f1;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;transition:transform .15s,background .15s,border-color .15s;min-height:45px}.btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--teal)}.btn-primary{border-color:var(--teal);color:#06252d;background:var(--teal);box-shadow:0 3px 28px #1ec9ba1a}.btn-primary:hover:not(:disabled){background:#73eee3}.btn-warning{background:#f7a675;border-color:#f7a675;color:#1a2a30}.btn-soft{background:transparent}.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.btn-full{width:100%}.tiny{font-size:11px;color:#89a3b1;line-height:1.65}.pill{display:inline-block;padding:7px 9px;background:#13394a;border:1px solid #2b6071;border-radius:100px;color:#71ddd4;font-size:10px;font-weight:800;letter-spacing:.09em}
+.setup-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(270px,.85fr);align-items:start;gap:20px;padding-bottom:35px}.board-panel{padding:22px;position:relative}.board-panel .panel-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}.panel-top h2{font:800 24px 'Barlow Condensed',sans-serif;letter-spacing:.08em;margin:0}.board-shell{display:grid;grid-template-columns:22px 1fr;grid-template-rows:18px 1fr;gap:4px;max-width:490px;margin:auto}.coord-top{grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));align-items:center;text-align:center;color:#6091a1;font:800 10px 'DM Sans',sans-serif}.coord-side{grid-column:1;grid-row:2;display:grid;grid-template-rows:repeat(10,minmax(0,1fr));align-items:center;text-align:center;color:#6091a1;font:800 10px 'DM Sans',sans-serif}.board{grid-column:2;grid-row:2;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));aspect-ratio:1;width:100%;background:#0c3041;border:1px solid #4c8898;box-shadow:inset 0 0 27px #002e40,0 10px 35px #00000038;position:relative;overflow:hidden}.cell{appearance:none;position:relative;min-width:0;min-height:0;padding:0;margin:0;border:1px solid #3c71804f;background:linear-gradient(130deg,#155062a8,#113748c4);border-radius:0;color:inherit;transition:background .13s;overflow:hidden;touch-action:manipulation;outline-offset:-2px}.board.enemy .cell:not(.hit):not(.miss):not(.sunk):hover,.board.placement .cell:hover{background:#328a8b96;box-shadow:inset 0 0 0 1px #72f5df}.board.enemy .cell:disabled{opacity:1;cursor:default}.cell.ship{background:linear-gradient(110deg,#40647a,#66879a 56%,#18394a);border:1px solid #86a5a77c;box-shadow:inset 0 -3px 0 #113445,inset 0 3px 0 #acc6c124}.cell.ship:before{content:'';position:absolute;inset:28%;border:2px solid #abc4c4a6;border-radius:50%;background:#233f51}.cell.ship:after{content:'';position:absolute;inset:0;border-top:3px solid #d5e5de33;pointer-events:none}.cell.preview{background:#35bba896;box-shadow:inset 0 0 0 1px var(--teal)}.cell.preview.invalid{background:#df686b99;box-shadow:inset 0 0 0 1px #ff8787}.cell.hit,.cell.sunk{background:radial-gradient(circle,#b54b4c,#803e47 65%,#3f2f42);border-color:#f4947a82}.cell.hit:after,.cell.sunk:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;color:#ffd4a0;font-size:clamp(20px,2.5vw,32px);font-weight:900;text-shadow:0 0 14px #f9a668;animation:impact .35s ease-out}.cell.sunk{background:radial-gradient(circle,#c44736,#6c282f 69%)}.cell.miss:after{content:'';width:24%;height:24%;position:absolute;top:38%;left:38%;border-radius:50%;background:#cee8e3;box-shadow:0 0 0 3px #c0dfd438,0 0 12px #b9edeb;animation:appear .35s ease-out}.cell.shot-last{box-shadow:inset 0 0 0 2px #fff7bd}.cell:focus-visible{outline:2px solid white;z-index:2}@keyframes impact{from{transform:scale(3);opacity:.4}to{transform:scale(1);opacity:1}}@keyframes appear{from{transform:scale(.1);opacity:0}to{transform:scale(1);opacity:1}}.board.compact{max-width:435px}.radar-text{display:flex;align-items:center;justify-content:space-between;color:#618d9e;font-size:9px;letter-spacing:.16em;font-weight:800;margin-top:13px}.radar-text b{color:var(--teal)}
+.fleet-list{display:grid;gap:10px;margin:19px 0}.fleet-option{width:100%;min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:15px;text-align:left;background:#103243;border:1px solid #315968;border-radius:8px;padding:12px 14px;color:#dceced}.fleet-option:hover:not(:disabled),.fleet-option.selected{border-color:var(--teal);background:#1b4b54}.fleet-option.placed{opacity:.48}.fleet-option strong{font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.05em;display:block}.fleet-option small{display:block;color:#8fabb4;font-size:10px}.ship-preview{display:flex;gap:3px;align-items:center;justify-content:flex-end;flex-shrink:0}.ship-preview i{height:11px;width:20px;background:linear-gradient(180deg,#b6c9c5,#527789);border:1px solid #86a9ad;display:inline-block;box-shadow:0 3px 0 #163b48}.ship-preview i:first-child{border-radius:12px 1px 1px 12px}.ship-preview i:last-child{border-radius:1px 12px 12px 1px}.panel-heading{font:800 23px 'Barlow Condensed',sans-serif;letter-spacing:.06em;margin:0}.setup-aside .panel+.panel{margin-top:17px}.line{border:0;border-top:1px solid #375a6796;margin:22px 0}.counter{color:var(--teal);font-weight:800}
+.battle-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start;padding-bottom:28px}.battle-layout .board-panel{min-width:0}.battle-layout .board-shell{max-width:505px}.battle-stats{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.stat-chip{border:1px solid #2f5363;background:#092434;padding:7px 10px;border-radius:5px;color:#90b4c3;font-size:10px;font-weight:800;letter-spacing:.08em}.stat-chip strong{color:#fff}.turn-banner{margin:20px 0 16px;display:flex;align-items:center;gap:18px;background:linear-gradient(100deg,#1b5258,#103343 55%,#103343);border:1px solid #31656d;border-left:4px solid var(--teal);border-radius:7px;padding:14px 19px;min-height:66px}.turn-banner.inactive{border-left-color:var(--orange);background:linear-gradient(100deg,#3a3940,#17313e)}.turn-dot{height:12px;width:12px;background:var(--teal);border-radius:100%;box-shadow:0 0 0 6px #3ed9d31c;flex:none}.turn-banner.inactive .turn-dot{background:var(--orange);box-shadow:none}.turn-banner strong{display:block;font:800 20px 'Barlow Condensed',sans-serif;letter-spacing:.08em}.turn-banner span{color:#9bbdc8;font-size:11px}.battle-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:28px}.battle-head h1{font:900 44px 'Barlow Condensed',sans-serif;letter-spacing:.04em;margin:4px 0}.battle-log{margin:0 0 22px;background:#0a2231;border:1px solid #2b4c5a;padding:13px 15px;border-radius:7px;color:#8ca9b5;font-size:11px;min-height:43px}.battle-log strong{color:#e6f8ee}.legend{display:flex;align-items:center;gap:16px;color:#9bb5be;flex-wrap:wrap;font-size:10px;margin-top:14px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;background:#cfdfe4}.legend .hit-dot{background:var(--red)}.legend .ship-dot{background:#8baab1}
+.lobby-wrap{max-width:690px;margin:40px auto 55px}.lobby-wrap h1{font:900 clamp(42px,6vw,68px)/1 'Barlow Condensed',sans-serif;letter-spacing:.04em}.lobby-wrap .panel{padding:30px}.room-code{font:900 clamp(21px,4vw,35px) 'Barlow Condensed',sans-serif;word-break:break-all;letter-spacing:.03em;color:var(--teal);background:#081f2c;border:1px dashed #356b74;border-radius:8px;padding:20px;margin:18px 0}.room-input{display:block;width:100%;border:1px solid #3b6977;background:#071d2a;color:#f1ffff;padding:17px;border-radius:8px;font-size:17px;font-weight:700;margin:10px 0 16px;outline:none}.room-input:focus{border-color:var(--teal)}.spinner{width:20px;height:20px;border-radius:50%;border:2px solid #4c7584;border-top-color:var(--teal);animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}@keyframes spin{to{transform:rotate(360deg)}}.status-list{color:#9db6c0;font-size:12px;line-height:2}.status-list b{color:var(--teal)}
+.cover-screen{min-height:470px;display:grid;place-items:center;padding:35px 0}.cover-inner{width:min(490px,100%);text-align:center;padding:48px 30px;border:1px solid #3c6572;background:linear-gradient(#122f3e,#081d2b);border-radius:12px;box-shadow:0 25px 80px #0005}.cover-symbol{display:grid;place-items:center;font-size:54px;margin:0 auto 18px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,#155762,#12303e);border:1px dashed #4c9b9e}.cover-inner h1{font:900 48px 'Barlow Condensed',sans-serif;margin:10px 0 15px}.cover-inner p{line-height:1.7;font-size:13px;color:#9cb7c3;margin:0 0 26px}.result{min-height:500px;display:grid;align-items:center;text-align:center}.result .result-card{max-width:580px;margin:48px auto;padding:50px 34px;border:1px solid #3f7181;background:radial-gradient(circle at 50% 0,#205358,#0c2230 70%);border-radius:13px}.result.win .result-card{border-color:#41ccc0}.result.lose .result-card{border-color:#ce746a}.result-icon{font-size:72px;filter:drop-shadow(0 0 22px #28c9bd80)}.result h1{font:900 clamp(48px,9vw,86px)/.95 'Barlow Condensed',sans-serif;margin:20px 0 12px}.result p{color:#aac2ce;font-size:13px;line-height:1.7}.result .btn-row{justify-content:center;margin-top:30px}.score-line{display:flex;justify-content:center;gap:28px;margin:26px auto 0;color:#88a8b6;font-size:11px;letter-spacing:.08em}.score-line strong{display:block;font:800 35px 'Barlow Condensed',sans-serif;color:var(--white)}
+#toast-root{position:fixed;top:105px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(95%,450px)}.toast{background:#0d3444;box-shadow:0 8px 35px #020b1399;border:1px solid #54b5b5;color:#e0ffff;border-radius:8px;padding:12px 18px;font-size:12px;line-height:1.4;text-align:center;animation:toastIn .24s ease-out}.toast.warning{border-color:var(--orange)}@keyframes toastIn{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}.burst{position:fixed;z-index:30;pointer-events:none;width:12px;height:12px;border-radius:50%;border:3px solid var(--teal);animation:burst .7s ease-out forwards}.burst.hit{border-color:#ff9665;box-shadow:0 0 10px #ff7630}.particle{position:fixed;z-index:31;pointer-events:none;width:5px;height:5px;border-radius:50%;background:#ffb97d;animation:particle .7s ease-out forwards}@keyframes burst{to{width:100px;height:100px;opacity:0;transform:translate(-44px,-44px)}}@keyframes particle{to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.4)}}
+@media(max-width:900px){.app-shell{width:min(100% - 28px,740px)}.menu-hero{grid-template-columns:1fr;min-height:unset;padding:43px 0 13px}.hero-title{font-size:88px}.hero-visual{height:270px;grid-row:1}.sonar{height:250px;width:250px}.hero-ship{transform:rotate(-26deg) scale(.77)}.mode-grid{gap:11px}.mode-card{padding:18px}.setup-layout{grid-template-columns:1fr}.battle-layout{grid-template-columns:1fr;gap:14px}.battle-layout .board-shell{max-width:480px}.battle-head{margin-top:18px}.setup-aside{display:grid;grid-template-columns:1fr 1fr;gap:14px}.setup-aside .panel+.panel{margin:0}}
+@media(max-width:560px){.app-shell{width:calc(100% - 24px)}.site-header{height:75px}.brand-logo{width:35px;height:35px;font-size:23px}.brand{gap:11px}.brand strong{font-size:25px}.brand small{font-size:7px;letter-spacing:.16em}.header-right{gap:10px}.live-label{font-size:0}.live-label .pulse-dot{margin-right:0}.icon-btn{width:35px;height:35px}.menu-hero{padding-top:16px}.hero-visual{height:215px}.sonar{width:190px;height:190px}.hero-ship{transform:rotate(-26deg) scale(.6)}.hero-coord{font-size:8px}.hero-title{font-size:68px;margin:22px 0 16px}.hero-description{font-size:12px;line-height:1.65}.hero-sub{font-size:9px;margin-top:20px;gap:11px}.section-heading{margin-top:20px}.section-heading h2{font-size:24px}.section-heading span{font-size:8px}.mode-grid{grid-template-columns:1fr;gap:9px}.mode-card{min-height:100px;padding:15px;display:grid;grid-template-columns:47px 1fr;column-gap:13px;align-content:center}.mode-card .card-icon{grid-row:1/3;margin:0;width:44px;height:44px;font-size:20px}.mode-card h3{font-size:22px;margin:0 0 3px}.mode-card p{font-size:10px;padding-right:16px}.mode-card .arrow{font-size:18px;right:14px;bottom:36px}.mode-card .tag{top:8px;right:9px;padding:3px 6px;font-size:7px}.footer{font-size:7px;letter-spacing:.1em;padding:17px 0}.page-heading{margin:24px 0 15px}.page-heading h1{font-size:41px}.page-heading p{display:none}.board-panel{padding:12px}.panel-top h2{font-size:20px}.panel-top .pill{font-size:9px}.board-shell{grid-template-columns:17px 1fr;grid-template-rows:14px 1fr;gap:2px}.coord-top,.coord-side{font-size:8px}.radar-text{font-size:8px;letter-spacing:.05em;margin-top:10px}.setup-aside{display:block}.setup-aside .panel+.panel{margin-top:12px}.panel{padding:17px}.fleet-list{gap:6px;margin:12px 0}.fleet-option{min-height:52px;padding:8px 11px}.fleet-option strong{font-size:17px}.ship-preview i{width:15px;height:9px}.btn{padding:11px 13px;font-size:10px;min-height:41px}.btn-row{gap:7px}.battle-head h1{font-size:37px}.turn-banner{min-height:58px;margin:12px 0;padding:11px 13px}.turn-banner strong{font-size:19px}.turn-banner span{font-size:10px}.battle-layout .board-panel{max-width:100%}.battle-log{margin-bottom:14px}.lobby-wrap{margin:24px auto}.lobby-wrap .panel{padding:19px}.result .result-card{padding:36px 20px}.score-line{gap:19px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+</style>
+  <script async src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+
+</head>
+<body>
+  <div class="background-sea" aria-hidden="true"><div class="glow glow-one"></div><div class="glow glow-two"></div><div class="wave-lines"></div></div>
+  <div class="app-shell">
+    <header class="site-header">
+      <button class="brand" data-action="menu" aria-label="Volver al menú"><span class="brand-logo">✦</span><span><strong>NEPTUNO</strong><small>BATTLESHIP COMMAND</small></span></button>
+      <div class="header-right"><div class="live-label"><span class="pulse-dot"></span> SISTEMA OPERATIVO</div><button class="icon-btn" id="sound-toggle" data-action="sound" aria-label="Activar o desactivar sonido" title="Sonido">♪</button></div>
+    </header>
+    <main id="app" aria-live="polite"></main>
+    <footer class="footer"><span>NEPTUNO <b> // </b> OPERACIONES NAVALES</span><span>EST. 2026 <b> · </b> V1.0</span></footer>
+  </div>
+  <div id="toast-root" role="status" aria-live="polite"></div>
+<script>
+/* NEPTUNO — Battleship, static-host friendly. No build process needed. */
+(() => {
+  'use strict';
+  const SIZE = 10;
+  const FLEET = [
+    { name: 'PORTAAVIONES', size: 5, code: 'CV-05' },
+    { name: 'ACORAZADO', size: 4, code: 'BB-04' },
+    { name: 'DESTRUCTOR', size: 3, code: 'DD-03' },
+    { name: 'SUBMARINO', size: 3, code: 'SS-03' },
+    { name: 'PATRULLERO', size: 2, code: 'PT-02' }
+  ];
+  const app = document.getElementById('app');
+  const toastRoot = document.getElementById('toast-root');
+  const soundBtn = document.getElementById('sound-toggle');
+  const state = {
+    stage: 'menu', mode: null, players: [], localId: 0, placer: 0,
+    ready: [false, false], selected: 0, vertical: false,
+    turn: 0, turnCount: 1, lastShot: null, log: 'Los sistemas están listos.',
+    winner: null, curtain: false, pendingShot: null, onlineCode: '',
+    connection: null, peer: null, joining: false, difficulty: 'normal',
+    aiQueue: [], aiHits: [], aiRunning: false, muted: (() => { try { return localStorage.getItem('neptuno-muted') === 'true'; } catch (_) { return false; } })(),
+    timerId: null
+  };
+  const coord = (x, y) => String.fromCharCode(65 + x) + String(y + 1);
+  const key = (x, y) => `${x},${y}`;
+  const inRange = (x, y) => x >= 0 && y >= 0 && x < SIZE && y < SIZE;
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const rand = n => Math.floor(Math.random() * n);
+  const isOnline = () => state.mode === 'online';
+  let audioCtx;
+  function sound(kind) {
+    if (state.muted) return;
+    try {
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      audioCtx ||= new Audio();
+      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+      const base = audioCtx.currentTime;
+      const patterns = {
+        click: [[450, 270, .055, 'sine', .055]],
+        place: [[320, 520, .12, 'triangle', .075], [520, 670, .1, 'sine', .045, .06]],
+        rotate: [[720, 480, .10, 'sine', .045]],
+        shoot: [[270, 60, .23, 'sawtooth', .15], [100, 52, .28, 'triangle', .085, .07]],
+        miss: [[430, 170, .16, 'sine', .1], [290, 150, .18, 'sine', .045, .07]],
+        hit: [[180, 50, .32, 'sawtooth', .18], [390, 90, .24, 'triangle', .1, .07]],
+        sunk: [[280, 65, .50, 'sawtooth', .13], [420, 90, .42, 'triangle', .1, .13]],
+        win: [[320, 320, .17, 'sine', .07], [410, 410, .18, 'sine', .09, .15], [510, 510, .18, 'sine', .09, .30], [710, 710, .45, 'sine', .08, .45]],
+        lose: [[230, 185, .4, 'triangle', .08], [185, 110, .5, 'sawtooth', .06, .34]]
+      };
+      (patterns[kind] || patterns.click).forEach(([from, to, duration, type, vol, delay = 0]) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = type; o.frequency.setValueAtTime(from, base + delay);
+        o.frequency.exponentialRampToValueAtTime(Math.max(35, to), base + delay + duration);
+        g.gain.setValueAtTime(.0001, base + delay);
+        g.gain.exponentialRampToValueAtTime(Math.max(.001, vol), base + delay + .018);
+        g.gain.exponentialRampToValueAtTime(.0001, base + delay + duration);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(base + delay); o.stop(base + delay + duration + .02);
+      });
+    } catch (err) { console.warn('Audio no disponible:', err); }
+  }
+  let toastTimer;
+  function toast(message, warning = false) {
+    clearTimeout(toastTimer);
+    toastRoot.innerHTML = `<div class="toast ${warning ? 'warning' : ''}">${escapeHtml(message)}</div>`;
+    toastTimer = setTimeout(() => toastRoot.innerHTML = '', 3000);
+  }
+  function createPlayer() { return { ships: [], occupied: {}, ownShots: {}, fired: {} }; }
+  function occupiedKeys(ships) { const occ = {}; ships.forEach(s => s.cells.forEach(k => occ[k] = s.id)); return occ; }
+  function canPlace(p, x, y, size, vertical) {
+    for (let i = 0; i < size; i++) {
+      const cx = x + (vertical ? 0 : i), cy = y + (vertical ? i : 0);
+      if (!inRange(cx, cy) || p.occupied[key(cx, cy)] !== undefined) return false;
+    }
+    return true;
+  }
+  function place(p, index, x, y, vertical) {
+    const def = FLEET[index];
+    if (p.ships.some(s => s.id === index) || !canPlace(p, x, y, def.size, vertical)) return false;
+    const cells = Array.from({ length: def.size }, (_, i) => key(x + (vertical ? 0 : i), y + (vertical ? i : 0)));
+    p.ships.push({ id: index, name: def.name, size: def.size, cells, hits: 0 });
+    p.occupied = occupiedKeys(p.ships);
+    return true;
+  }
+  function randomFleet(p) {
+    p.ships = []; p.occupied = {}; p.ownShots = {}; p.fired = {};
+    for (let i = 0; i < FLEET.length; i++) {
+      let success = false;
+      for (let n = 0; n < 600 && !success; n++) success = place(p, i, rand(SIZE), rand(SIZE), Math.random() > .5);
+      if (!success) { randomFleet(p); return; }
+    }
+  }
+  function getPlacementPlayer() { return state.players[isOnline() ? state.localId : state.placer]; }
+  function nextUnplaced(player) { return FLEET.findIndex((_, idx) => !player.ships.some(s => s.id === idx)); }
+  function fleetDone(player) { return player && player.ships.length === FLEET.length; }
+  function aliveShips(player) { return player ? player.ships.filter(s => s.hits < s.size).length : 5; }
+  function shotsCount(map) { return Object.keys(map || {}).length; }
+  function resetGame(mode) {
+    clearTimeout(state.timerId);
+    destroyConnection();
+    state.stage = mode === 'online' ? 'lobby' : 'placement';
+    state.mode = mode; state.players = [createPlayer(), createPlayer()];
+    state.localId = 0; state.placer = 0; state.ready = [false, false];
+    state.selected = 0; state.vertical = false; state.turn = 0; state.turnCount = 1;
+    state.lastShot = null; state.log = 'Esperando primera coordenada.';
+    state.winner = null; state.curtain = false; state.pendingShot = null;
+    state.aiQueue = []; state.aiHits = []; state.aiRunning = false;
+    state.onlineCode = ''; state.joining = false;
+    if (mode === 'solo') randomFleet(state.players[1]);
+    render();
+  }
+  function destroyConnection() {
+    const c = state.connection, p = state.peer;
+    state.connection = null; state.peer = null;
+    if (c) { try { c.close(); } catch (_) {} }
+    if (p) { try { p.destroy(); } catch (_) {} }
+  }
+  function openMenu() {
+    resetGame(null); state.stage = 'menu'; state.mode = null;
+    render();
+  }
+  function renderMenu() {
+    return `<section class="menu-hero">
+      <div class="hero-content">
+        <div class="eyebrow">CENTRO DE COMBATE NAVAL · V1.0</div>
+        <h1 class="hero-title">DOMINÁ<br>EL <em>OCÉANO.</em></h1>
+        <p class="hero-description">Posicioná tu flota. Rastreá al enemigo. Dispará con precisión. Cada movimiento cuenta en esta batalla de estrategia naval.</p>
+        <div class="hero-sub"><span><strong>10 × 10</strong> CUADRÍCULA</span><span><strong>05</strong> BUQUES</span><span><strong>03</strong> MODOS</span></div>
+      </div>
+      <div class="hero-visual" aria-hidden="true"><div class="sonar"><div class="sonar-sweep"></div></div><div class="hero-ship"><div class="hull"></div><div class="tower"></div><div class="deck"></div><div class="cannon"></div></div><div class="hero-coord one">LAT 40° 28′ N</div><div class="hero-coord two">SECTOR 08 // EN VIVO</div></div>
+    </section>
+    <div class="section-heading"><h2>SELECCIONÁ TU MISIÓN</h2><span>03 MODALIDADES DISPONIBLES</span></div>
+    <section class="mode-grid">
+      <button class="mode-card" data-action="solo"><span class="card-icon">◎</span><h3>1 JUGADOR</h3><p>Enfrentate a la inteligencia artificial y hundí la flota enemiga.</p><span class="arrow">↗</span></button>
+      <button class="mode-card" data-action="local"><span class="card-icon">♟</span><h3>2 JUGADORES</h3><p>Compartí un dispositivo y enfrentate a un amigo por turnos.</p><span class="arrow">↗</span></button>
+      <button class="mode-card" data-action="online"><span class="card-icon">⌁</span><h3>MULTIJUGADOR ONLINE</h3><p>Creá una sala privada y jugá a distancia con un enlace.</p><span class="tag">P2P</span><span class="arrow">↗</span></button>
+    </section>`;
+  }
+  function boardMarkup(player, type, options = {}) {
+    const { showShips = false, interactive = false, last = null } = options;
+    const fired = type === 'enemy' ? player?.fired || {} : player?.ownShots || {};
+    let cells = '';
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) {
+      const k = key(x, y), result = fired[k];
+      const ship = showShips && player && player.occupied[k] !== undefined;
+      const sunk = result === 'sunk';
+      const status = sunk ? 'sunk' : result === 'hit' ? 'hit' : result === 'miss' ? 'miss' : '';
+      const className = `cell ${ship && !result ? 'ship' : ''} ${status} ${last === k ? 'shot-last' : ''}`;
+      const attrs = interactive ? `data-cell="${type}" data-x="${x}" data-y="${y}"` : '';
+      const disabled = interactive ? '' : 'disabled';
+      cells += `<button class="${className}" ${attrs} ${disabled} aria-label="${coord(x, y)}${status ? ', ' + status : ''}" title="${coord(x, y)}"></button>`;
+    }
+    return `<div class="board-shell"><div class="coord-top">${Array.from({ length: SIZE }, (_, i) => `<span>${String.fromCharCode(65 + i)}</span>`).join('')}</div><div class="coord-side">${Array.from({ length: SIZE }, (_, i) => `<span>${i + 1}</span>`).join('')}</div><div class="board ${type}" data-board="${type}">${cells}</div></div>`;
+  }
+  function radarFoot(note = 'SONAR EN LÍNEA') { return `<div class="radar-text"><span>▣ ${note}</span><span><b>●</b> SECTOR ATLÁNTICO 01</span></div>`; }
+  function renderPlacement() {
+    if (state.curtain) return renderCurtain();
+    const p = getPlacementPlayer();
+    const done = fleetDone(p);
+    const isReady = state.ready[isOnline() ? state.localId : state.placer];
+    const label = state.mode === 'local' ? `COMANDANTE ${state.placer + 1}` : state.mode === 'online' ? `JUGADOR ${state.localId + 1} · ONLINE` : 'MISIÓN INDIVIDUAL';
+    const fleet = FLEET.map((item, i) => {
+      const placed = p.ships.some(s => s.id === i);
+      return `<button class="fleet-option ${placed ? 'placed' : ''} ${state.selected === i ? 'selected' : ''}" data-action="select-ship" data-index="${i}" ${placed || isReady ? 'disabled' : ''}>
+        <span><strong>${item.name}</strong><small>${item.code} · ${item.size} CASILLAS</small></span><span class="ship-preview">${Array.from({ length: item.size }, () => '<i></i>').join('')}</span></button>`;
+    }).join('');
+    return `<div class="page-heading"><div><div class="eyebrow">OPERACIÓN 01 · DESPLIEGUE</div><h1>PREPARÁ TU FLOTA</h1></div><p>Ubicá los cinco barcos en el mapa. Podés girarlos, elegir cada barco o desplegarlos automáticamente.</p></div>
+      <section class="setup-layout">
+      <div class="panel board-panel"><div class="panel-top"><h2>AGUAS ALIADAS</h2><span class="pill">${label}</span></div>
+      ${boardMarkup(p, 'placement', { showShips: true, interactive: !isReady })}
+      ${radarFoot('ZONA DE DESPLIEGUE')}</div>
+      <div class="setup-aside">
+      <div class="panel"><div class="eyebrow">INVENTARIO NAVAL</div><h2 class="panel-heading" style="margin-top:9px">TU ESCUADRÓN <span class="counter">${p.ships.length}/5</span></h2>
+      <div class="fleet-list">${fleet}</div><div class="btn-row"><button class="btn" data-action="rotate" ${isReady ? 'disabled' : ''}>↻ GIRAR · ${state.vertical ? 'VERTICAL' : 'HORIZONTAL'}</button><button class="btn btn-soft" data-action="random" ${isReady ? 'disabled' : ''}>⤨ ALEATORIO</button><button class="btn btn-soft" data-action="clear" ${isReady ? 'disabled' : ''}>LIMPIAR</button></div>
+      <hr class="line"><button class="btn btn-primary btn-full" data-action="ready" ${!done || isReady ? 'disabled' : ''}>${isReady ? '✓ FLOTA CONFIRMADA' : 'CONFIRMAR DESPLIEGUE →'}</button>
+      ${isReady ? '<p class="tiny">⌛ Esperando a que el otro comandante prepare su flota…</p>' : `<p class="tiny">${done ? '¡Todos los barcos posicionados! Confirmá para empezar.' : 'Elegí un barco y tocá el tablero para ubicarlo. Presioná R para girar.'}</p>`}
+      </div>
+      <div class="panel"><div class="eyebrow">INFORME DE INTELIGENCIA</div><p class="tiny" style="margin-bottom:0">Los barcos pueden colocarse horizontal o verticalmente. No se pueden superponer. Ganás al hundir los cinco barcos rivales.</p></div></div></section>`;
+  }
+  function renderCurtain() {
+    const name = state.stage === 'placement' ? `COMANDANTE ${state.placer + 1}` : `COMANDANTE ${state.turn + 1}`;
+    const description = state.stage === 'placement' ? 'Es tu turno de posicionar la flota. El otro jugador no debe ver el tablero.' : 'Es tu turno de disparar. No mires el tablero de tu rival cuando te pase el dispositivo.';
+    return `<section class="cover-screen"><div class="cover-inner"><div class="cover-symbol">⚓</div><div class="eyebrow">TRASPASO DE MANDO</div><h1>TURNO DEL ${name}</h1><p>${description}</p><button class="btn btn-primary" data-action="reveal">DESBLOQUEAR PANTALLA →</button></div></section>`;
+  }
+  function renderBattle() {
+    if (state.curtain) return renderCurtain();
+    const me = state.mode === 'local' ? state.turn : state.localId;
+    const opp = 1 - me;
+    const mine = state.players[me];
+    const enemy = isOnline() ? null : state.players[opp];
+    const enemyData = isOnline() ? mine : enemy;
+    // In local/solo, hits on enemy board are kept on the acting player's fired map.
+    const enemyShots = mine.fired;
+    const enemyBoard = { fired: enemyShots };
+    const ownTurn = state.turn === me;
+    const canShoot = ownTurn && !state.pendingShot && !state.aiRunning && state.stage === 'battle';
+    const isWaiting = !ownTurn || state.pendingShot || state.aiRunning;
+    const status = state.pendingShot ? 'DISPARO EN CURSO…' : state.aiRunning ? 'EL ENEMIGO ESTÁ APUNTANDO…' : ownTurn ? 'TU TURNO — ELEGÍ UN OBJETIVO' : 'ESPERANDO FUEGO ENEMIGO';
+    const helper = state.pendingShot ? 'Aguardando respuesta del rival.' : ownTurn ? 'Tocá una casilla del radar enemigo para disparar.' : 'Defendé tu flota. Es el turno del adversario.';
+    const lastEnemy = state.lastShot?.target === opp ? state.lastShot.k : null;
+    const lastOwn = state.lastShot?.target === me ? state.lastShot.k : null;
+    return `<div class="battle-head"><div><div class="eyebrow">OPERACIÓN 02 · COMBATE</div><h1>EN ZONA DE FUEGO</h1></div><div class="battle-stats"><span class="stat-chip">RONDA <strong>${state.turnCount.toString().padStart(2, '0')}</strong></span><span class="stat-chip">TU FLOTA <strong>${aliveShips(mine)}/5</strong></span><button class="btn btn-soft" data-action="menu">SALIR</button></div></div>
+      <div class="turn-banner ${isWaiting ? 'inactive' : ''}"><span class="turn-dot"></span><div><strong>${status}</strong><span>${helper}</span></div></div>
+      <section class="battle-layout"><div class="panel board-panel"><div class="panel-top"><h2>RADAR ENEMIGO</h2><span class="pill">OBJETIVO ALFA</span></div>
+      ${boardMarkup(enemyBoard, 'enemy', { interactive: canShoot, last: lastEnemy })}
+      ${radarFoot('OBJETIVOS MARCADOS: ' + shotsCount(enemyShots))}
+      <div class="legend"><span><i class="hit-dot"></i>IMPACTO</span><span><i></i>AGUA</span><span>Tocá para disparar</span></div>
+      </div><div class="panel board-panel"><div class="panel-top"><h2>TU FLOTA</h2><span class="pill">BASE ALIADA</span></div>
+      ${boardMarkup(mine, 'own', { showShips: true, last: lastOwn })}
+      ${radarFoot('BUQUES EN SERVICIO: ' + aliveShips(mine))}
+      <div class="legend"><span><i class="ship-dot"></i>TU BARCO</span><span><i class="hit-dot"></i>RECIBIDO</span><span><i></i>AGUA</span></div>
+      </div></section><div class="battle-log">▸ <strong>BITÁCORA:</strong> ${escapeHtml(state.log)}</div>`;
+  }
+  function renderLobby() {
+    return `<div class="lobby-wrap"><div class="eyebrow">PROTOCOLO P2P · CANAL SEGURO</div><h1>CREAR UNA SALA</h1><div class="panel">
+      <div class="eyebrow">CÓDIGO DE ACCESO</div><div class="room-code">${escapeHtml(state.onlineCode || 'ESTABLECIENDO ENLACE…')}</div>
+      <div class="btn-row"><button class="btn btn-primary" data-action="copy-link" ${!state.onlineCode ? 'disabled' : ''}>↗ COPIAR INVITACIÓN</button><button class="btn" data-action="copy-code" ${!state.onlineCode ? 'disabled' : ''}>COPIAR CÓDIGO</button></div>
+      <hr class="line"><div class="status-list"><div>✓ Sala creada en tu navegador.</div><div><span class="spinner"></span> Esperando al segundo jugador…</div><div>Compartí el enlace con una persona. Cuando se conecte, ambos podrán acomodar sus barcos.</div></div>
+      <button class="btn btn-soft" data-action="menu" style="margin-top:20px">← CANCELAR</button>
+      </div></div>`;
+  }
+  function renderJoin() {
+    return `<div class="lobby-wrap"><div class="eyebrow">PROTOCOLO P2P · UNIÓN DE FLOTAS</div><h1>UNIRSE A UNA SALA</h1><div class="panel"><h2 class="panel-heading">INGRESÁ EL CÓDIGO</h2>
+      <p class="tiny">Pedile al anfitrión el código de su sala, o abrí directamente su enlace de invitación.</p>
+      <input class="room-input" id="room-input" aria-label="Código de la sala" placeholder="Ej: 4f2c..." maxlength="180" value="${escapeHtml(state.onlineCode)}" autocapitalize="off" autocomplete="off" spellcheck="false">
+      <div class="btn-row"><button class="btn btn-primary" data-action="connect" ${state.joining ? 'disabled' : ''}>${state.joining ? 'CONECTANDO…' : 'CONECTAR →'}</button><button class="btn btn-soft" data-action="menu">← VOLVER</button></div>
+      <p class="tiny" style="margin-top:18px">Requiere conexión a internet. Algunas redes corporativas o móviles pueden bloquear la comunicación directa entre dispositivos.</p></div></div>`;
+  }
+  function renderOnlineChoose() {
+    return `<div class="lobby-wrap"><div class="eyebrow">COMBATE CON AMIGOS</div><h1>MULTIJUGADOR ONLINE</h1><div class="panel"><p class="tiny">Jugá a distancia desde dos celulares o computadoras. El anfitrión genera un enlace para invitar al otro jugador.</p><div class="btn-row" style="margin-top:25px"><button class="btn btn-primary" data-action="host">+ CREAR SALA</button><button class="btn" data-action="join">↗ UNIRSE A SALA</button></div><hr class="line"><button class="btn btn-soft" data-action="menu">← MENÚ PRINCIPAL</button></div></div>`;
+  }
+  function renderResult() {
+    const win = state.mode === 'local' ? true : state.winner === state.localId;
+    const title = state.mode === 'local' ? `GANÓ EL COMANDANTE ${state.winner + 1}` : win ? '¡VICTORIA NAVAL!' : 'MISIÓN FALLIDA';
+    const subtitle = state.mode === 'local' ? 'Una flota desapareció del radar. ¡Partida terminada!' : win ? 'La flota enemiga está completamente hundida. El océano es tuyo.' : 'Tu escuadrón fue hundido. Reagrupate y volvé al combate.';
+    const p = state.mode === 'local' ? state.players[state.winner] : state.players[state.localId];
+    return `<section class="result ${win ? 'win' : 'lose'}"><div class="result-card"><div class="result-icon">${win ? '♛' : '⚑'}</div><div class="eyebrow">INFORME FINAL DE OPERACIONES</div><h1>${title}</h1><p>${subtitle}</p><div class="score-line"><div><strong>${shotsCount(p.fired)}</strong>DISPAROS</div><div><strong>${Object.values(p.fired).filter(x => x === 'hit' || x === 'sunk').length}</strong>IMPACTOS</div><div><strong>${state.turnCount}</strong>RONDAS</div></div><div class="btn-row"><button class="btn btn-primary" data-action="again">↻ NUEVA PARTIDA</button><button class="btn btn-soft" data-action="menu">MENÚ PRINCIPAL</button></div></div></section>`;
+  }
+  function render() {
+    soundBtn.classList.toggle('off', state.muted);
+    soundBtn.title = state.muted ? 'Activar sonidos' : 'Silenciar sonidos';
+    const stage = state.stage;
+    app.innerHTML = stage === 'menu' ? renderMenu() : stage === 'placement' ? renderPlacement() : stage === 'battle' ? renderBattle() : stage === 'result' ? renderResult() : stage === 'lobby' ? renderLobby() : stage === 'join' ? renderJoin() : stage === 'online-choose' ? renderOnlineChoose() : '';
+  }
+  function markSunkOnShots(player, cells) { for (const k of cells) player.fired[k] = 'sunk'; }
+  function resolveShot(target, x, y) {
+    if (!inRange(x, y)) return null;
+    const k = key(x, y);
+    if (target.ownShots[k] !== undefined) return null;
+    const shipId = target.occupied[k];
+    const hit = shipId !== undefined;
+    target.ownShots[k] = hit ? 'hit' : 'miss';
+    let sunk = false, shipCells = [];
+    if (hit) {
+      const ship = target.ships.find(s => s.id === shipId);
+      ship.hits++;
+      sunk = ship.hits === ship.size;
+      if (sunk) {
+        shipCells = [...ship.cells];
+        for (const c of shipCells) target.ownShots[c] = 'sunk';
+      }
+    }
+    return { x, y, hit, sunk, shipCells, win: target.ships.every(s => s.hits === s.size) };
+  }
+  function hitLog(result, who) {
+    const position = coord(result.x, result.y);
+    if (result.win) return `${who}: ${position}. ¡Último buque destruido!`;
+    if (result.sunk) return `${who}: ${position}. ¡BUQUE HUNDIDO!`;
+    return `${who}: ${position}. ${result.hit ? '¡Impacto confirmado!' : 'Solo agua.'}`;
+  }
+  function displayImpact(type, x, y, result) {
+    const node = app.querySelector(`.board[data-board="${type}"] .cell[data-x="${x}"][data-y="${y}"]`);
+    // Own cells do not have action attributes; use grid index fallback.
+    const root = node || app.querySelector(`.board[data-board="${type}"]`)?.children?.[y * 10 + x];
+    if (!root) return;
+    const rect = root.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+    const ring = document.createElement('div'); ring.className = 'burst ' + (result.hit ? 'hit' : '');
+    ring.style.left = (cx - 6) + 'px'; ring.style.top = (cy - 6) + 'px'; document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 750);
+    if (result.hit) for (let i = 0; i < 12; i++) {
+      const particle = document.createElement('div'); particle.className = 'particle';
+      particle.style.left = cx + 'px'; particle.style.top = cy + 'px';
+      const a = Math.PI * 2 * i / 12, r = 22 + rand(43);
+      particle.style.setProperty('--dx', Math.cos(a) * r + 'px'); particle.style.setProperty('--dy', Math.sin(a) * r + 'px');
+      document.body.appendChild(particle); setTimeout(() => particle.remove(), 750);
+    }
+  }
+  function recordOutgoing(shooter, result) {
+    const k = key(result.x, result.y);
+    shooter.fired[k] = result.hit ? 'hit' : 'miss';
+    if (result.sunk && result.shipCells?.length) markSunkOnShots(shooter, result.shipCells);
+  }
+  function endGame(winner) {
+    state.winner = winner; state.stage = 'result'; state.pendingShot = null;
+    render(); sound(winner === state.localId || state.mode === 'local' ? 'win' : 'lose');
+  }
+  function finishTurn(shooter, target, result) {
+    state.lastShot = { k: key(result.x, result.y), target };
+    state.log = hitLog(result, `COMANDANTE ${shooter + 1}`);
+    if (result.win) { endGame(shooter); return; }
+    state.turn = target; state.turnCount++;
+    if (state.mode === 'local') state.curtain = true;
+    render();
+    if (state.mode === 'solo' && state.turn === 1) {
+      state.aiRunning = true;
+      render();
+      state.timerId = setTimeout(aiShoot, 850);
+    }
+  }
+  function playerShoot(x, y) {
+    if (state.stage !== 'battle' || state.curtain || state.pendingShot) return;
+    const shooter = state.mode === 'local' ? state.turn : state.localId;
+    const target = 1 - shooter;
+    if (state.turn !== shooter || !inRange(x, y)) return;
+    const p = state.players[shooter];
+    if (p.fired[key(x, y)] !== undefined) { toast('Ya disparaste a esa coordenada.', true); return; }
+    sound('shoot');
+    if (isOnline()) {
+      if (!state.connection?.open) { toast('Se perdió la conexión con el rival.', true); return; }
+      state.pendingShot = key(x, y); state.connection.send({ type: 'fire', x, y });
+      render(); return;
+    }
+    const result = resolveShot(state.players[target], x, y);
+    if (!result) return;
+    recordOutgoing(p, result);
+    sound(result.sunk ? 'sunk' : result.hit ? 'hit' : 'miss');
+    finishTurn(shooter, target, result);
+    if (state.stage === 'battle' && !state.curtain) displayImpact('enemy', x, y, result);
+  }
+  function aiPick() {
+    const ai = state.players[1];
+    const seen = ai.fired;
+    if (state.difficulty === 'normal') {
+      while (state.aiQueue.length) {
+        const [x, y] = state.aiQueue.shift();
+        if (inRange(x, y) && seen[key(x, y)] === undefined) return [x, y];
+      }
+      const parity = [];
+      for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) if (seen[key(x, y)] === undefined && ((x + y) % 2 === 0)) parity.push([x, y]);
+      if (parity.length) return parity[rand(parity.length)];
+    }
+    const remaining = [];
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) if (seen[key(x, y)] === undefined) remaining.push([x, y]);
+    return remaining.length ? remaining[rand(remaining.length)] : null;
+  }
+  function aiShoot() {
+    if (state.stage !== 'battle' || state.mode !== 'solo' || state.turn !== 1) return;
+    const shot = aiPick(); if (!shot) return;
+    const [x, y] = shot;
+    const result = resolveShot(state.players[0], x, y); if (!result) return;
+    recordOutgoing(state.players[1], result);
+    if (state.difficulty === 'normal') {
+      if (result.sunk) { state.aiHits = []; state.aiQueue = []; }
+      else if (result.hit) {
+        state.aiHits.push([x, y]);
+        const candidates = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]];
+        // Keep possible adjacent cells near a confirmed hit.
+        state.aiQueue.push(...candidates.filter(([cx, cy]) => inRange(cx, cy)));
+      }
+    }
+    state.aiRunning = false;
+    sound(result.sunk ? 'sunk' : result.hit ? 'hit' : 'miss');
+    finishTurn(1, 0, result);
+    if (state.stage === 'battle') displayImpact('own', x, y, result);
+  }
+  function readyPlacement() {
+    if (state.stage !== 'placement' || state.curtain) return;
+    const p = getPlacementPlayer();
+    if (!fleetDone(p)) { toast('Primero ubicá los cinco barcos.', true); return; }
+    sound('place');
+    if (state.mode === 'solo') { state.stage = 'battle'; render(); return; }
+    if (state.mode === 'local') {
+      if (state.placer === 0) { state.placer = 1; state.selected = 0; state.vertical = false; state.curtain = true; }
+      else { state.stage = 'battle'; state.curtain = true; state.turn = 0; }
+      render(); return;
+    }
+    state.ready[state.localId] = true;
+    state.connection?.send({ type: 'ready' });
+    beginOnlineBattleIfReady(); render();
+  }
+  function beginOnlineBattleIfReady() {
+    if (state.stage === 'placement' && state.ready[0] && state.ready[1]) {
+      state.stage = 'battle'; state.turn = 0; state.turnCount = 1;
+      toast('¡Ambas flotas están listas! Inicia el combate.'); sound('place');
+    }
+  }
+  function onlineShotReceived(data) {
+    if (state.stage !== 'battle' || state.turn === state.localId || !Number.isInteger(data.x) || !Number.isInteger(data.y)) return;
+    const result = resolveShot(state.players[state.localId], data.x, data.y);
+    if (!result) return;
+    state.connection?.send({ type: 'result', ...result });
+    const shooter = 1 - state.localId;
+    // Shots received must not be added to local fired history.
+    state.lastShot = { k: key(data.x, data.y), target: state.localId };
+    state.log = hitLog(result, 'RIVAL');
+    sound(result.sunk ? 'sunk' : result.hit ? 'hit' : 'miss');
+    if (result.win) { endGame(shooter); return; }
+    state.turn = state.localId; state.turnCount++;
+    render(); displayImpact('own', data.x, data.y, result);
+  }
+  function onlineResultReceived(data) {
+    if (state.stage !== 'battle' || state.turn !== state.localId) return;
+    if (!Number.isInteger(data.x) || !Number.isInteger(data.y) || state.pendingShot !== key(data.x, data.y)) return;
+    if (typeof data.hit !== 'boolean' || typeof data.win !== 'boolean' || typeof data.sunk !== 'boolean') return;
+    if (!Array.isArray(data.shipCells) || data.shipCells.length > 5 || data.shipCells.some(k => !/^\d,\d$/.test(k))) return;
+    state.pendingShot = null;
+    recordOutgoing(state.players[state.localId], data);
+    sound(data.sunk ? 'sunk' : data.hit ? 'hit' : 'miss');
+    state.lastShot = { k: key(data.x, data.y), target: 1 - state.localId };
+    state.log = hitLog(data, 'VOS');
+    if (data.win) { endGame(state.localId); return; }
+    state.turn = 1 - state.localId; state.turnCount++;
+    render(); displayImpact('enemy', data.x, data.y, data);
+  }
+  function receiveOnline(data) {
+    if (!data || typeof data !== 'object') return;
+    switch (data.type) {
+      case 'ready':
+        if (state.stage !== 'placement') return;
+        state.ready[1 - state.localId] = true;
+        beginOnlineBattleIfReady(); render(); break;
+      case 'fire': onlineShotReceived(data); break;
+      case 'result': onlineResultReceived(data); break;
+      case 'busy': toast('La sala ya está ocupada.', true); openMenu(); break;
+      default: break;
+    }
+  }
+  function installPeer(conn) {
+    if (state.connection && state.connection.open) { conn.on('open', () => {conn.send({type:'busy'}); conn.close();}); return; }
+    state.connection = conn;
+    conn.on('open', () => {
+      state.stage = 'placement'; state.selected = 0; state.placer = state.localId;
+      state.players = [createPlayer(), createPlayer()]; state.ready = [false, false];
+      state.pendingShot = null;
+      toast('¡Jugador conectado! Prepará tu flota.'); sound('place'); render();
+    });
+    conn.on('data', receiveOnline);
+    conn.on('close', () => {
+      if (state.mode === 'online' && (state.stage === 'battle' || state.stage === 'placement')) {
+        state.stage = 'online-choose'; toast('El otro jugador se desconectó.', true); render();
+      }
+    });
+    conn.on('error', () => {toast('Ocurrió un problema en la conexión.', true);});
+  }
+  function hostOnline() {
+    resetGame('online'); state.localId = 0; state.stage = 'lobby'; render();
+    if (!window.Peer) { toast('No se pudo cargar PeerJS. Revisá tu conexión a internet.', true); state.stage = 'online-choose'; render(); return; }
+    const peer = new window.Peer(); state.peer = peer;
+    peer.on('open', id => { if (state.peer !== peer) return; state.onlineCode = id; render(); });
+    peer.on('connection', conn => { if (state.peer === peer) installPeer(conn); });
+    peer.on('error', err => { if (state.peer === peer) toast(`No se pudo crear la sala (${err.type || 'red'}).`, true); });
+  }
+  function joinOnline() {
+    const codeInput = document.getElementById('room-input');
+    const code = (codeInput?.value || '').trim();
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,179}$/.test(code)) { toast('Ingresá un código de sala válido.', true); return; }
+    state.onlineCode = code; state.joining = true; render();
+    if (!window.Peer) {toast('No se cargó PeerJS. Se necesita internet.', true); state.joining = false; render(); return;}
+    if (state.peer) {try { state.peer.destroy(); } catch (_) {}}
+    const peer = new window.Peer(); state.peer = peer; state.localId = 1;
+    peer.on('open', () => {
+      if (state.peer !== peer) return;
+      const conn = peer.connect(code, { reliable: true }); installPeer(conn);
+    });
+    peer.on('error', err => { if (state.peer !== peer) return; state.joining = false; toast(`No se pudo conectar (${err.type || 'red'}). Verificá el código.`, true); render(); });
+    state.timerId = setTimeout(() => {if (state.stage === 'join' && state.joining) {state.joining = false; toast('Tiempo de conexión agotado. Probá de nuevo.', true); render();}}, 17000);
+  }
+  function inviteUrl() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', state.onlineCode);
+    return url.toString();
+  }
+  async function copyValue(value, label) {
+    try {
+      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(value); toast(`${label} copiado.`); }
+      else { window.prompt(`Copiá el ${label.toLowerCase()}:`, value); }
+    } catch (_) { window.prompt(`Copiá el ${label.toLowerCase()}:`, value); }
+  }
+  function actionClick(action, elem) {
+    switch (action) {
+      case 'menu': openMenu(); break;
+      case 'sound': state.muted = !state.muted; try { localStorage.setItem('neptuno-muted', String(state.muted)); } catch (_) {} sound('click'); render(); break;
+      case 'solo': resetGame('solo'); sound('click'); break;
+      case 'local': resetGame('local'); sound('click'); break;
+      case 'online': state.mode = 'online'; state.stage = 'online-choose'; render(); sound('click'); break;
+      case 'host': hostOnline(); sound('click'); break;
+      case 'join': state.mode = 'online'; state.stage = 'join'; state.onlineCode = ''; state.joining = false; render(); sound('click'); break;
+      case 'connect': joinOnline(); sound('click'); break;
+      case 'copy-code': if (state.onlineCode) copyValue(state.onlineCode, 'Código'); break;
+      case 'copy-link': if (state.onlineCode) copyValue(inviteUrl(), 'Enlace'); break;
+      case 'select-ship': state.selected = Number(elem.dataset.index); sound('click'); render(); break;
+      case 'rotate': state.vertical = !state.vertical; sound('rotate'); render(); break;
+      case 'random': randomFleet(getPlacementPlayer()); state.selected = -1; sound('place'); render(); break;
+      case 'clear': { const p = getPlacementPlayer(); p.ships = []; p.occupied = {}; state.selected = 0; sound('click'); render(); break; }
+      case 'ready': readyPlacement(); break;
+      case 'reveal': state.curtain = false; sound('click'); render(); break;
+      case 'again': if (isOnline()) {destroyConnection(); state.stage = 'online-choose'; render();} else {const m = state.mode; resetGame(m); } break;
+      default: break;
+    }
+  }
+  app.addEventListener('click', e => {
+    const boardCell = e.target.closest('[data-cell]');
+    if (boardCell) {
+      if (boardCell.dataset.cell === 'placement' && state.stage === 'placement') {
+        const p = getPlacementPlayer();
+        let index = state.selected;
+        if (index < 0 || p.ships.some(s => s.id === index)) index = nextUnplaced(p);
+        if (index < 0) {toast('Ya posicionaste todos los barcos.'); return;}
+        const x = Number(boardCell.dataset.x), y = Number(boardCell.dataset.y);
+        if (!place(p, index, x, y, state.vertical)) {sound('rotate'); toast('Ese barco no entra en esa posición.', true); return;}
+        state.selected = nextUnplaced(p); sound('place'); render(); return;
+      }
+      if (boardCell.dataset.cell === 'enemy' && state.stage === 'battle') {
+        playerShoot(Number(boardCell.dataset.x), Number(boardCell.dataset.y)); return;
+      }
+    }
+    const control = e.target.closest('[data-action]'); if (control) actionClick(control.dataset.action, control);
+  });
+  app.addEventListener('pointerover', e => {
+    if (state.stage !== 'placement' || state.curtain) return;
+    const cell = e.target.closest('[data-cell="placement"]');
+    if (!cell) return;
+    const board = cell.closest('.board');
+    board.querySelectorAll('.preview').forEach(c => c.classList.remove('preview', 'invalid'));
+    const p = getPlacementPlayer();
+    const index = state.selected >= 0 ? state.selected : nextUnplaced(p);
+    if (index < 0) return;
+    const x = Number(cell.dataset.x), y = Number(cell.dataset.y);
+    const valid = canPlace(p, x, y, FLEET[index].size, state.vertical);
+    for (let i = 0; i < FLEET[index].size; i++) {
+      const cx = x + (state.vertical ? 0 : i), cy = y + (state.vertical ? i : 0);
+      if (!inRange(cx, cy)) continue;
+      const c = board.children[cy * SIZE + cx];
+      if (c) {c.classList.add('preview'); if (!valid) c.classList.add('invalid');}
+    }
+  });
+  app.addEventListener('pointerout', e => {
+    if (e.target.closest('.board') && !e.relatedTarget?.closest?.('.board')) {
+      e.target.closest('.board').querySelectorAll('.preview').forEach(c => c.classList.remove('preview','invalid'));
+    }
+  });
+  document.querySelector('.site-header').addEventListener('click', e => {const btn = e.target.closest('[data-action]'); if (btn) actionClick(btn.dataset.action, btn);});
+  document.addEventListener('keydown', e => {
+    if (e.key.toLowerCase() === 'r' && state.stage === 'placement' && !state.curtain && !(e.target instanceof HTMLInputElement)) {
+      state.vertical = !state.vertical; sound('rotate'); render();
+    }
+    if (e.key === 'Enter' && state.stage === 'join' && e.target.id === 'room-input') joinOnline();
+  });
+  window.addEventListener('beforeunload', destroyConnection);
+  // Link invites open the join screen and prefill the room code.
+  const room = new URLSearchParams(location.search).get('room');
+  if (room && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,179}$/.test(room)) {state.stage = 'join'; state.mode = 'online'; state.onlineCode = room;}
+  render();
+  // Minimal hooks for automated browser checks (no gameplay shortcuts in public UI).
+  window.__neptunoDebug = { getState: () => ({ stage: state.stage, mode: state.mode, turn: state.turn, winner: state.winner, ready: [...state.ready], ships: state.players.map(p => p.ships.length), shots: state.players.map(p => Object.keys(p.fired).length) }) };
+})();
+
+</script>
+</body>
+</html>

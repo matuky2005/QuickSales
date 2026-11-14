@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Retro Fútbol 06: fútbol arcade original de navegador. Jugá solo, dos en un teclado o 1 contra 1 online desde dos celulares.">
-<title>RETRO FÚTBOL '06 — PlayCanvas Beta</title>
+<title>RETRO FÚTBOL '06 — PlayCanvas Beta 2</title>
 <style>
 :root{color-scheme:dark;--bg:#101e1b;--panel:#182e29;--panel2:#203e35;--line:#385649;--cream:#f3edd8;--muted:#b1c7b6;--orange:#f5b544;--green:#83ec94;--red:#fe746b;--blue:#81bdf7}
 *{box-sizing:border-box}
@@ -169,6 +169,14 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
  body.is-game #game .game-outer{height:100vh;height:100dvh}
  body.is-game #game .game-canvas{width:100%!important;height:100%!important;object-fit:fill}
 }
+
+.graphics-loader{position:absolute;inset:0;z-index:9;display:grid;place-items:center;background:linear-gradient(140deg,#1b6e3b,#2b9253);font-size:clamp(16px,3vw,30px);font-weight:900;color:#fffbe3;text-shadow:0 2px 4px #0a2c14}
+.three-error{display:grid;place-items:center;z-index:30!important;background:#102e2c!important}
+.graphics-diagnostic{display:flex;flex-direction:column;gap:13px;max-width:min(400px,90vw);text-align:center;padding:12px}
+.graphics-diagnostic strong{font-size:clamp(17px,3vw,25px)}
+.graphics-diagnostic span{font-size:13px;color:#eaf1e8;font-weight:550}
+.graphics-diagnostic a,.graphics-diagnostic button{display:block;text-align:center;border:0;border-radius:10px;background:#f4bf52;padding:11px 16px;color:#102c20;text-decoration:none;font-size:15px;font-weight:900;cursor:pointer;pointer-events:auto}
+.graphics-diagnostic button{background:#d6e9e0}
 </style>
 </head>
 <body>
@@ -202,17 +210,17 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
   </section>
   <section class="game-shell" id="game" hidden>
     <div class="game-hud"><div class="score-teams"><span class="jersey red"></span> ROJOS</div><div class="score-mid"><div class="match-time" id="clockText">02:00</div><div class="score-big" id="scoreText">0 - 0</div></div><div class="score-teams right">AZULES <span class="jersey blue"></span></div></div>
-    <div class="game-outer"><canvas id="pitch" width="1200" height="740" class="game-canvas" aria-label="Estadio tridimensional de fútbol con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div><div class="set-piece-badge" id="setPieceBadge" hidden>SAQUE DE BANDA</div><canvas class="pitch-radar" id="radar" width="184" height="106" aria-label="Minimapa de los 22 jugadores"></canvas><div class="three-error" id="threeError" hidden>No se pudo abrir el estadio 3D. Revisá la conexión a internet y actualizá Chrome.</div></div>
+    <div class="game-outer"><canvas id="pitch" width="1200" height="740" class="game-canvas" aria-label="Estadio tridimensional de fútbol con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div><div class="set-piece-badge" id="setPieceBadge" hidden>SAQUE DE BANDA</div><canvas class="pitch-radar" id="radar" width="184" height="106" aria-label="Minimapa de los 22 jugadores"></canvas><div class="three-error" id="threeError" hidden><div class="graphics-diagnostic"><strong id="engineErrorTitle">El motor 3D no inició</strong><span id="engineErrorDetails">Se detectó un problema con los gráficos WebGL.</span><a href="../futbol/?v=6" id="fallbackGame">Jugar la versión 3D anterior</a><button type="button" id="retryRender">Reintentar gráficos</button></div></div><div class="graphics-loader" id="graphicsLoader" hidden>⚽ Preparando estadio 3D…</div></div>
     <div class="power-hud" id="powerHud" hidden><span id="powerText">POTENCIA DE TIRO</span><div class="power-track"><div class="power-fill" id="powerFill"></div></div></div>
     <div class="role"><span id="roleText">Manejás a los ROJOS</span><span class="status" id="statusText">¡A JUGAR!</span></div>
     <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>⏳</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⏳</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
     <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
-  <footer class="foot">PlayCanvas Beta v1 · Motor 3D abierto · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
+  <footer class="foot">PlayCanvas Beta v2 · Motor 3D abierto · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
 </div>
 <div class="orientation-tip" id="rotateHint"><div class="rotate-icon">📱↻</div><strong>Girás el iPhone y entrás a la cancha</strong><p>Para jugar 3D a pantalla completa, poné el teléfono horizontal.</p><button class="outline" id="portraitOk" type="button">Jugar así de todas formas</button></div>
 <div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
-<script src="https://cdn.jsdelivr.net/npm/playcanvas@2.24.1/build/playcanvas.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/playcanvas@2.24.1/build/playcanvas.min.js'"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/playcanvas/2.21.4/playcanvas.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/playcanvas@2.24.1/build/playcanvas.min.js'"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 'use strict';
@@ -629,7 +637,7 @@ function endGame(){if(!game||gameEnded)return;game.ended=true;gameEnded=true;sfx
 const worldScale=.115,worldDepth=.134;
 const wx=x=>(x-W/2)*worldScale,wz=y=>(y-MID)*worldDepth;
 let app3=null,cam3=null,actors=[],ball3=null,ballShadow3=null,viewMode=0,last3dTick=performance.now(),drawError=false;
-let camPos={x:0,y:29,z:47},frameCount=0,lastResizeW=0,lastResizeH=0;
+let camPos={x:0,y:29,z:47},frameCount=0,lastResizeW=0,lastResizeH=0,sceneDidRender=false,sceneRenderChecks=0,sceneWatchdog=null,sceneWarning=false;
 const pcMaterials=new Map();
 function pcMaterial(hex){
  if(pcMaterials.has(hex))return pcMaterials.get(hex);
@@ -692,18 +700,48 @@ function resizeWorld(){
  app3.resizeCanvas(w,h);
  if(cam3?.camera){cam3.camera.aspectRatio=w/h;}
 }
+function graphicsFail(message){
+ if(sceneWarning)return;
+ sceneWarning=true;drawError=true;
+ clearTimeout(sceneWatchdog);
+ $('graphicsLoader').hidden=true;
+ $('threeError').hidden=false;
+ $('engineErrorDetails').textContent=String(message||'Error gráfico desconocido').slice(0,260);
+ console.error('Retro Football PlayCanvas:',message);
+}
+function inspectCanvasColor(){
+ if(!app3||drawError||!app3.graphicsDevice?.gl)return;
+ try{
+   const gl=app3.graphicsDevice.gl,w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
+   if(w<20||h<20)throw Error('La superficie WebGL mide cero.');
+   const points=[[.50,.50],[.35,.38],[.65,.58]],rgb=[];
+   for(const [x,y] of points){
+     const a=new Uint8Array(4);gl.readPixels(Math.floor(w*x),Math.floor(h*y),1,1,gl.RGBA,gl.UNSIGNED_BYTE,a);
+     rgb.push([...a]);
+   }
+   const dark=rgb.every(x=>x[0]+x[1]+x[2]<18);
+   if(dark)graphicsFail('La GPU está dibujando una pantalla negra. Se activó el diagnóstico de renderizado.');
+   else $('graphicsLoader').hidden=true;
+ }catch(err){
+   console.warn('No se pudo analizar el fotograma WebGL',err);
+   $('graphicsLoader').hidden=true;
+ }
+}
 function createWorld(){
  if(app3)return true;
  if(typeof pc==='undefined'){
-   drawError=true;const e=$('threeError');e.hidden=false;
-   e.textContent='El motor PlayCanvas no se pudo cargar. Comprobá internet y abrí el juego nuevamente.';
+   graphicsFail('No se cargó PlayCanvas desde los servidores CDN.');
    return false;
  }
  try{
-   app3=new pc.Application(canvas,{graphicsDeviceOptions:{antialias:true,alpha:false,powerPreference:'high-performance'}});
+   $('graphicsLoader').hidden=false;
+   app3=new pc.Application(canvas,{graphicsDeviceOptions:{antialias:false,alpha:false,preserveDrawingBuffer:true,powerPreference:'high-performance'}});
+   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();graphicsFail('El navegador perdió el contexto WebGL.');},{passive:false});
+   app3.scene.on('postrender',()=>{sceneDidRender=true;if(!sceneWarning){sceneRenderChecks++;if(sceneRenderChecks===8)inspectCanvasColor();}});
+   app3.graphicsDevice.on('devicelost',()=>graphicsFail('El dispositivo perdió la conexión con el procesador gráfico.'));
    app3.setCanvasFillMode(pc.FILLMODE_NONE,canvas.clientWidth||1000,canvas.clientHeight||600);
    app3.setCanvasResolution(pc.RESOLUTION_AUTO);
-   app3.graphicsDevice.maxPixelRatio=Math.min(window.devicePixelRatio||1,1.45);
+   app3.graphicsDevice.maxPixelRatio=Math.min(window.devicePixelRatio||1,window.innerWidth<1000?1:1.3);
    const light=new pc.Entity('sun');light.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.83),intensity:2.4,castShadows:false});
    light.setEulerAngles(45,26,15);app3.root.addChild(light);
    const ambient=new pc.Entity('softlight');ambient.addComponent('light',{type:'omni',intensity:.6,color:new pc.Color(.70,.85,1),range:180});
@@ -764,7 +802,7 @@ function createWorld(){
    let seed=5150;
    function rng(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
    const fans=[0xeaeff8,0xd73d45,0x5a9acc,0xf2cd70,0x53b17a,0xdad0c0];
-   for(let i=0;i<180;i++){
+   for(let i=0;i<42;i++){
      const side=rng()<.5?-1:1,row=Math.floor(rng()*6);
      const x=-67+rng()*134,z=side*(45.2+row*2.30);
      object3(app3.root,'box',fans[i%fans.length],x,1+row*.81,z,.41,.70,.32);
@@ -787,13 +825,13 @@ function createWorld(){
    for(const spot of spots)object3(ball3,'sphere',0x1e2934,spot[0],spot[1],spot[2],.27,.27,.27);
    ballShadow3=object3(app3.root,'cylinder',0x0c3d29,0,.045,0,1.2,.034,1.2);
    app3.start();
+   sceneWatchdog=setTimeout(()=>{if(!sceneDidRender){graphicsFail('PlayCanvas no está dibujando fotogramas.');}else if(!drawError){$('graphicsLoader').hidden=true;}},4500);
    resizeWorld();
    last3dTick=performance.now();
    return true;
  }catch(e){
    console.error('Error iniciando PlayCanvas:',e);
-   drawError=true;$('threeError').hidden=false;
-   $('threeError').textContent='No se pudo iniciar el motor 3D en este teléfono. Revisá Chrome y WebGL.';
+   graphicsFail('Error al crear el estadio: '+(e?.message||String(e)));
    return false;
  }
 }
@@ -876,7 +914,7 @@ function beginGame(newMode){makeAudio();mode=newMode;show('game');$('setPieceBad
  $('touchUI').hidden=newMode==='local';sfx('start');
  if(clockId)cancelAnimationFrame(clockId);lastFrame=performance.now();clockId=requestAnimationFrame(animate);
 }
-function cleanup(){$('setPieceBadge').hidden=true;if(clockId){cancelAnimationFrame(clockId);clockId=0;}if(netTimer)clearInterval(netTimer);netTimer=0;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;room='';mode='menu';game=null;keys.clear();pressed.clear();remote=blankInput();touch=blankInput();$('resultOverlay').hidden=true;$('goalFlash').hidden=true;show('menu')}
+function cleanup(){$('graphicsLoader').hidden=true;$('setPieceBadge').hidden=true;if(clockId){cancelAnimationFrame(clockId);clockId=0;}if(netTimer)clearInterval(netTimer);netTimer=0;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;room='';mode='menu';game=null;keys.clear();pressed.clear();remote=blankInput();touch=blankInput();$('resultOverlay').hidden=true;$('goalFlash').hidden=true;show('menu')}
 function netAvailable(){if(typeof window.Peer!=='function'){toast('No se pudo cargar la conexión online. Comprobá internet y recargá el juego.',true);return false;}if(!window.isSecureContext&&location.protocol!=='http:'){toast('Para jugar online, abrí el juego desde un enlace HTTPS.',true);return false;}return true;}
 function setupPeer(id){const p=new Peer(id||undefined,{debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});p.on('error',err=>{if(mode==='lobby')toast('Error de conexión: '+(err?.type||err?.message||'No disponible')+'. Revisá el código o intentá otra vez.',true);else if(mode==='host'||mode==='guest')$('statusText').textContent='⚠️ Problema de conexión';});p.on('disconnected',()=>{if(mode==='lobby')toast('Se perdió conexión con el servicio de salas. Podés volver a intentar.',true);});return p;}
 function showLobby(type){makeAudio();mode='lobby';show('lobby');$('hostControls').hidden=type!=='host';$('joinControls').hidden=type!=='join';$('lobbyTitle').textContent=type==='host'?'Crear partido online':'Unirse a partido';$('lobbyHint').textContent=type==='host'?'Enviá este código o enlace a tu rival. El partido empieza automáticamente cuando se conecta.':'Pedile a tu amigo el código de 6 dígitos.';$('lobbyTag').textContent=type==='host'?'SOS EL LOCAL 🔴':'SOS EL VISITANTE 🔵';toast(type==='host'?'Creando sala online...':'Ingresá el código de la sala para entrar.');}
@@ -968,6 +1006,7 @@ window.addEventListener('pagehide',()=>{try{conn?.close()}catch(e){}});
 $('cameraBtn').onclick=()=>{viewMode=1-viewMode;cam3?.camera&&(cam3.camera.fov=viewMode?40:45);$('cameraBtn').textContent=viewMode?'📷 Cámara cerca':'📹 Cámara TV';};
 window.addEventListener('resize',resizeWorld);
 window.addEventListener('orientationchange',()=>setTimeout(resizeWorld,250));
+$('retryRender').onclick=()=>window.location.reload();
 // Evitar doble toque y pellizco de zoom mientras se juega (iOS Safari/Chrome comparten WebKit).
 document.addEventListener('gesturestart',e=>{if(mode!=='menu'&&mode!=='lobby')e.preventDefault();},{passive:false});
 document.addEventListener('gesturechange',e=>{if(mode!=='menu'&&mode!=='lobby')e.preventDefault();},{passive:false});

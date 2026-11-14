@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101e1b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Retro Fútbol 06: fútbol arcade original de navegador. Jugá solo, dos en un teclado o 1 contra 1 online desde dos celulares.">
+<title>RETRO FÚTBOL '06 — ¡A la cancha!</title>
+<style>
+:root{color-scheme:dark;--bg:#101e1b;--panel:#182e29;--panel2:#203e35;--line:#385649;--cream:#f3edd8;--muted:#b1c7b6;--orange:#f5b544;--green:#83ec94;--red:#fe746b;--blue:#81bdf7}
+*{box-sizing:border-box}
+html{min-height:100%;-webkit-text-size-adjust:100%;touch-action:pan-y}
+body{margin:0;background:radial-gradient(ellipse at 50% -15%,#294a39 0,transparent 60%),var(--bg);color:var(--cream);font:500 15px/1.5 -apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit}button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}button:disabled{opacity:.48;cursor:not-allowed}
+[hidden]{display:none!important}
+.shell{width:min(1120px,calc(100% - 26px));margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 0 max(22px,env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
+.logo{font-weight:1000;font-size:20px;letter-spacing:-1px;line-height:1.08;display:flex;align-items:center;gap:9px}.logo-mark{background:var(--orange);color:#14281e;display:grid;place-items:center;width:42px;height:42px;border-radius:12px;font-size:25px;box-shadow:3px 3px 0 #a06a23}
+.logo small{display:block;color:#95bbaa;font-size:10px;letter-spacing:2px;font-weight:850;margin-top:4px}
+.tag{font-size:10px;letter-spacing:1.5px;background:#345343;color:#d6ecd6;padding:5px 9px;border-radius:99px;font-weight:900;text-transform:uppercase}
+.icon-btn{background:#244139;color:var(--cream);border:1px solid var(--line);padding:9px 12px;border-radius:12px;font-weight:800}
+.hd-right{display:flex;align-items:center;gap:7px}
+.card{border:1px solid #476955;border-radius:23px;background:linear-gradient(153deg,#254638,#142a25);box-shadow:0 14px 45px #020e0b55}
+.hero{overflow:hidden;padding:clamp(20px,5vw,36px);position:relative}
+.eyebrow{color:var(--orange);font-size:12px;font-weight:950;letter-spacing:2.5px;text-transform:uppercase}
+h1{font-size:clamp(40px,9vw,75px);line-height:.98;margin:9px 0 14px;letter-spacing:-2.5px;font-weight:1000}h1 em{font-style:normal;color:var(--orange);text-shadow:3px 4px 0 #1f432c}
+h2{font-size:25px;line-height:1.2;margin:0 0 8px;letter-spacing:-.7px}
+p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
+.hero-art{height:155px;max-width:490px;position:relative;border:4px solid #cdebb24d;border-radius:11px;margin:22px 0;background:repeating-linear-gradient(90deg,#2e7b4c 0,#2e7b4c 38px,#2a7146 38px,#2a7146 76px);box-shadow:inset 0 0 0 6px #1d5036,0 12px 20px #06110e66;overflow:hidden}
+.hero-art:before{content:"";position:absolute;border:3px solid #e8f4d2a8;left:50%;top:50%;width:85px;height:85px;border-radius:50%;transform:translate(-50%,-50%)}.hero-art:after{content:"";position:absolute;left:50%;height:100%;top:0;border-left:3px solid #e8f4d2a8}
+.hero-player{position:absolute;z-index:2;top:65px;left:30%;border:5px solid #fbf4df;border-radius:50%;width:40px;height:40px;background:var(--red);box-shadow:4px 7px 0 #07150b77}.hero-player.blue{background:#65b3fb;left:72%;top:35px}.hero-ball{position:absolute;z-index:3;top:46px;left:51%;transform:rotate(-22deg);font-size:40px;filter:drop-shadow(4px 8px 3px #0b2011aa)}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:19px 0}.mode{border:1px solid #4e7962;border-radius:15px;background:#254336;color:#f8f4e8;padding:16px 12px;text-align:left;min-height:90px;display:flex;flex-direction:column;justify-content:center;gap:5px}.mode:hover,.mode:focus-visible{border-color:var(--orange)}.mode strong{font-size:17px}.mode small{color:#b4d3be}.mode i{font-size:24px;font-style:normal}.mode.online{background:#344834}
+.options-line{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid #ffffff24;padding-top:15px}.times{display:flex;gap:7px}.time-btn{border-radius:10px;color:#e4f2e4;background:#1a372a;border:1px solid #4b6b51;padding:9px 12px;font-weight:850}.time-btn[aria-pressed=true]{background:var(--orange);color:#173227;border-color:#ffc362}
+.note{color:#b0c6b5;font-size:12px;margin-top:11px}.pill{display:inline-block;font-size:11px;color:#1b3628;background:#addca3;padding:3px 9px;border-radius:40px;font-weight:850}
+.lobby{max-width:660px;margin:12px auto;padding:23px}.lobby-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.back{border:0;color:#d5e7d7;background:none;font-size:14px;font-weight:850;padding:9px 5px}.room-code{font-size:clamp(38px,9vw,64px);letter-spacing:7px;font-weight:1000;background:#081c15;color:#f8d48d;text-align:center;border-radius:16px;padding:13px;margin:12px 0;user-select:all;font-variant-numeric:tabular-nums}
+.room-field{display:block;width:100%;background:#0b2219;border:2px solid #598366;border-radius:15px;padding:13px 14px;color:#fff7dd;font-size:26px;font-weight:950;letter-spacing:4px;text-align:center;margin:14px 0;text-transform:uppercase}
+.main-btn{border:0;background:var(--orange);color:#163627;font-size:17px;font-weight:950;min-height:50px;border-radius:13px;padding:12px 17px;width:100%}.main-btn:active,.mode:active{transform:scale(.99)}.outline{border:1px solid #6d967b;background:#254c38;color:#e9f6e9;border-radius:12px;font-weight:900;padding:12px 15px;min-height:46px}
+.room-actions{display:flex;gap:9px}.room-actions>*{flex:1}.room-status{margin:17px 0 0;color:#d4e5cf;line-height:1.6}.warn{color:#ffe196}.bad{color:#ffb0a4}
+.game-shell{max-width:1050px;margin:0 auto}.game-hud{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center;margin-bottom:10px}.score-teams{display:flex;align-items:center;gap:9px;font-weight:950;font-size:clamp(11px,2.5vw,16px)}.score-teams.right{justify-content:flex-end}.jersey{width:20px;height:20px;transform:rotate(12deg);border:2px solid #ffffff8c;border-radius:5px 5px 3px 3px}.jersey.red{background:#ef6661}.jersey.blue{background:#62acff}
+.score-mid{text-align:center;padding:3px 15px;background:#0a1b14;border:1px solid #45624f;border-radius:13px}.score-big{font-size:clamp(24px,6vw,37px);line-height:1.15;font-weight:1000;letter-spacing:3px;color:#fff9e6;font-variant-numeric:tabular-nums}.match-time{font-size:12px;letter-spacing:2px;color:var(--orange);font-weight:950}.game-outer{position:relative;box-shadow:0 18px 42px #020b086b;border-radius:15px;overflow:hidden;border:3px solid #45624c;background:#25643a;touch-action:none}.game-canvas{display:block;width:100%;aspect-ratio:5/3;max-height:68vh;touch-action:none}
+.flash{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;text-shadow:4px 4px 0 #102b20;color:#fff1bc;font-size:clamp(34px,10vw,88px);font-weight:1000;letter-spacing:-3px;text-align:center;animation:celebrate .55s infinite alternate}@keyframes celebrate{from{transform:scale(.96)}to{transform:scale(1.06)}}
+.role{font-size:12px;color:#d4e4d0;display:flex;align-items:center;justify-content:space-between;margin-top:7px;gap:12px}.status{color:var(--orange);font-weight:850}
+.touch-ui{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 0;min-height:155px;touch-action:none;user-select:none;-webkit-user-select:none}
+.joystick{position:relative;width:140px;height:140px;flex-shrink:0;border-radius:50%;border:3px solid #629271;background:radial-gradient(circle,#2f5a46,#172e25);touch-action:none;box-shadow:inset 0 0 18px #081b12}.stick{position:absolute;left:50%;top:50%;width:57px;height:57px;transform:translate(-50%,-50%);border-radius:50%;background:var(--orange);border:5px solid #fbe5a7;box-shadow:0 4px 9px #08180f9e;pointer-events:none}.joystick:after{content:"✛";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ffffff25;font-weight:950;font-size:82px;pointer-events:none}
+.touch-buttons{display:grid;grid-template-columns:80px 80px;grid-template-rows:70px 65px;gap:9px;align-items:center}.touch-btn{border-radius:18px;border:3px solid #ffffff57;color:#173b2c;background:#89c7fc;font-size:13px;font-weight:950;line-height:1.1;touch-action:none}.touch-btn.shoot{grid-row:1/3;grid-column:2;background:var(--orange);border-radius:40px;min-height:120px;font-size:16px}.touch-btn.pass{grid-row:1;grid-column:1;background:#a9edaa}.touch-btn.switch{grid-row:2;grid-column:1;background:#e6a8f0}.touch-btn:active{filter:brightness(1.18);transform:scale(.97)}
+.game-bottom{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}.keys{color:#9cbaaa;font-size:12px;line-height:1.5}.game-bottom .outline{white-space:nowrap}
+.overlay{position:fixed;inset:0;z-index:50;background:#06100cdb;display:grid;place-items:center;padding:17px}.modal{padding:25px;max-width:440px;width:100%;text-align:center}.modal-icon{font-size:68px}.modal h2{font-size:clamp(30px,7vw,45px);margin:8px 0}.modal p{color:#ccdacd}.modal .outline{margin-top:10px;width:100%}
+.foot{color:#77958a;text-align:center;font-size:11px;margin-top:19px}.is-game .foot{display:none}
+@media(min-width:850px){.touch-ui{display:none}.game-canvas{max-height:65vh}}
+@media(max-width:600px){.hero{padding:20px}.modes{gap:8px}.mode{min-height:88px;padding:13px 10px}.mode strong{font-size:15px}.mode small{font-size:11px}.logo{font-size:17px}.tag{display:none}.game-shell{margin-top:0}.role{font-size:11px}.game-canvas{max-height:none}.game-bottom .keys{display:none}.game-bottom{justify-content:flex-end}}
+@media(max-width:350px){.touch-ui{min-height:132px}.joystick{width:120px;height:120px}.touch-buttons{grid-template-columns:68px 68px;grid-template-rows:63px 60px;gap:6px}.touch-btn.shoot{min-height:115px}}
+@media(max-height:490px) and (orientation:landscape){.shell{padding-top:5px}.shell>header{margin-bottom:5px}.touch-ui{position:fixed;inset:auto 10px 8px 10px;pointer-events:none;min-height:85px;margin:0}.joystick{width:96px;height:96px;pointer-events:auto}.stick{width:45px;height:45px}.touch-buttons{grid-template-columns:60px 60px;grid-template-rows:43px 43px;pointer-events:auto}.touch-btn.shoot{min-height:84px}.game-hud{margin-bottom:5px}.game-canvas{max-height:66vh}.role,.game-bottom{display:none}.game-outer{border-width:2px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06</span><small>ARCADE EDITION</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
+  <main id="menu">
+    <section class="hero card">
+      <div class="eyebrow">EL FÚTBOL DE ANTES · EN TU NAVEGADOR</div>
+      <h1>LA PELOTA<br>NO SE <em>MANCHA.</em></h1>
+      <p class="sub">Fútbol arcade original con estética retro: corré, pasá, meté goles y enfrentate a un amigo desde otro teléfono. Inspirado en los juegos de cancha de los 2000.</p>
+      <div class="hero-art" aria-hidden="true"><span class="hero-player"></span><span class="hero-ball">⚽</span><span class="hero-player blue"></span></div>
+      <span class="pill">Elegí tu partido</span>
+      <div class="modes">
+        <button class="mode" id="soloBtn"><i>🎮</i><strong>Contra la máquina</strong><small>1 jugador · cualquier dispositivo</small></button>
+        <button class="mode" id="localBtn"><i>⌨️</i><strong>2 en el mismo teclado</strong><small>Multijugador local · PC</small></button>
+        <button class="mode online" id="hostBtn"><i>🌐</i><strong>Crear partido online</strong><small>Invitá a alguien con un código</small></button>
+        <button class="mode online" id="joinBtn"><i>🤝</i><strong>Unirse a partido</strong><small>Jugá desde otro celular o PC</small></button>
+      </div>
+      <div class="options-line"><strong>Duración del partido</strong><div class="times" id="timeOptions"><button class="time-btn" data-min="2" aria-pressed="true">2 min</button><button class="time-btn" data-min="3" aria-pressed="false">3 min</button><button class="time-btn" data-min="5" aria-pressed="false">5 min</button></div></div>
+      <p class="note">Sin instalación · Compatible con Chrome en iPhone · Online requiere internet y conexión WebRTC entre ambos jugadores.</p>
+    </section>
+  </main>
+  <section class="lobby card" id="lobby" hidden>
+    <div class="lobby-head"><div class="eyebrow" id="lobbyTag">MULTIJUGADOR ONLINE</div><button class="back" id="backLobby">← Volver</button></div>
+    <h2 id="lobbyTitle">Creá tu partido</h2>
+    <p class="sub" id="lobbyHint">Compartí el código con tu rival. Ambos tienen que abrir el juego.</p>
+    <div id="hostControls" hidden><div class="room-code" id="roomCode">······</div><div class="room-actions"><button class="outline" id="copyCode">📋 Copiar código</button><button class="outline" id="copyLink">🔗 Copiar enlace</button></div></div>
+    <div id="joinControls" hidden><label for="codeInput">Código de 6 números</label><input class="room-field" id="codeInput" inputmode="numeric" type="text" maxlength="6" pattern="[0-9]{6}" placeholder="123456" autocomplete="off"><button class="main-btn" id="connectBtn">Unirme a la cancha →</button></div>
+    <p class="room-status" id="roomStatus" role="status" aria-live="polite">Preparando conexión...</p>
+    <p class="note">Usa conexión directa entre navegadores (PeerJS). Si una red bloquea WebRTC, probá con datos móviles o Wi-Fi diferente.</p>
+  </section>
+  <section class="game-shell" id="game" hidden>
+    <div class="game-hud"><div class="score-teams"><span class="jersey red"></span> ROJOS</div><div class="score-mid"><div class="match-time" id="clockText">02:00</div><div class="score-big" id="scoreText">0 - 0</div></div><div class="score-teams right">AZULES <span class="jersey blue"></span></div></div>
+    <div class="game-outer"><canvas id="pitch" width="1000" height="600" class="game-canvas" aria-label="Cancha de fútbol arcade con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div></div>
+    <div class="role"><span id="roleText">Manejás a los ROJOS</span><span class="status" id="statusText">¡A JUGAR!</span></div>
+    <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>↗</button><button class="touch-btn shoot" id="shootBtn">TIRAR<br>⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button></div></div>
+    <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><button class="outline" id="exitBtn">← Salir del partido</button></div>
+  </section>
+  <footer class="foot">Juego original, independiente de FIFA, PES, Konami y EA. No incluye marcas, equipos ni imágenes oficiales.</footer>
+</div>
+<div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const canvas=$('pitch'),ctx=canvas.getContext('2d');
+const W=1000,H=600,L=55,R=945,T=70,B=530,MID=300,GOAL=85;
+const TAU=Math.PI*2;
+let duration=120,mode='menu',game=null,peer=null,conn=null,room='',netTimer=0,clockId=0,lastFrame=0,hostSnapshot=0,guestLastPacket=0,sourceCode='',audio=null,soundOn=true,flashUntil=0;
+let keys=new Set(),pressed=new Set(),touch={x:0,y:0,shoot:false,pass:false,sw:false},remote={x:0,y:0,shoot:false,pass:false,sw:false};
+let gameEnded=false;
+function clamp(v,a,b){return Math.min(b,Math.max(a,v));}
+function length(x,y){return Math.hypot(x,y);}
+function normalized(x,y){const n=length(x,y);return n>0.0001?[x/n,y/n]:[0,0]}
+function rand(a,b){return a+Math.random()*(b-a)}
+function show(which){$('menu').hidden=which!=='menu';$('lobby').hidden=which!=='lobby';$('game').hidden=which!=='game';document.body.classList.toggle('is-game',which==='game');window.scrollTo(0,0)}
+function toast(text,bad=false){$('roomStatus').textContent=text;$('roomStatus').className='room-status '+(bad?'bad':'')}
+function makeAudio(){if(!soundOn)return;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;if(!audio)audio=new A();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch(e){}}
+function note(freq,durationSec=.12,offset=0,type='triangle',vol=.075){if(!soundOn)return;try{makeAudio();if(!audio||audio.state!=='running')return;const t=audio.currentTime+offset;const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+durationSec);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+durationSec+.01);}catch(e){}}
+function sfx(name){if(name==='kick')note(180,.08,0,'sawtooth',.03);if(name==='pass')note(330,.08,0,'triangle',.035);if(name==='start'){note(780,.14);note(920,.21,.17)}if(name==='goal'){[440,554,659,880,988].forEach((f,i)=>note(f,.22,i*.13,'triangle',.11));}if(name==='end'){note(550,.22);note(390,.35,.2)}if(name==='steal')note(270,.12,0,'sine',.035)}
+$('soundBtn').onclick=()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'🔊':'🔇';$('soundBtn').setAttribute('aria-label',soundOn?'Desactivar sonido':'Activar sonido');if(soundOn){makeAudio();sfx('pass')}};
+function player(team,index,x,y,gk=false){return{team,index,x,y,dx:team===0?1:-1,dy:0,n:1+index,gk,sel:false};}
+const initial=[[128,300],[265,185],[275,415],[420,300],[92,300]];
+function createGame(){
+ const ps=[];
+ for(let t=0;t<2;t++)for(let i=0;i<5;i++){const [x,y]=initial[i];ps.push(player(t,i,t===0?x:W-x,y,i===4));}
+ game={players:ps,ball:{x:W/2,y:H/2,vx:0,vy:0,holder:null,lock:0},scores:[0,0],time:duration,selected:[3,8],goalPause:0,lastScore:-1,started:true,ended:false};
+ lastFrame=performance.now();gameEnded=false;flashUntil=0;
+ setScore();
+}
+function restartPositions(teamKick=0){
+ if(!game)return;
+ game.players.forEach(p=>{const v=initial[p.index];p.x=p.team===0?v[0]:W-v[0];p.y=v[1];p.dx=p.team===0?1:-1;p.dy=0;});
+ const b=game.ball;b.x=W/2;b.y=MID;b.vx=0;b.vy=0;b.holder=teamKick===0?3:8;b.lock=.7;
+ game.selected=[3,8];
+}
+function setScore(){if(!game)return;$('scoreText').textContent=game.scores[0]+' - '+game.scores[1];const sec=Math.ceil(Math.max(0,game.time));$('clockText').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');}
+function inputFor(side){
+ if(mode==='solo'&&side===1)return null;
+ if(mode==='guest')return null;
+ const prefix=side===0?'Key':'Arrow';let x=0,y=0;
+ if(side===0){x=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0);y=(keys.has('KeyS')?1:0)-(keys.has('KeyW')?1:0);}
+ if(side===1 && mode==='local'){x=(keys.has('ArrowRight')?1:0)-(keys.has('ArrowLeft')?1:0);y=(keys.has('ArrowDown')?1:0)-(keys.has('ArrowUp')?1:0);}
+ if(side===1 && mode==='host')return remote;
+ if(side===0){x+=touch.x;y+=touch.y;}
+ const [nx,ny]=normalized(x,y);
+ const shoot=side===0?(pressed.has('Space')||touch.shoot):pressed.has('Enter');
+ const pass=side===0?(pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.pass):pressed.has('KeyM');
+ const sw=side===0?(pressed.has('KeyC')||touch.sw):pressed.has('KeyN');
+ return{x:nx,y:ny,shoot,pass,sw};
+}
+function switchPlayer(team){
+ const near=game.players.filter(p=>p.team===team&&!p.gk).sort((a,b)=>length(a.x-game.ball.x,a.y-game.ball.y)-length(b.x-game.ball.x,b.y-game.ball.y));
+ const current=game.selected[team];const idx=near.findIndex(p=>p.team*5+p.index===current);
+ const chosen=near[(idx+1)%near.length]; game.selected[team]=chosen.team*5+chosen.index;
+}
+function kick(team,kind){const b=game.ball;
+ let owner=b.holder!==null?game.players[b.holder]:null;
+ if(owner && owner.team!==team)return;
+ const me=game.players[game.selected[team]];
+ if(!owner){if(length(b.x-me.x,b.y-me.y)>35)return; owner=me;}
+ const oi=owner.team*5+owner.index; const targetGoal=team===0?R:L;
+ let vx=owner.dx,vy=owner.dy;
+ if(Math.abs(vx)+Math.abs(vy)<.08){vx=team===0?1:-1;vy=0;}
+ if(kind==='pass'){
+  const choices=game.players.filter(p=>p.team===team&&!p.gk&&p!==owner).sort((a,b)=>{const da=length(a.x-owner.x,a.y-owner.y),db=length(b.x-owner.x,b.y-owner.y);return (da+Math.abs(a.y-owner.y)*.15)-(db+Math.abs(b.y-owner.y)*.15)});
+  let chosen=choices.filter(p=>(p.x-owner.x)*(team===0?1:-1)>-25)[0]||choices[0];
+  if(chosen){[vx,vy]=normalized(chosen.x-owner.x,chosen.y-owner.y);if(team===0||team===1)game.selected[team]=chosen.team*5+chosen.index;}
+ }else{
+  const aim=[targetGoal-owner.x,MID-owner.y];
+  const direct=normalized(...aim);
+  if(team===0?vx<.15:vx>-.15){vx=direct[0];vy=direct[1];}
+  else [vx,vy]=normalized(vx*.78+direct[0]*.22,vy*.78+direct[1]*.22);
+ }
+ b.holder=null;b.x=owner.x+vx*23;b.y=owner.y+vy*23;
+ const speed=kind==='shoot'?570:330;b.vx=vx*speed;b.vy=vy*speed;b.lock=.24;
+ sfx(kind==='shoot'?'kick':'pass');
+}
+function steer(p,tx,ty,spd,dt){const d=length(tx-p.x,ty-p.y);if(d<5)return;const dx=(tx-p.x)/d,dy=(ty-p.y)/d; const step=Math.min(spd*dt,d);p.x+=dx*step;p.y+=dy*step;p.dx=dx;p.dy=dy}
+function cpuTarget(p,holder,dt){const side=p.team,forward=side===0?1:-1;
+ if(p.gk){steer(p,side===0?L+23:R-23,clamp(game.ball.y,MID-78,MID+78),158,dt);return;}
+ if(holder===p){const targetX=side===0?R-48:L+48;steer(p,targetX,clamp(MID+(p.index-2)*18,T+90,B-90),132,dt);if(Math.abs(targetX-p.x)<170||Math.random()<dt*.10)kick(side,'shoot');return;}
+ const b=game.ball;
+ const opponentHolds=holder&&holder.team!==side;
+ const contenders=game.players.filter(q=>q.team===side&&!q.gk&&q!==holder&&q.team*5+q.index!==game.selected[side]);
+ const near=contenders.sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y))[0];
+ const isNear=near===p && (!holder||opponentHolds);
+ if(isNear){steer(p,b.x,b.y,148,dt);return;}
+ const form=initial[p.index];let x=side===0?form[0]:W-form[0];let y=form[1];
+ if(holder&&holder.team===side){x=clamp(x+forward*85,L+40,R-40);y=clamp(y+(b.y-MID)*.24,T+30,B-30)}
+ else if(opponentHolds){x=clamp(x+forward*40,L+30,R-30);y=clamp(y+(b.y-MID)*.14,T+30,B-30)}
+ steer(p,x,y,112,dt);
+}
+function takeBall(p){const b=game.ball;b.holder=p.team*5+p.index;b.vx=0;b.vy=0;b.lock=.35;if(!p.gk && (mode==='solo'?p.team===0:true)){game.selected[p.team]=p.team*5+p.index;} }
+function resolveScore(team){game.scores[team]++;game.lastScore=team;game.goalPause=2.25;sfx('goal');flashUntil=performance.now()+1850;$('goalFlash').textContent='¡GOOOOL!';$('goalFlash').hidden=false;$('statusText').textContent=(team===0?'¡GOL DE ROJOS!':'¡GOL DE AZULES!');setScore();restartPositions(1-team);}
+function step(dt){if(!game||game.ended)return;
+ if(game.goalPause>0){game.goalPause-=dt;if(game.goalPause<=0){$('goalFlash').hidden=true;$('statusText').textContent='¡A JUGAR!';}return;}
+ game.time=Math.max(0,game.time-dt);if(game.time===0){endGame();return;}
+ const b=game.ball;b.lock=Math.max(0,b.lock-dt);
+ const in0=inputFor(0),in1=inputFor(1);
+ const inputs=[in0,mode==='solo'?null:in1];
+ for(let side=0;side<2;side++){
+  const inp=inputs[side];if(inp&&inp.sw)switchPlayer(side);
+  if(inp&&(inp.shoot||inp.pass))kick(side,inp.shoot?'shoot':'pass');
+ }
+ const holder=b.holder===null?null:game.players[b.holder];
+ for(const p of game.players){
+  const idx=p.team*5+p.index;const inpt=inputs[p.team];
+  if(!p.gk&&inpt&&game.selected[p.team]===idx){
+   const speed=196; p.x+=inpt.x*speed*dt;p.y+=inpt.y*speed*dt;
+   if(Math.abs(inpt.x)+Math.abs(inpt.y)>.07){p.dx=inpt.x;p.dy=inpt.y;}
+  }else cpuTarget(p,holder,dt);
+  p.x=clamp(p.x,L+17,R-17);p.y=clamp(p.y,T+17,B-17);
+ }
+ // Evita superposiciones, sin bloquear la movilidad.
+ for(let i=0;i<game.players.length;i++)for(let j=i+1;j<game.players.length;j++){
+  const a=game.players[i],c=game.players[j],d=length(a.x-c.x,a.y-c.y);
+  if(d>0&&d<31){const push=(31-d)*.35,dx=(a.x-c.x)/d,dy=(a.y-c.y)/d;a.x=clamp(a.x+dx*push,L+17,R-17);a.y=clamp(a.y+dy*push,T+17,B-17);c.x=clamp(c.x-dx*push,L+17,R-17);c.y=clamp(c.y-dy*push,T+17,B-17);}
+ }
+ if(b.holder!==null){const o=game.players[b.holder];b.x=o.x+o.dx*21;b.y=o.y+o.dy*21;
+  if(b.lock<=0){const adversary=game.players.filter(p=>p.team!==o.team&&!p.gk).sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y))[0];if(adversary&&length(adversary.x-b.x,adversary.y-b.y)<19){takeBall(adversary);sfx('steal');}}
+ }else{
+  b.x+=b.vx*dt;b.y+=b.vy*dt;
+  const friction=Math.pow(.988,dt*60);b.vx*=friction;b.vy*=friction;
+  if(b.y<T+7){b.y=T+7;b.vy=Math.abs(b.vy)*.7;}if(b.y>B-7){b.y=B-7;b.vy=-Math.abs(b.vy)*.7;}
+  if(b.x<=L+1){if(Math.abs(b.y-MID)<GOAL){resolveScore(1);return;}b.x=L+2;b.vx=Math.abs(b.vx)*.75;}
+  if(b.x>=R-1){if(Math.abs(b.y-MID)<GOAL){resolveScore(0);return;}b.x=R-2;b.vx=-Math.abs(b.vx)*.75;}
+  if(b.lock<=0){const candidates=game.players.filter(p=>length(p.x-b.x,p.y-b.y)<22).sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y));if(candidates.length){const p=candidates[0];if(p.gk){b.vx=p.team===0?300:-300;b.vy=(b.y-MID)*1.7;b.lock=.35;sfx('kick');}else takeBall(p);}}
+ }
+ // Un guardameta puede despejar el balón cuando le llega.
+ if(b.holder!==null){const p=game.players[b.holder];if(p.gk){kick(p.team,'pass');}}
+ setScore();
+ if(mode==='host'){remote.shoot=false;remote.pass=false;remote.sw=false;}
+ touch.shoot=false;touch.pass=false;touch.sw=false;pressed.clear();
+}
+function endGame(){if(!game||gameEnded)return;game.ended=true;gameEnded=true;sfx('end');$('goalFlash').hidden=true;const a=game.scores[0],b=game.scores[1];$('resultTitle').textContent=a===b?'¡EMPATE!':a>b?'¡GANARON LOS ROJOS!':'¡GANARON LOS AZULES!';$('resultDesc').textContent=`Resultado final: Rojos ${a} — ${b} Azules`;$('resultOverlay').hidden=false;$('againBtn').hidden=mode==='guest';if(mode==='host')sendNetwork({type:'end',scores:game.scores});}
+function render(){if(!game)return;
+ const c=ctx;c.clearRect(0,0,W,H);
+ c.fillStyle='#163b28';c.fillRect(0,0,W,H);
+ // Gradas y carteles de publicidad alrededor de la cancha.
+ for(let i=0;i<20;i++){c.fillStyle=i%2?'#386049':'#456f55';c.fillRect(i*50,0,49,59);c.fillRect(i*50,540,49,60);}
+ for(let i=0;i<17;i++){c.fillStyle=i%2?'#2d653f':'#225b39';c.fillRect(L+i*(R-L)/17,T,(R-L)/17+1,B-T);}
+ c.fillStyle='#0d2b1b';c.fillRect(L-14,MID-GOAL-13,14,GOAL*2+26);c.fillRect(R,MID-GOAL-13,14,GOAL*2+26);
+ c.fillStyle='#e9f4d5';c.fillRect(L-15,MID-GOAL-3,15,6);c.fillRect(L-15,MID+GOAL-3,15,6);c.fillRect(R,MID-GOAL-3,15,6);c.fillRect(R,MID+GOAL-3,15,6);
+ c.strokeStyle='#f5f7dfd9';c.lineWidth=2.7;c.strokeRect(L,T,R-L,B-T);c.beginPath();c.moveTo(W/2,T);c.lineTo(W/2,B);c.stroke();
+ c.beginPath();c.arc(W/2,MID,80,0,TAU);c.stroke();c.beginPath();c.arc(W/2,MID,3,0,TAU);c.fillStyle='#f5f7d9';c.fill();
+ c.strokeRect(L,MID-140,125,280);c.strokeRect(R-125,MID-140,125,280);c.strokeRect(L,MID-81,46,162);c.strokeRect(R-46,MID-81,46,162);
+ for(const x of [L+95,R-95]){c.beginPath();c.arc(x,MID,3,0,TAU);c.fill();}
+ c.font='900 15px system-ui';c.textAlign='center';c.fillStyle='#d0e7ba74';c.fillText('RETRO 06',W/2,30);c.fillText('EL FÚTBOL ES TUYO',W/2,579);
+ const ys=[147,227,307,387,467];for(let i=0;i<ys.length;i++){c.fillStyle=i%2?'#8ab68b':'#ffdf91';c.fillRect(20,ys[i],24,7);c.fillRect(955,ys[i],24,7);}
+ const b=game.ball;
+ const active=mode==='guest'?1:0;
+ for(const p of game.players){
+  const chosen=game.selected[p.team]===p.team*5+p.index&&(!p.gk);
+  // sombra, aura de jugador controlado.
+  c.beginPath();c.ellipse(p.x+4,p.y+13,19,7,0,0,TAU);c.fillStyle='#071f1766';c.fill();
+  if(chosen){c.beginPath();c.arc(p.x,p.y,24,0,TAU);c.strokeStyle=p.team===0?'#ffe98b':'#b7d9ff';c.lineWidth=4;c.stroke();
+   c.beginPath();c.moveTo(p.x,p.y-39);c.lineTo(p.x-8,p.y-51);c.lineTo(p.x+8,p.y-51);c.closePath();c.fillStyle=p.team===active?'#ffe582':'#d7e5e4';c.fill();}
+  c.beginPath();c.arc(p.x,p.y,16,0,TAU);c.fillStyle=p.team===0?'#ea6660':'#5eace8';c.fill();c.strokeStyle='#f3e9d7';c.lineWidth=2.8;c.stroke();
+  c.beginPath();c.arc(p.x+p.dx*6,p.y+p.dy*6,4,0,TAU);c.fillStyle=p.team===0?'#ffc0b1':'#c6e9ff';c.fill();
+  c.font='950 15px system-ui';c.fillStyle='#fffef3';c.textAlign='center';c.textBaseline='middle';c.fillText(p.gk?'1':String(p.n),p.x,p.y+1);
+ }
+ c.beginPath();c.ellipse(b.x+4,b.y+7,9,4,0,0,TAU);c.fillStyle='#0000006b';c.fill();
+ c.beginPath();c.arc(b.x,b.y,9,0,TAU);c.fillStyle='#fffefa';c.fill();c.strokeStyle='#1b3427';c.lineWidth=1.7;c.stroke();
+ c.beginPath();c.arc(b.x,b.y,3.5,0,TAU);c.fillStyle='#27362d';c.fill();
+ for(let i=0;i<5;i++){const a=TAU*i/5;c.beginPath();c.arc(b.x+6*Math.cos(a),b.y+6*Math.sin(a),1.6,0,TAU);c.fill();}
+}
+function animate(now){if(mode==='menu'||mode==='lobby'){clockId=0;return;}
+ const dt=Math.min((now-lastFrame)/1000,.033);lastFrame=now;
+ if(mode!=='guest'){step(dt);if(mode==='host'&&conn&&conn.open&&now-hostSnapshot>=65){sendNetwork({type:'state',state:game});hostSnapshot=now;}}
+ else sendGuestInput(now);
+ if(flashUntil&&now>flashUntil){flashUntil=0;$('goalFlash').hidden=true;}
+ render();clockId=requestAnimationFrame(animate);
+}
+function beginGame(newMode){makeAudio();mode=newMode;show('game');$('resultOverlay').hidden=true;createGame();
+ $('roleText').textContent=newMode==='guest'?'Manejás a los AZULES 🔵':newMode==='local'?'ROJOS (WASD) · AZULES (flechas)':'Manejás a los ROJOS 🔴';
+ $('keyHelp').textContent=newMode==='local'?'Rojo: WASD / ESPACIO / SHIFT / C · Azul: FLECHAS / ENTER / M / N':'Movete: WASD · Tiro: ESPACIO · Pase: SHIFT · Cambio: C';
+ $('touchUI').hidden=newMode==='local';sfx('start');
+ if(clockId)cancelAnimationFrame(clockId);lastFrame=performance.now();clockId=requestAnimationFrame(animate);
+}
+function cleanup(){if(clockId){cancelAnimationFrame(clockId);clockId=0;}if(netTimer)clearInterval(netTimer);netTimer=0;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;room='';mode='menu';game=null;keys.clear();pressed.clear();remote={x:0,y:0,shoot:false,pass:false,sw:false};touch={x:0,y:0,shoot:false,pass:false,sw:false};$('resultOverlay').hidden=true;$('goalFlash').hidden=true;show('menu')}
+function netAvailable(){if(typeof window.Peer!=='function'){toast('No se pudo cargar la conexión online. Comprobá internet y recargá el juego.',true);return false;}if(!window.isSecureContext&&location.protocol!=='http:'){toast('Para jugar online, abrí el juego desde un enlace HTTPS.',true);return false;}return true;}
+function setupPeer(id){const p=new Peer(id||undefined,{debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});p.on('error',err=>{if(mode==='lobby')toast('Error de conexión: '+(err?.type||err?.message||'No disponible')+'. Revisá el código o intentá otra vez.',true);else if(mode==='host'||mode==='guest')$('statusText').textContent='⚠️ Problema de conexión';});p.on('disconnected',()=>{if(mode==='lobby')toast('Se perdió conexión con el servicio de salas. Podés volver a intentar.',true);});return p;}
+function showLobby(type){makeAudio();mode='lobby';show('lobby');$('hostControls').hidden=type!=='host';$('joinControls').hidden=type!=='join';$('lobbyTitle').textContent=type==='host'?'Crear partido online':'Unirse a partido';$('lobbyHint').textContent=type==='host'?'Enviá este código o enlace a tu rival. El partido empieza automáticamente cuando se conecta.':'Pedile a tu amigo el código de 6 dígitos.';$('lobbyTag').textContent=type==='host'?'SOS EL LOCAL 🔴':'SOS EL VISITANTE 🔵';toast(type==='host'?'Creando sala online...':'Ingresá el código de la sala para entrar.');}
+function createRoom(){showLobby('host');if(!netAvailable())return;const digits=String(Math.floor(Math.random()*1000000)).padStart(6,'0');room=digits;const id='retro06-'+digits;$('roomCode').textContent=digits;peer=setupPeer(id);peer.on('open',()=>{toast('Sala creada. Esperando al rival...');});peer.on('connection',c=>{if(conn&&conn.open){c.close();return;}conn=c;wireConnection(true)});}
+function joinRoom(){const v=$('codeInput').value.replace(/\D/g,'').slice(0,6);$('codeInput').value=v;if(v.length!==6){toast('Ingresá un código válido de 6 números.',true);return;}if(!netAvailable())return;try{conn?.close();peer?.destroy()}catch(e){}room=v;toast('Conectando con la sala '+v+'...');peer=setupPeer();peer.on('open',()=>{conn=peer.connect('retro06-'+room,{reliable:true,serialization:'json'});wireConnection(false)});}
+function sendNetwork(obj){if(conn&&conn.open){try{conn.send(obj)}catch(e){}}}
+function wireConnection(isHost){const c=conn;c.on('open',()=>{if(conn!==c)return;if(isHost){toast('¡Rival conectado! Arranca el partido.');beginGame('host');sendNetwork({type:'begin',duration});sendNetwork({type:'state',state:game});}
+  else{toast('¡Conexión establecida! Cargando partido...');$('connectBtn').disabled=true;}
+ });
+ c.on('data',msg=>{if(conn!==c||!msg||typeof msg!=='object')return;
+   if(isHost){if(msg.type==='input'&&msg.input&&mode==='host'){const v=msg.input;remote={x:clamp(Number(v.x)||0,-1,1),y:clamp(Number(v.y)||0,-1,1),shoot:Boolean(v.shoot),pass:Boolean(v.pass),sw:Boolean(v.sw)};}}
+   else{if(msg.type==='begin'){duration=Number(msg.duration)||120;beginGame('guest');}
+   if(msg.type==='state'&&msg.state&&mode==='guest'){game=msg.state;setScore();if(game.goalPause>0){$('goalFlash').hidden=false;$('goalFlash').textContent='¡GOOOOL!';$('statusText').textContent='¡GOL!';}else{$('goalFlash').hidden=true;$('statusText').textContent='¡A JUGAR!';}if(game.ended&&!gameEnded)endGame();}
+   if(msg.type==='end'&&mode==='guest'&&game){game.scores=msg.scores;endGame();}}
+ });
+ c.on('close',()=>{if(conn!==c)return;remote.x=0;remote.y=0;if(mode==='host'||mode==='guest'){if(game&&!game.ended){$('statusText').textContent='⚠️ El rival se desconectó';if(mode==='guest'){endGame();$('resultTitle').textContent='RIVAL DESCONECTADO';}else{$('statusText').textContent='⚠️ El rival se desconectó · Podés salir';}}}else toast('Se cerró la conexión. Volvé a intentar.',true);});
+ c.on('error',()=>toast('No se pudo establecer conexión. Probá otro internet o recreá la sala.',true));
+}
+function getGuestInput(){let x=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0),y=(keys.has('KeyS')?1:0)-(keys.has('KeyW')?1:0);[x,y]=normalized(x+touch.x,y+touch.y);return{x,y,shoot:pressed.has('Space')||touch.shoot,pass:pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.pass,sw:pressed.has('KeyC')||touch.sw};}
+function sendGuestInput(now){if(now-guestLastPacket<48)return;guestLastPacket=now;const inp=getGuestInput();sendNetwork({type:'input',input:inp});pressed.clear();touch.shoot=false;touch.pass=false;touch.sw=false;}
+function copyString(v){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(v).then(()=>true).catch(()=>fallbackCopy(v));return Promise.resolve(fallbackCopy(v));}
+function fallbackCopy(v){const t=document.createElement('textarea');t.value=v;t.style.position='fixed';t.style.opacity='0';document.body.append(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}t.remove();return ok;}
+function roomUrl(){const u=new URL(location.href);u.searchParams.set('room',room);return u.toString()}
+$('copyCode').onclick=()=>copyString(room).then(ok=>toast(ok?'¡Código copiado! Enviáselo a tu rival.':'Copiá este código: '+room,!ok));
+$('copyLink').onclick=()=>copyString(roomUrl()).then(ok=>toast(ok?'¡Enlace copiado! Pegalo en WhatsApp.':'Enlace: '+roomUrl(),!ok));
+$('soloBtn').onclick=()=>beginGame('solo');
+$('localBtn').onclick=()=>beginGame('local');
+$('hostBtn').onclick=createRoom;
+$('joinBtn').onclick=()=>{showLobby('join');if(sourceCode)$('codeInput').value=sourceCode;};
+$('connectBtn').onclick=joinRoom;
+$('backLobby').onclick=cleanup;
+$('exitBtn').onclick=()=>{if(window.confirm('¿Salir del partido?'))cleanup()};
+$('resultExitBtn').onclick=cleanup;
+$('againBtn').onclick=()=>{if(mode==='host'&&conn?.open){beginGame('host');sendNetwork({type:'begin',duration});sendNetwork({type:'state',state:game});}else if(mode==='solo'||mode==='local')beginGame(mode);else cleanup()};
+$('timeOptions').addEventListener('click',e=>{const b=e.target.closest('[data-min]');if(!b)return;duration=Number(b.dataset.min)*60;document.querySelectorAll('[data-min]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+window.addEventListener('keydown',e=>{if(mode==='menu'||mode==='lobby')return;const allowed=['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','ShiftLeft','ShiftRight','Enter'];if(allowed.includes(e.code))e.preventDefault();keys.add(e.code);if(!e.repeat)pressed.add(e.code)},{passive:false});
+window.addEventListener('keyup',e=>keys.delete(e.code));
+window.addEventListener('blur',()=>{keys.clear();pressed.clear();touch.x=0;touch.y=0;resetStick();});
+function bindTouch(id,action){$(id).addEventListener('pointerdown',e=>{e.preventDefault();makeAudio();if(mode==='guest'||mode==='solo'||mode==='host')touch[action]=true;},{passive:false});}
+bindTouch('shootBtn','shoot');bindTouch('passBtn','pass');bindTouch('switchBtn','sw');
+const joy=$('joystick'),stick=$('stick');let joyPointer=null;
+function resetStick(){stick.style.left='50%';stick.style.top='50%';}
+function moveStick(e){const box=joy.getBoundingClientRect(),cx=box.left+box.width/2,cy=box.top+box.height/2;const dx=e.clientX-cx,dy=e.clientY-cy,max=box.width*.34,d=length(dx,dy),f=d>max?max/d:1;touch.x=clamp(dx/max,-1,1);touch.y=clamp(dy/max,-1,1);if(d>max){touch.x=dx/d;touch.y=dy/d;}stick.style.left=`calc(50% + ${dx*f}px)`;stick.style.top=`calc(50% + ${dy*f}px)`;}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();if(joyPointer!==null)return;joyPointer=e.pointerId;makeAudio();joy.setPointerCapture(e.pointerId);moveStick(e)},{passive:false});
+joy.addEventListener('pointermove',e=>{if(joyPointer===e.pointerId){e.preventDefault();moveStick(e)}},{passive:false});
+function endStick(e){if(joyPointer!==e.pointerId)return;joyPointer=null;touch.x=touch.y=0;resetStick()}
+joy.addEventListener('pointerup',endStick);joy.addEventListener('pointercancel',endStick);
+window.addEventListener('pagehide',()=>{try{conn?.close()}catch(e){}});
+// Si compartieron un enlace con ?room=123456, simplifica entrar desde el segundo celular.
+try{const params=new URL(location.href).searchParams,code=(params.get('room')||'').replace(/\D/g,'').slice(0,6);if(code.length===6){sourceCode=code;showLobby('join');$('codeInput').value=code;toast('Sala '+code+' detectada. Tocá “Unirme a la cancha” para entrar.');}}catch(e){}
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#07110b">
+<title>Zombie Plague Web — Motor experimental</title>
+<link rel="stylesheet" href="./style.css">
+<script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xash3d-fwgs@latest/dist/raw.js"></script>
+<script defer src="./controls.js"></script>
+<script defer src="./app.js"></script>
+</head>
+<body>
+<canvas id="engine" aria-label="Counter-Strike 1.6 — motor Xash3D experimental"></canvas>
+<main id="intro">
+<div class="panel">
+<div class="kicker">ZOMBIE PLAGUE WEB · PRE-ALFA 0.4</div>
+<h1>ARRANCAR EL<br>MOTOR REAL</h1>
+<p>Esta pantalla intenta ejecutar <strong>Counter-Strike 1.6 con Xash3D y WebAssembly</strong> en el navegador. Ya no es el escenario dibujado de la demo.</p>
+<p>Para cargar los modelos, mapas, sonidos y texturas necesitás un ZIP preparado desde tu propia instalación legítima de CS 1.6. El ZIP debe contener <code>valve/</code> y <code>cstrike/</code> en su raíz. <strong>Se lee localmente en el navegador: no se envía a GitHub ni a nuestros servidores.</strong></p>
+<div class="files">
+<label for="archive"><strong>1. Seleccionar archivos del juego (.zip)</strong></label>
+<input id="archive" type="file" accept=".zip,application/zip">
+<div id="zip-info" class="footnote">Todavía no seleccionaste un ZIP.</div>
+</div>
+<div class="actions">
+<button class="action primary" type="button" id="start" disabled>2. INICIAR MOTOR</button>
+<a class="action" href="../demo/index.html?touch=1">VOLVER A DEMO TÁCTIL</a>
+<a class="action" href="../index.html">INICIO</a>
+</div>
+<div id="phase" role="status" aria-live="polite">Preparado para seleccionar archivos.</div>
+<progress id="bar" max="100" value="0"></progress>
+<pre id="debug" aria-label="Registro de inicio"></pre>
+<p class="footnote" style="margin-top:17px"><strong>Estado:</strong> arranque experimental, sin garantía de compatibilidad en iOS. Todavía no incluye Zombie Plague instalado, un servidor online ni bots configurados. La carga puede requerir cientos de MB de memoria; si se cierra la pestaña es posible que iOS haya agotado la RAM.</p>
+</div>
+</main>
+<div id="hud">
+<div id="aim-pad" aria-label="Mover la cámara"></div>
+<div id="top"><div class="brand">ZOMBIE PLAGUE WEB</div><div class="tag">MOTOR EXPERIMENTAL</div><button type="button" id="menu-open">AJUSTES</button></div>
+<div id="status">Inicializando...</div>
+<div id="stick" role="application" aria-label="Joystick de movimiento"><div id="knob"></div></div>
+<div id="buttons">
+<button type="button" class="control" data-cmd="+reload">RECARGAR</button>
+<button type="button" class="control" data-cmd="+jump">SALTAR</button>
+<button type="button" class="control fire" data-cmd="+attack">DISPARAR</button>
+<button type="button" class="control" data-cmd="+duck">AGACHAR</button>
+<button type="button" class="control" data-cmd="+use">USAR</button>
+<button type="button" class="control" data-tap="say /zpmenu">ZP</button>
+<button type="button" class="control" data-tap="invnext">ARMA</button>
+</div>
+<button type="button" id="gear" aria-label="Abrir opciones">⚙</button>
+<div id="menu">
+<div class="box">
+<h2>Control móvil experimental</h2>
+<p>Arrastrá el joystick izquierdo para moverte. Deslizá el dedo por la derecha para girar. En este port todavía no está confirmada la compatibilidad con el ratón virtual ni el modo táctil del motor.</p>
+<label>Modo de apuntado
+<select id="aim-mode">
+<option value="commands">Giro continuo con comandos (experimental)</option>
+<option value="mouse">Eventos de ratón virtual (experimental)</option>
+</select></label>
+<div class="actions">
+<button type="button" class="action slim" id="map-load">CARGAR DE_DUST2</button>
+<button type="button" class="action slim" id="menu-close">SEGUIR JUGANDO</button>
+<button type="button" class="action slim" id="back">VOLVER AL INICIO</button>
+</div>
+<p class="footnote">Si el motor no reconoce los comandos, necesitaremos adaptar el port WebAssembly. El botón ZP sólo funcionará al conectarse a un servidor con Zombie Plague.</p>
+</div></div>
+</div>
+<div id="portrait"><strong>GIRÁ EL IPHONE ↻</strong><span>Esta prueba fue diseñada para jugar horizontalmente. Desactivá el bloqueo de orientación.</span></div>
+</body></html>

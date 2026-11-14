@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#17122f">
+  <meta name="description" content="Charadas de películas infantiles: un juego de mímica para jugar en familia o con amigos. No necesita bibliotecas externas.">
+  <title>¡Mímica de peli! · Charadas infantiles</title>
+  <style>
+    :root{color-scheme:dark;--bg:#17122f;--card:#292043;--card2:#392750;--text:#fffdf9;--muted:#c6bad8;--coral:#ff7e72;--yellow:#ffe38b;--mint:#81e6c4;--purple:#b4a3fa;--line:rgba(255,255,255,.13);--shadow:0 18px 60px rgba(11,7,29,.34)}
+    *{box-sizing:border-box}
+    html{min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+    body{min-height:100vh;min-height:100dvh;margin:0;font-family:ui-rounded,"SF Pro Rounded","Nunito",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 16% 9%,#513467 0%,transparent 33%),radial-gradient(ellipse at 92% 80%,#352759 0%,transparent 44%),var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
+    button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-appearance:none;appearance:none;user-select:none;-webkit-user-select:none}
+    button:focus-visible{outline:3px solid var(--yellow);outline-offset:4px}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    [hidden]{display:none!important}
+    .app{width:calc(100% - 28px);max-width:570px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 0 max(26px,env(safe-area-inset-bottom));min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:21px}
+    .brand{display:flex;align-items:center;gap:11px;font-size:17px;font-weight:900;letter-spacing:-.6px}
+    .brand-icon{display:grid;place-items:center;width:42px;height:42px;background:linear-gradient(135deg,#ffb588,#ff668f);border-radius:15px;box-shadow:0 6px 22px #ff648634;font-size:24px;transform:rotate(-6deg)}
+    .mini{font-size:11px;font-weight:900;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+    .header-button{border:1px solid var(--line);color:#f4eeff;background:#ffffff0a;border-radius:13px;padding:10px 14px;font-size:13px;font-weight:800}
+    .screen{flex:1;display:flex;flex-direction:column;min-height:0;animation:pop .25s ease-out}
+    @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    h1,h2,p{margin-top:0}
+    .heading{font-size:clamp(39px,9vw,61px);letter-spacing:-2.5px;line-height:1.02;margin:13px 0 12px;font-weight:950}
+    .heading .highlight{color:var(--yellow)}
+    .lead{font-size:16px;line-height:1.6;color:var(--muted);max-width:480px;margin-bottom:26px}
+    .sticker{align-self:flex-start;font-size:13px;color:#2a1c3f;font-weight:950;background:var(--yellow);padding:9px 13px;border-radius:99px;transform:rotate(-3deg)}
+    .config{border:1px solid var(--line);border-radius:25px;padding:21px;background:linear-gradient(145deg,#322546c9,#241d3eea);box-shadow:var(--shadow)}
+    .field{margin-bottom:19px}.field:last-of-type{margin-bottom:23px}
+    .field-label{font-size:14px;font-weight:850;margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}.field-label small{color:var(--muted);font-weight:500}
+    .choices{display:flex;gap:9px}.choice{flex:1;border:1.5px solid #6e5b83;background:#ffffff08;border-radius:14px;min-height:48px;color:white;font-weight:800;font-size:14px;padding:9px 6px}
+    .choice[aria-pressed=true]{background:#fff1bd;color:#2d2247;border-color:var(--yellow);box-shadow:0 4px 20px #ffe38b20}
+    .primary{width:100%;border:0;background:linear-gradient(135deg,#ffdc83,#ffa36c);color:#312039;border-radius:17px;min-height:58px;font-size:17px;font-weight:950;box-shadow:0 9px 25px #f9ac7f27}
+    .primary:active,.action:active,.choice:active{transform:scale(.985)}
+    .instructions{margin:23px 3px 0;display:flex;gap:11px;align-items:flex-start;color:#d8cce8;font-size:13px;line-height:1.5}
+    .instructions span{font-size:22px;line-height:1.1}
+    .game-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+    .meta-title{font-size:13px;color:var(--muted);font-weight:700}
+    .meta-strong{font-size:20px;font-weight:950;letter-spacing:-.4px;margin-top:4px}
+    .scoreboard{display:flex;gap:9px;margin-bottom:15px}
+    .score{border:1px solid var(--line);border-radius:15px;flex:1;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;background:#ffffff09;color:var(--muted);font-size:13px;font-weight:850}
+    .score.active{background:#ffe38b12;border-color:#ffe38b8c;color:#fff8de}
+    .score b{font-size:23px;font-variant-numeric:tabular-nums;color:var(--text)}
+    .timer-wrap{display:flex;align-items:center;gap:12px;margin:5px 0 14px}
+    .timer{font-variant-numeric:tabular-nums;font-size:34px;font-weight:950;letter-spacing:-1px;width:100px;flex-shrink:0}
+    .timer.low{color:#ff938a;animation:pulse .8s infinite alternate}
+    @keyframes pulse{to{opacity:.6}}
+    .track{height:13px;background:#ffffff20;border-radius:99px;flex:1;overflow:hidden}
+    .bar{height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#8febd1,#ffe38b);transition:width .15s linear}
+    .bar.low{background:linear-gradient(90deg,#ff8177,#ffc48e)}
+    .film-card{position:relative;isolation:isolate;overflow:hidden;min-height:240px;min-height:clamp(240px,38dvh,450px);border:2px solid #ffffff16;border-radius:30px;background:radial-gradient(circle at 50% -5%,#654a87 0%,transparent 70%),linear-gradient(160deg,#51355e,#2a2454);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 18px;box-shadow:var(--shadow);flex:1}
+    .film-card:before,.film-card:after{content:"✦";position:absolute;z-index:-1;color:#ffffff23}.film-card:before{left:18px;top:22px;font-size:40px}.film-card:after{right:17px;bottom:10px;font-size:62px}
+    .poster-emoji{font-size:clamp(54px,13vw,86px);line-height:1.25;filter:drop-shadow(0 8px 15px #0e0a2b55);margin-bottom:14px}
+    .eyebrow{font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:2.6px;color:#eee0ff;margin-bottom:17px}
+    .film-name{font-size:clamp(35px,8.5vw,56px);font-weight:950;line-height:1.06;letter-spacing:-1.65px;text-wrap:balance;overflow-wrap:break-word;margin:0;max-width:100%}
+    .hint{color:#e3d6ef;font-size:13px;line-height:1.5;margin-top:21px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}
+    .action{border:0;border-radius:20px;min-height:85px;font-weight:950;font-size:20px;display:flex;align-items:center;justify-content:center;gap:9px}
+    .action.pass{color:#382745;background:#f4c5eb}.action.right{color:#183b34;background:#91ebcd}
+    .small-actions{margin-top:12px;display:flex;justify-content:center;gap:18px}.text-button{border:0;background:transparent;color:#d8cbe8;font-weight:800;padding:10px;font-size:13px}
+    .center-screen{flex:1;justify-content:center;text-align:center;align-items:center;padding-bottom:18px}
+    .big-emoji{font-size:76px;margin-bottom:8px}.result-title{font-size:clamp(34px,8vw,50px);font-weight:950;letter-spacing:-1.5px;line-height:1.1;margin:6px 0 11px}
+    .result-copy{font-size:16px;line-height:1.5;color:var(--muted);margin:0 0 20px}
+    .result-score{font-size:82px;font-weight:950;letter-spacing:-3px;line-height:1;color:var(--yellow);margin:9px 0}
+    .result-label{font-size:14px;font-weight:800;color:var(--muted);margin-bottom:24px}
+    .result-summary{width:100%;display:flex;justify-content:space-between;gap:14px;background:#ffffff0e;border:1px solid var(--line);border-radius:16px;padding:17px 20px;margin:8px 0 22px;font-weight:800}
+    .result-summary span{color:var(--muted)}
+    .end-scores{width:100%;display:flex;gap:11px;margin:12px 0 24px}.end-score{flex:1;border-radius:18px;border:1px solid var(--line);background:#ffffff0e;padding:17px 10px}.end-score b{display:block;font-size:38px;margin:7px 0;color:var(--yellow)}.end-score span{font-size:13px;color:#d8c8ea}
+    .secondary{width:100%;margin-top:12px;background:transparent;border:1px solid var(--line);border-radius:17px;min-height:53px;color:white;font-weight:850}
+    .footer{margin-top:24px;font-size:11px;color:#998cac;text-align:center}
+    body.is-playing .footer{display:none}
+    body.is-playing .app{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}
+    body.is-playing .top{margin-bottom:9px}
+    body.is-playing .actions{position:sticky;bottom:0;z-index:5;padding-bottom:max(4px,env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent 0%,#17122fe8 35%)}
+    .notice{background:#ffe38b16;color:#fff0ba;padding:13px 14px;border-radius:13px;border:1px solid #ffe38b5c;margin:16px 0 0;font-size:13px;line-height:1.5}
+    @media(max-height:740px){body.is-playing .film-card{min-height:170px}body.is-playing .game-top{margin-bottom:7px}body.is-playing .scoreboard{margin-bottom:6px}body.is-playing .timer-wrap{margin:0 0 7px}body.is-playing .action{min-height:63px}body.is-playing .actions{margin-top:8px}body.is-playing .small-actions{margin-top:3px}body.is-playing .poster-emoji{font-size:48px;margin-bottom:5px}body.is-playing .hint{margin-top:8px}body.is-playing .eyebrow{margin-bottom:7px}body.is-playing .film-card{padding:18px 13px}}
+    @media(max-width:370px){.app{width:calc(100% - 20px);padding-top:14px}.config{padding:16px}.action{min-height:75px;font-size:17px}.film-card{min-height:260px}.score{padding:9px 10px}.film-name{font-size:33px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="brand"><div class="brand-icon" aria-hidden="true">🎬</div><div>¡Mímica de peli!<div class="mini">Edición infantil</div></div></div>
+      <button class="header-button" id="restartTop" hidden type="button">↻ Reiniciar</button>
+    </header>
+
+    <section id="setup" class="screen" aria-labelledby="welcomeTitle">
+      <span class="sticker">🍿 ¡Diversión en familia!</span>
+      <h1 class="heading" id="welcomeTitle">Adiviná la <span class="highlight">película.</span></h1>
+      <p class="lead">Actuá sin hablar y hacé que tu equipo adivine. Solo películas infantiles súper conocidas, para que todos puedan jugar.</p>
+      <div class="config">
+        <div class="field">
+          <p class="field-label">¿Cómo juegan?</p>
+          <div class="choices" data-setting="teams" role="group" aria-label="Equipos">
+            <button class="choice" type="button" data-value="1" aria-pressed="false">1 equipo</button>
+            <button class="choice" type="button" data-value="2" aria-pressed="true">2 equipos</button>
+          </div>
+        </div>
+        <div class="field">
+          <p class="field-label">Tiempo por turno</p>
+          <div class="choices" data-setting="seconds" role="group" aria-label="Tiempo por turno">
+            <button class="choice" type="button" data-value="60" aria-pressed="true">1 min</button>
+            <button class="choice" type="button" data-value="90" aria-pressed="false">1:30</button>
+            <button class="choice" type="button" data-value="120" aria-pressed="false">2 min</button>
+          </div>
+        </div>
+        <div class="field">
+          <p class="field-label">Rondas por equipo</p>
+          <div class="choices" data-setting="rounds" role="group" aria-label="Rondas por equipo">
+            <button class="choice" type="button" data-value="3" aria-pressed="true">3 rondas</button>
+            <button class="choice" type="button" data-value="5" aria-pressed="false">5 rondas</button>
+          </div>
+        </div>
+        <button id="startGame" class="primary" type="button">¡Empezar a jugar! →</button>
+      </div>
+      <div class="instructions"><span aria-hidden="true">💡</span><div>Una persona mira la película y la representa con gestos, sin decir palabras. El resto adivina. Tocá <b>¡Acertamos!</b> o <b>Pasar</b> para seguir.</div></div>
+    </section>
+
+    <section id="ready" class="screen center-screen" hidden aria-labelledby="readyTitle">
+      <div class="big-emoji" aria-hidden="true">🎭</div>
+      <div class="mini" id="readyMeta">Ronda 1 de 6</div>
+      <h2 class="result-title" id="readyTitle">¡Preparen los gestos!</h2>
+      <p class="result-copy" id="readyDesc">Es el turno del Equipo 1.</p>
+      <div class="notice">Mostrale el teléfono solamente a quien va a actuar. ¡Nada de hablar ni hacer sonidos!</div>
+      <div style="width:100%;margin-top:24px"><button id="beginRound" class="primary" type="button">▶ Empezar turno</button></div>
+    </section>
+
+    <section id="play" class="screen" hidden aria-labelledby="filmTitle">
+      <div class="game-top"><div><div id="playRound" class="meta-title">Ronda 1 de 6</div><div id="playTeam" class="meta-strong">Equipo 1 🎭</div></div><div class="mini">¡Actuá sin hablar!</div></div>
+      <div class="scoreboard" id="scoreboard"></div>
+      <div class="timer-wrap"><div class="timer" id="timer" aria-label="Tiempo restante">1:00</div><div class="track" role="progressbar" aria-label="Tiempo restante" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" id="timerTrack"><div id="timeBar" class="bar"></div></div></div>
+      <div class="film-card" id="filmCard">
+        <div class="poster-emoji" id="filmEmoji" aria-hidden="true">🎥</div>
+        <div class="eyebrow">Película para actuar</div>
+        <h2 class="film-name" id="filmTitle" aria-live="polite">Toy Story</h2>
+        <div class="hint">¡Usá gestos, movimientos y creatividad!</div>
+      </div>
+      <div class="actions">
+        <button type="button" class="action pass" id="passFilm">↪ Pasar</button>
+        <button type="button" class="action right" id="rightFilm">✓ ¡Acertamos!</button>
+      </div>
+      <div class="small-actions"><button type="button" class="text-button" id="pauseGame">Ⅱ Pausar</button><button type="button" class="text-button" id="endTurn">Terminar turno</button></div>
+    </section>
+
+    <section id="paused" class="screen center-screen" hidden aria-labelledby="pausedTitle">
+      <div class="big-emoji" aria-hidden="true">⏸️</div><h2 class="result-title" id="pausedTitle">Juego en pausa</h2><p class="result-copy">El tiempo está detenido y la película está oculta.</p>
+      <div style="width:100%"><button type="button" id="resumeRound" class="primary">▶ Continuar</button></div>
+    </section>
+
+    <section id="roundEnd" class="screen center-screen" hidden aria-labelledby="roundEndTitle">
+      <div class="big-emoji" aria-hidden="true">🌟</div><div class="mini" id="endRoundMeta">Turno completado</div><h2 class="result-title" id="roundEndTitle">¡Buen trabajo!</h2>
+      <div class="result-score" id="roundPoints">0</div><div class="result-label">películas adivinadas en este turno</div>
+      <div class="result-summary"><span>Películas pasadas</span><b id="roundPasses">0</b></div>
+      <button id="nextRound" class="primary" type="button">Siguiente equipo →</button>
+    </section>
+
+    <section id="finish" class="screen center-screen" hidden aria-labelledby="finishTitle">
+      <div class="big-emoji" aria-hidden="true">🏆</div><div class="mini">¡Fin de la partida!</div><h2 class="result-title" id="finishTitle">¡Qué buen equipo!</h2><p class="result-copy" id="finishDesc">Estos son los resultados.</p>
+      <div class="end-scores" id="finalScores"></div><button id="playAgain" class="primary" type="button">🔄 Jugar otra vez</button><button id="settingsAgain" class="secondary" type="button">⚙️ Cambiar configuración</button>
+    </section>
+    <footer class="footer">🎞️ Más de 70 películas populares · Sin cuentas · Sin publicidad</footer>
+  </main>
+<script>
+  "use strict";
+  // Películas infantiles populares, con títulos habituales en español latinoamericano.
+  const films = [
+    ["Toy Story","🧸"],["Frozen","❄️"],["El rey león","🦁"],["Shrek","👹"],
+    ["Buscando a Nemo","🐠"],["Monsters, Inc.","👾"],["Cars","🏎️"],["Coco","🎸"],
+    ["Encanto","🦋"],["Ratatouille","🐭"],["Kung Fu Panda","🐼"],["Intensamente","😊"],
+    ["Mi villano favorito","🍌"],["Minions","💛"],["Madagascar","🦓"],["La sirenita","🧜‍♀️"],
+    ["Aladdín","🧞"],["La bella y la bestia","🌹"],["Moana","🌊"],["Los increíbles","🦸"],
+    ["Up: una aventura de altura","🎈"],["La princesa y el sapo","🐸"],["Mulán","⚔️"],
+    ["Blancanieves","🍎"],["Cenicienta","👠"],["Peter Pan","🧚"],["Bambi","🦌"],
+    ["Winnie Pooh","🍯"],["101 dálmatas","🐶"],["Lilo y Stitch","👽"],["Zootopia","🦊"],
+    ["Cómo entrenar a tu dragón","🐲"],["La era de hielo","🦣"],["Sonic: la película","🦔"],
+    ["Super Mario Bros.: La película","🍄"],["El gato con botas","🐱"],["Trolls","🌈"],
+    ["Hotel Transilvania","🧛"],["La vida secreta de tus mascotas","🐕"],["Sing: ¡Ven y canta!","🎤"],
+    ["La gran aventura LEGO","🧱"],["La película de Bob Esponja","🧽"],["Los Croods","🪨"],
+    ["Rio","🦜"],["Happy Feet","🐧"],["Bolt","⚡"],["Valiente","🏹"],
+    ["Wall-E","🤖"],["Grandes héroes","🤍"],["La dama y el vagabundo","🐕"],
+    ["Pinocho","🤥"],["Dumbo","🐘"],["La bella durmiente","👑"],["Alicia en el país de las maravillas","🐇"],
+    ["Tarzán","🌴"],["Hércules","💪"],["Pocahontas","🍂"],["El libro de la selva","🐻"],
+    ["Campanita","🧚‍♀️"],["Spirit: el corcel indomable","🐎"],["La familia Mitchell vs. las máquinas","📱"],
+    ["Red","🐼"],["Luca","🐟"],["Elementos","🔥"],["Wish: el poder de los deseos","⭐"],
+    ["El origen de los guardianes","🎅"],["La Navidad de Charlie Brown","🎄"],["Las aventuras de Peabody y Sherman","🐕"],
+    ["El Grinch","🎄"],["La pantera rosa","🩷"],["Los pingüinos de Madagascar","🐧"],
+    ["El espanta tiburones","🦈"],["Las aventuras de Tadeo Jones","🗺️"],["Bee Movie","🐝"],
+    ["El planeta del tesoro","🚀"],["Tierra de osos","🐻"],["Chicken Little","🐣"],["El expreso polar","🚂"],
+    ["La película de Garfield","🐈"],["La película de Peppa Pig","🐷"]
+  ];
+
+  const $ = id => document.getElementById(id);
+  const screens = ["setup","ready","play","paused","roundEnd","finish"];
+  const options = {teams:2,seconds:60,rounds:3};
+  let state = null, clock = null, remainingMs = 0, startedAt = 0;
+  let audioCtx = null;
+
+  function screen(name){
+    screens.forEach(id => {$(id).hidden = id !== name;});
+    document.body.classList.toggle("is-playing",name === "play");
+    window.scrollTo(0,0);
+    $("restartTop").hidden = name === "setup" || name === "finish";
+  }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+    return arr;
+  }
+  function newDeck(){return shuffle(films.map((_,i)=>i));}
+  function nextFilm(){
+    if(!state.deck.length){state.deck=newDeck(); if(state.lastFilm !== null && state.deck.length > 1 && state.deck[state.deck.length-1] === state.lastFilm){[state.deck[0],state.deck[state.deck.length-1]]=[state.deck[state.deck.length-1],state.deck[0]];}}
+    const index=state.deck.pop();state.lastFilm=index;
+    $("filmTitle").textContent=films[index][0];$("filmEmoji").textContent=films[index][1];
+    $("filmCard").style.animation="none";void $("filmCard").offsetWidth;$("filmCard").style.animation="pop .19s ease-out";
+  }
+  function turnTeam(){return state.turn%options.teams;}
+  function totalTurns(){return options.rounds*options.teams;}
+  function showReady(){
+    const team=turnTeam()+1,turn=state.turn+1;
+    $("readyMeta").textContent=`Ronda ${turn} de ${totalTurns()}`;
+    $("readyDesc").textContent=options.teams===1?"¡Es tu turno de hacer mímica!":`¡Es el turno del Equipo ${team}!`;
+    screen("ready");
+  }
+  function startGame(){
+    stopClock();state={turn:0,scores:Array(options.teams).fill(0),roundHits:0,roundPasses:0,deck:newDeck(),lastFilm:null,phase:"ready"};showReady();
+  }
+  function updateScores(){
+    $("scoreboard").replaceChildren();
+    state.scores.forEach((score,i)=>{
+      const el=document.createElement("div");el.className=`score${i===turnTeam()?" active":""}`;
+      const name=document.createElement("span");name.textContent=options.teams===1?"Aciertos":"Equipo "+(i+1);
+      const total=document.createElement("b");total.textContent=score;el.append(name,total);$("scoreboard").append(el);
+    });
+  }
+  function formatTime(ms){const s=Math.ceil(Math.max(0,ms)/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;}
+  function renderTimer(){
+    $("timer").textContent=formatTime(remainingMs);
+    const pct=Math.max(0,Math.min(100,remainingMs/(options.seconds*1000)*100));
+    $("timeBar").style.width=pct+"%";
+    $("timerTrack").setAttribute("aria-valuenow",String(Math.round(pct)));
+    const low=remainingMs <= 10000;
+    $("timer").classList.toggle("low",low);$("timeBar").classList.toggle("low",low);
+  }
+  function unlockAudio(){
+    // iOS WebKit (también usado por Chrome para iPhone) exige que el audio
+    // se habilite durante un toque explícito del usuario.
+    try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!audioCtx)audioCtx=new Audio();if(audioCtx.state==="suspended")audioCtx.resume().catch(()=>{});}catch(_e){}
+  }
+  function beep(freq=620,dur=.09){
+    try{unlockAudio();if(!audioCtx||audioCtx.state!=="running")return;const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type="sine";osc.frequency.value=freq;gain.gain.setValueAtTime(.07,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);osc.connect(gain).connect(audioCtx.destination);osc.start();osc.stop(audioCtx.currentTime+dur);}catch(_e){}
+  }
+  function stopClock(){if(clock!==null){clearInterval(clock);clock=null;}}
+  function tick(){if(!state || state.phase!=="play")return;remainingMs=Math.max(0,remainingMs-(performance.now()-startedAt));startedAt=performance.now();renderTimer();if(remainingMs<=0){beep(340,.28);finishTurn();}}
+  function startClock(){startedAt=performance.now();stopClock();clock=setInterval(tick,100);}
+  function beginRound(){
+    unlockAudio();
+    state.roundHits=0;state.roundPasses=0;state.phase="play";remainingMs=options.seconds*1000;
+    $("playRound").textContent=`Ronda ${state.turn+1} de ${totalTurns()}`;
+    $("playTeam").textContent=options.teams===1?"¡Tu turno! 🎭":`Equipo ${turnTeam()+1} 🎭`;
+    updateScores();nextFilm();renderTimer();screen("play");startClock();
+  }
+  function answer(correct){
+    if(!state || state.phase!=="play")return;
+    tick();if(state.phase!=="play")return;
+    if(correct){state.roundHits++;state.scores[turnTeam()]++;beep(730,.075);updateScores();}
+    else{state.roundPasses++;beep(430,.06);}
+    nextFilm();
+  }
+  function pauseRound(){
+    if(!state || state.phase!=="play")return;tick();if(state.phase!=="play")return;
+    stopClock();state.phase="paused";screen("paused");
+  }
+  function resumeRound(){if(!state || state.phase!=="paused")return;unlockAudio();state.phase="play";screen("play");startClock();}
+  function finishTurn(){
+    if(!state || (state.phase!=="play" && state.phase!=="paused"))return;
+    stopClock();state.phase="roundEnd";
+    $("endRoundMeta").textContent=options.teams===1?`Ronda ${state.turn+1} finalizada`:`Equipo ${turnTeam()+1} · Ronda terminada`;
+    $("roundPoints").textContent=state.roundHits;$("roundPasses").textContent=state.roundPasses;
+    $("nextRound").textContent=state.turn+1>=totalTurns()?"Ver resultados 🏆":"Siguiente turno →";
+    screen("roundEnd");
+  }
+  function nextTurn(){
+    if(!state || state.phase!=="roundEnd")return;
+    state.turn++;
+    if(state.turn>=totalTurns()){showFinish();}else{state.phase="ready";showReady();}
+  }
+  function showFinish(){
+    state.phase="finish";
+    $("finalScores").replaceChildren();
+    const max=Math.max(...state.scores),ties=state.scores.filter(s=>s===max).length>1;
+    $("finishTitle").textContent=options.teams===1?"¡Lo hicieron genial!":ties?"¡Empate de película!":`¡Ganó el Equipo ${state.scores.indexOf(max)+1}!`;
+    $("finishDesc").textContent=options.teams===1?"¡Cuántas películas pudieron adivinar!":"¡Aplausos para todos los participantes!";
+    state.scores.forEach((score,i)=>{
+      const div=document.createElement("div");div.className="end-score";
+      const label=document.createElement("span");label.textContent=options.teams===1?"Total de aciertos":`Equipo ${i+1}`;
+      const value=document.createElement("b");value.textContent=score;
+      div.append(label,value);$("finalScores").append(div);
+    });
+    screen("finish");beep(840,.18);
+  }
+  function setSetting(name,value){
+    options[name]=Number(value);
+    document.querySelectorAll(`[data-setting="${name}"] .choice`).forEach(btn=>btn.setAttribute("aria-pressed",String(Number(btn.dataset.value)===options[name])));
+  }
+  document.querySelectorAll(".choices").forEach(group=>{
+    group.addEventListener("click",e=>{const btn=e.target.closest(".choice");if(btn)setSetting(group.dataset.setting,btn.dataset.value);});
+  });
+  $("startGame").addEventListener("click",startGame);
+  $("beginRound").addEventListener("click",beginRound);
+  $("rightFilm").addEventListener("click",()=>answer(true));
+  $("passFilm").addEventListener("click",()=>answer(false));
+  $("pauseGame").addEventListener("click",pauseRound);
+  $("resumeRound").addEventListener("click",resumeRound);
+  $("endTurn").addEventListener("click",finishTurn);
+  $("nextRound").addEventListener("click",nextTurn);
+  $("playAgain").addEventListener("click",startGame);
+  $("settingsAgain").addEventListener("click",()=>{stopClock();state=null;screen("setup");});
+  $("restartTop").addEventListener("click",()=>{if(window.confirm("¿Reiniciar la partida y borrar los puntos?")){stopClock();state=null;screen("setup");}});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden && state && state.phase==="play")pauseRound();});
+  // iOS puede suspender las pestañas sin ejecutar inmediatamente un intervalo.
+  window.addEventListener("pagehide",()=>{if(state && state.phase==="play")pauseRound();});
+  document.addEventListener("keydown",e=>{
+    if(!state||state.phase!=="play"||e.repeat)return;
+    if(e.key==="ArrowRight"){e.preventDefault();answer(true);}
+    if(e.key==="ArrowLeft"){e.preventDefault();answer(false);}
+    if(e.code==="Space"){e.preventDefault();pauseRound();}
+  });
+</script>
+</body>
+</html>

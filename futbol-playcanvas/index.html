@@ -671,34 +671,70 @@ function pcLine(a,b,hex=0xf2f6dd,thickness=.13){
  const piece=object3(app3.root,'box',hex,(a[0]+b[0])/2,.055,(a[1]+b[1])/2,len,.03,thickness);
  piece.setLocalEulerAngles(0,-Math.atan2(dz,dx)*180/Math.PI,0);
 }
+// Personajes estilizados con articulaciones independientes, pensados para WebGL móvil.
+// Animación procedural (no son modelos ni animaciones oficiales de PES).
 function createAthlete3(i){
- const side=Math.floor(i/TEAM_SIZE),idx=i%TEAM_SIZE,isGoalie=idx===TEAM_SIZE-1;
- const jersey=isGoalie?(side?0xf0b348:0x5dd3a3):(side?0x367dde:0xe33f4a);
- const shorts=side?0x193c88:0x7c2030;
- const skin=[0xe8b28a,0xb58060,0xf3c8ad,0xa27653,0xd69b71][i%5];
- const hair=[0x201a19,0x43332c,0x121514,0x5b3c20,0x2d2929][i%5];
- const root=childNode(app3.root,'player-'+i,0,0,0);
- const torso=childNode(root,'torso',0,0,0);
- object3(torso,'capsule',jersey,0,2.46,0,1.07,1.40,.79);
- object3(torso,'box',shorts,0,1.52,0,.91,.60,.83);
- object3(torso,'sphere',skin,0,3.52,0,.77,.88,.75);
- object3(torso,'sphere',hair,0,3.87,-.055,.81,.33,.78);
- object3(torso,'box',0xfbf4ea,0,2.35,.44,.24,.34,.13);
- const arms=[],legs=[];
+ const side=Math.floor(i/TEAM_SIZE),idx=i%TEAM_SIZE,goalkeeper=idx===TEAM_SIZE-1;
+ const red=side===0, jersey=goalkeeper?(red?0x37c5a7:0xf0c25e):(red?0xd63444:0x2374d7);
+ const shorts=goalkeeper?0x293d54:(red?0xf7f3e9:0x172e67);
+ const collar=goalkeeper?0xffffff:(red?0xfbf5e5:0xfff8ec);
+ const sock=goalkeeper?0xffedb3:(red?0xefeee5:0x276bd3);
+ const skin=[0xe4b389,0x995b40,0xc9885b,0xefc7a7,0xbb7956,0x72432e][i%6];
+ const hair=[0x29201a,0x14191d,0x543324,0x222321,0x392819][i%5];
+ const root=childNode(app3.root,'footballer-'+i,0,0,0);
+ const waist=childNode(root,'waist',0,1.45,0);
+ // Equipo completo: tronco ligeramente en V, hombros y cuello.
+ object3(waist,'box',shorts,0,.07,0,.93,.52,.72);
+ const torso=childNode(waist,'upper-body',0,.26,0);
+ object3(torso,'capsule',jersey,0,.82,0,1.14,1.42,.78);
+ object3(torso,'box',jersey,0,1.18,.11,1.11,.60,.73);
+ object3(torso,'box',collar,0,1.58,-.015,.50,.14,.46);
+ object3(torso,'box',collar,0,1.18,.45,.23,.63,.055);
+ // Franja/detalle frontal en la camiseta, algo distinto para arqueros.
+ object3(torso,'box',goalkeeper?0x183f5a:(red?0xf6ecda:0xf3f2df),0,.94,.433,.24,.62,.055);
+ const neck=object3(torso,'cylinder',skin,0,1.67,.005,.26,.32,.26);
+ const head=childNode(torso,'head',0,1.91,0);
+ object3(head,'sphere',skin,0,.28,0,.70,.82,.69);
+ object3(head,'sphere',hair,0,.61,-.09,.73,.32,.73);
+ object3(head,'sphere',skin,-.36,.23,.02,.14,.22,.16);
+ object3(head,'sphere',skin,.36,.23,.02,.14,.22,.16);
+ object3(head,'sphere',skin,0,.22,.35,.16,.19,.15);
+ // Mirada y cejas discretas: hacia el frente del jugador (+z).
  for(const sign of [-1,1]){
-   const shoulder=childNode(torso,'shoulder',sign*.70,2.93,0);arms.push(shoulder);
-   object3(shoulder,'capsule',jersey,sign*.03,-.51,0,.33,.81,.31);
-   object3(shoulder,'sphere',skin,sign*.03,-1.02,0,.31,.28,.31);
-   const hip=childNode(torso,'hip',sign*.29,1.37,0);legs.push(hip);
-   object3(hip,'capsule',shorts,0,-.47,0,.39,.85,.42);
-   object3(hip,'capsule',0xf3f4fa,0,-1.02,.02,.30,.62,.31);
-   object3(hip,'box',0x161c23,0,-1.38,.22,.37,.22,.70);
+   object3(head,'sphere',0x212c30,sign*.18,.32,.324,.072,.080,.060);
+   object3(head,'box',hair,sign*.18,.43,.30,.19,.043,.045);
  }
- const shadow=object3(root,'cylinder',0x174633,0,.04,0,1.85,.025,1.15);
- const sel=object3(root,'cylinder',side?0x94ddff:0xffdc69,0,.087,0,2.18,.075,2.18);
- const indicator=object3(root,'cone',side?0x92d4ff:0xffe773,0,5.35,0,.79,.94,.79);
+ // Brazos articulados en hombro y codo.
+ const arms=[];
+ for(const sign of [-1,1]){
+   const shoulder=childNode(torso,'shoulder',sign*.64,1.34,0);
+   object3(shoulder,'capsule',jersey,sign*.045,-.30,0,.34,.56,.35);
+   const elbow=childNode(shoulder,'elbow',sign*.055,-.57,0);
+   object3(elbow,'capsule',skin,0,-.29,0,.265,.60,.26);
+   object3(elbow,'sphere',skin,0,-.59,0,.27,.28,.27);
+   arms.push({shoulder,elbow,sign});
+ }
+ // Piernas: pivotes en cadera, rodilla y tobillo para flexionar y apoyar el pie.
+ const legs=[];
+ for(const sign of [-1,1]){
+   const hip=childNode(waist,'hip',sign*.27,-.10,0);
+   object3(hip,'capsule',shorts,0,-.41,0,.45,.85,.49);
+   const knee=childNode(hip,'knee',0,-.79,0);
+   object3(knee,'sphere',skin,0,0,0,.29,.30,.29);
+   object3(knee,'capsule',sock,0,-.36,0,.32,.75,.33);
+   object3(knee,'box',0xf7f6e9,0,-.10,.18,.36,.12,.13);
+   const ankle=childNode(knee,'ankle',0,-.75,0);
+   object3(ankle,'box',0x19202c,0,-.12,.23,.41,.25,.76);
+   object3(ankle,'box',red?0xf8fafb:0xe7edf9,0,-.03,.57,.25,.065,.18);
+   legs.push({hip,knee,ankle,sign});
+ }
+ // Selección con aro y cursor de jugador, desactivables sin quitar geometría.
+ const shadow=object3(root,'cylinder',0x175339,0,.025,0,1.7,.028,1.2);
+ const sel=object3(root,'cylinder',red?0xffe89b:0x94dbff,0,.077,0,2.22,.052,2.22);
+ const indicator=object3(root,'cone',red?0xffd75d:0x9bc8ff,0,5.12,0,.63,.83,.63);
  indicator.setLocalEulerAngles(180,0,0);
- return{root,torso,arms,legs,sel,indicator,phase:0,px:null,py:null,lastX:null,lastZ:null};
+ return {root,waist,torso,head,arms,legs,shadow,sel,indicator,phase:0,
+         px:null,py:null,lastX:null,lastZ:null,angle:side?180:0,runBlend:0,lean:0,action:'idle'};
 }
 function resizeWorld(){
  if(!app3||!canvas.clientWidth||!canvas.clientHeight)return;
@@ -848,51 +884,77 @@ function render(){
  if(!game||drawError)return;
  if(!createWorld())return;
  resizeWorld();
- const dt=Math.min(.08,Math.max(.001,(performance.now()-last3dTick)/1000));
- last3dTick=performance.now();frameCount++;
+ const now=performance.now(),dt=Math.min(.055,Math.max(.001,(now-last3dTick)/1000));
+ last3dTick=now;frameCount++;
  for(let i=0;i<game.players.length;i++){
-   const p=game.players[i],m=actors[i],x=wx(p.x),z=wz(p.y);
-   const delta=Math.hypot(p.vx||0,p.vy||0),speedRatio=Math.min(1,delta/230);
-   const old=m.root.getPosition();
-   const blend=Math.min(1,dt*16);
-   if(m.px===null){m.root.setPosition(x,0,z);}
-   else{m.root.setPosition(old.x+(x-old.x)*blend,0,old.z+(z-old.z)*blend);}
-   m.px=p.x;m.py=p.y;
-   m.phase+=dt*(3+speedRatio*12);
-   const walking=Math.abs(p.x-(m.lastX??p.x))+Math.abs(p.y-(m.lastZ??p.y))>.05;
-   const swing=(walking?.12+speedRatio*.64:0)*Math.sin(m.phase);
-   m.legs[0].setLocalEulerAngles(swing*65,0,0);
-   m.legs[1].setLocalEulerAngles(-swing*65,0,0);
-   m.arms[0].setLocalEulerAngles(-swing*40,0,-9);
-   m.arms[1].setLocalEulerAngles(swing*40,0,9);
-   const kicking=(p.kickT||0)>0?Math.sin(Math.PI*(1-p.kickT/.34)):0;
-   if(kicking>0)m.legs[0].setLocalEulerAngles(20+kicking*65,0,0);
-   const tackling=(p.tackleT||0)>0?Math.sin(Math.PI*(1-p.tackleT/.52)):0;
-   m.torso.setLocalEulerAngles(-tackling*24,0,tackling*18);
-   const targetAngle=Math.atan2(p.dx,p.dy)*180/Math.PI;
-   const prevAngle=m.root.getEulerAngles().y;
-   const angleDiff=((targetAngle-prevAngle+540)%360)-180;
-   m.root.setEulerAngles(0,prevAngle+angleDiff*Math.min(1,dt*9),0);
+   const p=game.players[i],m=actors[i],x=wx(p.x),z=wz(p.y),old=m.root.getPosition();
+   const smooth=Math.min(1,dt*17);
+   if(m.px===null)m.root.setPosition(x,0,z);
+   else m.root.setPosition(old.x+(x-old.x)*smooth,0,old.z+(z-old.z)*smooth);
+   // Para jugadores humanos y controlados por IA se mide movimiento real, no sólo p.vx.
+   const moved=m.lastX===null?0:Math.hypot(p.x-m.lastX,p.y-m.lastZ);
+   const localSpeed=Math.min(1,moved/Math.max(.005,dt*235));
+   const targetRun=moved<.08?0:localSpeed;
+   m.runBlend+=(targetRun-m.runBlend)*Math.min(1,dt*(targetRun>m.runBlend?9.5:7));
+   m.runBlend=Math.max(0,Math.min(1,m.runBlend));
+   m.phase+=dt*(4+m.runBlend*12.8);
+   const stride=Math.sin(m.phase),strideOpp=Math.sin(m.phase+Math.PI);
+   const landing=Math.max(0,Math.sin(m.phase*2));
+   const running=m.runBlend;
+   const kickT=Math.max(0,p.kickT||0),tackleT=Math.max(0,p.tackleT||0),stunT=Math.max(0,p.stun||0);
+   const kick=kickT>0?Math.sin(Math.PI*(1-kickT/.34)):0;
+   const slide=tackleT>0?Math.sin(Math.PI*(1-tackleT/.52)):0;
+   const hasBall=game.ball.holder===i;
+   m.action=slide>.08?'barrida':kick>.08?'remate':running>.62?'pique':running>.12?'correr':'quieto';
+   // Paso humano: la rodilla contraria se flexiona mientras el pie avanza.
+   const kickFoot=kick*83;
+   m.legs.forEach((leg,k)=>{
+     const wave=k===0?stride:strideOpp;
+     const kneeFlex=(.12+Math.max(0,wave)*.54)*running;
+     const runDeg=wave*(19+23*running)*running;
+     const shotLeg=k===0?kickFoot:-(kick*.23*50);
+     leg.hip.setLocalEulerAngles(runDeg+shotLeg-slide*49,0,k===0?-2:2);
+     leg.knee.setLocalEulerAngles(-kneeFlex*70+slide*38+((k===0)?kick*20:0),0,0);
+     leg.ankle.setLocalEulerAngles(-runDeg*.24+Math.max(0,wave)*running*11,0,0);
+   });
+   m.arms.forEach((arm,k)=>{
+     const wave=k===0?strideOpp:stride;
+     arm.shoulder.setLocalEulerAngles(-wave*(25+12*running)*running+slide*39-kick*18,
+       0,arm.sign*(11+running*4));
+     arm.elbow.setLocalEulerAngles(-25-Math.max(0,wave)*running*28-kick*8,0,arm.sign*2);
+   });
+   // Giro y peso del cuerpo, aceleración y frenado sin cambios instantáneos de ángulo.
+   const facing=Math.atan2(p.dx||0,p.dy||1)*180/Math.PI;
+   const diff=((facing-m.angle+540)%360)-180;
+   const newAngle=m.angle+diff*Math.min(1,dt*(moved>.3?11:6));
+   m.angle=(newAngle+360)%360;
+   m.root.setLocalEulerAngles(0,m.angle,0);
+   const lean=(Math.min(1,moved/(dt*260)))*7;
+   m.waist.setLocalEulerAngles(-lean-slide*58+stunT*8,0,(stride*.9+slide*8)*running);
+   m.waist.setLocalPosition(0,1.45+(running*.058*Math.abs(Math.sin(m.phase*2)))-slide*.39,0);
+   m.torso.setLocalEulerAngles(-running*4-slide*8, Math.sin(m.phase)*running*4,Math.sin(m.phase)*running*2.7);
+   m.head.setLocalEulerAngles(-running*3+slide*8,hasBall?Math.sin(m.phase)*4:0,0);
    const selected=game.selected[p.team]===i&&!p.gk;
    m.sel.enabled=selected;m.indicator.enabled=selected;
-   if(selected)m.indicator.setLocalPosition(0,5.18+Math.sin(performance.now()*.008)*.15,0);
-   m.lastX=p.x;m.lastZ=p.y;
+   if(selected)m.indicator.setLocalPosition(0,5.22+Math.sin(now*.007)*.12,0);
+   m.lastX=p.x;m.lastZ=p.y;m.px=p.x;m.py=p.y;
  }
- const b=game.ball;
- const ball=ball3.getPosition(),bx=wx(b.x),bz=wz(b.y),bh=.5+Math.max(0,b.h||0);
- const t=Math.min(1,dt*20);
- ball3.setPosition(ball.x+(bx-ball.x)*t,ball.y+(bh-ball.y)*t,ball.z+(bz-ball.z)*t);
- ball3.rotateLocal((Math.hypot(b.vx,b.vy)/90+1)*dt*36,0,(Math.hypot(b.vx,b.vy)/140+1)*dt*24);
+ const b=game.ball,oldBall=ball3.getPosition();
+ const bx=wx(b.x),bz=wz(b.y),bh=.5+Math.max(0,b.h||0),bl=Math.min(1,dt*22);
+ ball3.setPosition(oldBall.x+(bx-oldBall.x)*bl,oldBall.y+(bh-oldBall.y)*bl,oldBall.z+(bz-oldBall.z)*bl);
+ const bspeed=Math.hypot(b.vx||0,b.vy||0);
+ ball3.rotateLocal(bspeed*dt*.21,0,bspeed*dt*.12);
  ballShadow3.setPosition(ball3.getPosition().x,.045,ball3.getPosition().z);
- const focusX=Math.max(-46,Math.min(46,wx(b.x)*.90));
+ ballShadow3.setLocalScale(Math.max(.65,1.15-bh*.08),.034,Math.max(.55,1.15-bh*.08));
+ const anticipation=Math.max(-5,Math.min(5,(b.vx||0)*worldScale*.09));
+ const focusX=Math.max(-48,Math.min(48,wx(b.x)*.88+anticipation));
  const focusZ=Math.max(-13,Math.min(13,wz(b.y)*.35));
- const camTarget={x:focusX+3,y:viewMode?26:34,z:viewMode?41:53};
- const cv=cam3.getPosition(),fr=Math.min(1,dt*3.5);
- cam3.setPosition(cv.x+(camTarget.x-cv.x)*fr,cv.y+(camTarget.y-cv.y)*fr,cv.z+(camTarget.z-cv.z)*fr);
+ const cv=cam3.getPosition(),tracking=Math.min(1,dt*3.1);
+ const camTarget={x:focusX+1.9,y:viewMode?25:31.5,z:viewMode?39:49};
+ cam3.setPosition(cv.x+(camTarget.x-cv.x)*tracking,cv.y+(camTarget.y-cv.y)*tracking,cv.z+(camTarget.z-cv.z)*tracking);
  cam3.lookAt(new pc.Vec3(focusX,0,focusZ));
  drawRadar();
 }
-
 function drawRadar(){
   if(!game||!rctx)return;
   const c=rctx,w=radar.width,h=radar.height;

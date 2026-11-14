@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Retro Fútbol 06: fútbol arcade original de navegador. Jugá solo, dos en un teclado o 1 contra 1 online desde dos celulares.">
-<title>RETRO FÚTBOL '06 — PlayCanvas Beta 2</title>
+<title>RETRO FÚTBOL '06 — PlayCanvas Beta 3 (Color Fix)</title>
 <style>
 :root{color-scheme:dark;--bg:#101e1b;--panel:#182e29;--panel2:#203e35;--line:#385649;--cream:#f3edd8;--muted:#b1c7b6;--orange:#f5b544;--green:#83ec94;--red:#fe746b;--blue:#81bdf7}
 *{box-sizing:border-box}
@@ -216,7 +216,7 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
     <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>⏳</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⏳</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
     <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
-  <footer class="foot">PlayCanvas Beta v2 · Motor 3D abierto · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
+  <footer class="foot">PlayCanvas Beta v3 · Motor 3D abierto · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
 </div>
 <div class="orientation-tip" id="rotateHint"><div class="rotate-icon">📱↻</div><strong>Girás el iPhone y entrás a la cancha</strong><p>Para jugar 3D a pantalla completa, poné el teléfono horizontal.</p><button class="outline" id="portraitOk" type="button">Jugar así de todas formas</button></div>
 <div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
@@ -641,11 +641,19 @@ let camPos={x:0,y:29,z:47},frameCount=0,lastResizeW=0,lastResizeH=0,sceneDidRend
 const pcMaterials=new Map();
 function pcMaterial(hex){
  if(pcMaterials.has(hex))return pcMaterials.get(hex);
- const r=(hex>>16)&255,g=(hex>>8)&255,b=hex&255;
+ const r=((hex>>16)&255)/255,g=((hex>>8)&255)/255,b=(hex&255)/255;
  const m=new pc.StandardMaterial();
- m.diffuse=new pc.Color(r/255,g/255,b/255);
- m.specular=new pc.Color(.08,.08,.08);m.gloss=18;m.update();
- pcMaterials.set(hex,m);return m;
+ // PlayCanvas v2: evitar objetos totalmente negros cuando iOS no aporta luz
+ // ambiental al material estándar. Emisión independiente de luces dinámicas.
+ m.useLighting=false;
+ m.useFog=false;
+ m.diffuse=new pc.Color(r,g,b);
+ m.emissive=new pc.Color(r,g,b);
+ m.emissiveIntensity=1.0;
+ m.specular=new pc.Color(0,0,0);
+ m.update();
+ pcMaterials.set(hex,m);
+ return m;
 }
 function object3(parent,shape,hex,x,y,z,sx,sy,sz,label){
  const ob=new pc.Entity(label||shape);
@@ -714,12 +722,13 @@ function inspectCanvasColor(){
  try{
    const gl=app3.graphicsDevice.gl,w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
    if(w<20||h<20)throw Error('La superficie WebGL mide cero.');
-   const points=[[.50,.50],[.35,.38],[.65,.58]],rgb=[];
+   // Tomar muestras en la zona inferior del campo, no en el cielo.
+   const points=[[.50,.50],[.35,.40],[.65,.55],[.20,.62],[.80,.62],[.52,.70]],rgb=[];
    for(const [x,y] of points){
      const a=new Uint8Array(4);gl.readPixels(Math.floor(w*x),Math.floor(h*y),1,1,gl.RGBA,gl.UNSIGNED_BYTE,a);
      rgb.push([...a]);
    }
-   const dark=rgb.every(x=>x[0]+x[1]+x[2]<18);
+   const dark=rgb.filter(x=>x[0]+x[1]+x[2]<25).length>=5;
    if(dark)graphicsFail('La GPU está dibujando una pantalla negra. Se activó el diagnóstico de renderizado.');
    else $('graphicsLoader').hidden=true;
  }catch(err){
@@ -742,11 +751,11 @@ function createWorld(){
    app3.setCanvasFillMode(pc.FILLMODE_NONE,canvas.clientWidth||1000,canvas.clientHeight||600);
    app3.setCanvasResolution(pc.RESOLUTION_AUTO);
    app3.graphicsDevice.maxPixelRatio=Math.min(window.devicePixelRatio||1,window.innerWidth<1000?1:1.3);
-   const light=new pc.Entity('sun');light.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.83),intensity:2.4,castShadows:false});
+   // Las luces ambientales quedan opcionales: las superficies usan emisión de color.
+   const light=new pc.Entity('sun');
+   light.addComponent('light',{type:'directional',color:new pc.Color(1,.98,.9),intensity:1.5,castShadows:false});
    light.setEulerAngles(45,26,15);app3.root.addChild(light);
-   const ambient=new pc.Entity('softlight');ambient.addComponent('light',{type:'omni',intensity:.6,color:new pc.Color(.70,.85,1),range:180});
-   ambient.setPosition(0,36,0);app3.root.addChild(ambient);
-   app3.scene.ambientLight=new pc.Color(.45,.52,.47);
+   app3.scene.ambientLight=new pc.Color(.9,.92,.92);
    cam3=new pc.Entity('cameraTV');
    cam3.addComponent('camera',{clearColor:new pc.Color(.49,.67,.74),fov:45,nearClip:.25,farClip:270});
    cam3.setPosition(5,29,48);

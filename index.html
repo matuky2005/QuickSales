@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Charadas de películas infantiles: un juego de mímica para jugar en familia o con amigos. No necesita bibliotecas externas.">
-  <title>¡Mímica de peli! · Charadas infantiles</title>
+  <title>¡Mímica de peli! · Charadas con pósters (v3)</title>
   <style>
     :root{color-scheme:dark;--bg:#17122f;--card:#292043;--card2:#392750;--text:#fffdf9;--muted:#c6bad8;--coral:#ff7e72;--yellow:#ffe38b;--mint:#81e6c4;--purple:#b4a3fa;--line:rgba(255,255,255,.13);--shadow:0 18px 60px rgba(11,7,29,.34)}
     *{box-sizing:border-box}
@@ -115,7 +115,7 @@
       <span class="sticker">🍿 ¡Diversión en familia!</span>
       <h1 class="heading" id="welcomeTitle">Adiviná la <span class="highlight">película.</span></h1>
       <p class="lead">Actuá sin hablar y hacé que tu equipo adivine. Películas súper conocidas, con pósters de verdad y efectos de sonido.</p>
-      <div class="feature-posters" aria-label="Ejemplos de películas"><div class="feature-poster">🧸<img src="https://images.metahub.space/poster/medium/tt0114709/img" alt="Póster de Toy Story" loading="lazy" onerror="this.hidden=true"></div><div class="feature-poster">❄️<img src="https://images.metahub.space/poster/medium/tt2294629/img" alt="Póster de Frozen" loading="lazy" onerror="this.hidden=true"></div><div class="feature-poster">👹<img src="https://images.metahub.space/poster/medium/tt0126029/img" alt="Póster de Shrek" loading="lazy" onerror="this.hidden=true"></div></div>
+      <div class="feature-posters" aria-label="Ejemplos de películas"><div class="feature-poster">🧸<img src="https://m.media-amazon.com/images/M/MV5BMDU2ZWJlMjktMTRhMy00ZTA5LWEzNDgtYmNmZTEwZTViZWJkXkEyXkFqcGdeQXVyNDQ2OTk4MzI@._V1_SX300.jpg" alt="Póster de Toy Story" loading="lazy" onerror="this.hidden=true"></div><div class="feature-poster">❄️<img src="https://m.media-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX300.jpg" alt="Póster de Frozen" loading="lazy" onerror="this.hidden=true"></div><div class="feature-poster">👹<img src="https://m.media-amazon.com/images/M/MV5BN2FkMTRkNTUtYTI0NC00ZjI4LWI5MzUtMDFmOGY0NmU2OGY1XkEyXkFqcGc@._V1_SX300.jpg" alt="Póster de Shrek" loading="lazy" onerror="this.hidden=true"></div></div>
       <div class="config">
         <div class="field">
           <p class="field-label">¿Cómo juegan?</p>
@@ -187,7 +187,7 @@
       <div class="big-emoji" aria-hidden="true">🏆</div><div class="mini">¡Fin de la partida!</div><h2 class="result-title" id="finishTitle">¡Qué buen equipo!</h2><p class="result-copy" id="finishDesc">Estos son los resultados.</p>
       <div class="end-scores" id="finalScores"></div><button id="playAgain" class="primary" type="button">🔄 Jugar otra vez</button><button id="settingsAgain" class="secondary" type="button">⚙️ Cambiar configuración</button>
     </section>
-    <footer class="footer">🎞️ Más de 70 películas · Sonidos originales · Sin publicidad<br><span style="font-size:10px">Imágenes de películas servidas por MetaHub; derechos de sus respectivos titulares. Las imágenes requieren internet.</span></footer>
+    <footer class="footer">🎞️ Más de 70 películas · Pósters reales · Sonidos originales · Sin publicidad<br><span style="font-size:10px">Pósters de catálogo y Wikipedia, con fuentes alternativas. Derechos de sus respectivos titulares. Para ver imágenes se necesita internet.</span></footer>
   </main>
 <script>
   "use strict";
@@ -260,21 +260,72 @@
     btn.setAttribute("aria-label",soundEnabled?"Desactivar sonidos":"Activar sonidos");
   }
   renderSoundSetting();
-  function loadPoster(index){
-    const img=$("filmPoster"), emoji=$("filmEmoji"), badge=$("posterSource");
-    const token=++posterRequest, title=films[index][0], id=movieIds[title];
+  // Pósters reales de catálogo público (IMDb); para los demás, miniaturas de Wikipedia.
+  const verifiedPosters = {"Toy Story":"https://m.media-amazon.com/images/M/MV5BMDU2ZWJlMjktMTRhMy00ZTA5LWEzNDgtYmNmZTEwZTViZWJkXkEyXkFqcGdeQXVyNDQ2OTk4MzI@._V1_SX300.jpg","Frozen":"https://m.media-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX300.jpg","El rey león":"https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_SX300.jpg","Shrek":"https://m.media-amazon.com/images/M/MV5BN2FkMTRkNTUtYTI0NC00ZjI4LWI5MzUtMDFmOGY0NmU2OGY1XkEyXkFqcGc@._V1_SX300.jpg","Buscando a Nemo":"https://m.media-amazon.com/images/M/MV5BZTAzNWZlNmUtZDEzYi00ZjA5LWIwYjEtZGM1NWE1MjE4YWRhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg","Monsters, Inc.":"https://m.media-amazon.com/images/M/MV5BMTY1NTI0ODUyOF5BMl5BanBnXkFtZTgwNTEyNjQ0MDE@._V1_SX300.jpg","Coco":"https://m.media-amazon.com/images/M/MV5BYjQ5NjM0Y2YtNjZkNC00ZDhkLWJjMWItN2QyNzFkMDE3ZjAxXkEyXkFqcGdeQXVyODIxMzk5NjA@._V1_SX300.jpg","Ratatouille":"https://m.media-amazon.com/images/M/MV5BMTMzODU0NTkxMF5BMl5BanBnXkFtZTcwMjQ4MzMzMw@@._V1_SX300.jpg","Intensamente":"https://m.media-amazon.com/images/M/MV5BOTgxMDQwMDk0OF5BMl5BanBnXkFtZTgwNjU5OTg2NDE@._V1_SX300.jpg","Aladdín":"https://m.media-amazon.com/images/M/MV5BY2Q2NDI1MjUtM2Q5ZS00MTFlLWJiYWEtNTZmNjQ3OGJkZDgxXkEyXkFqcGdeQXVyNTI4MjkwNjA@._V1_SX300.jpg","La bella y la bestia":"https://m.media-amazon.com/images/M/MV5BMzE5MDM1NDktY2I0OC00YWI5LTk2NzUtYjczNDczOWQxYjM0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg","Los increíbles":"https://m.media-amazon.com/images/M/MV5BMTY5OTU0OTc2NV5BMl5BanBnXkFtZTcwMzU4MDcyMQ@@._V1_SX300.jpg","Up: una aventura de altura":"https://m.media-amazon.com/images/M/MV5BMTk3NDE2NzI4NF5BMl5BanBnXkFtZTgwNzE1MzEyMTE@._V1_SX300.jpg","Cómo entrenar a tu dragón":"https://m.media-amazon.com/images/M/MV5BMjA5NDQyMjc2NF5BMl5BanBnXkFtZTcwMjg5ODcyMw@@._V1_SX300.jpg","Wall-E":"https://m.media-amazon.com/images/M/MV5BMjExMTg5OTU0NF5BMl5BanBnXkFtZTcwMjMxMzMzMw@@._V1_SX300.jpg"};
+  const wikiTitles = {"El rey león":"The Lion King (1994 film)","Buscando a Nemo":"Finding Nemo","Monsters, Inc.":"Monsters, Inc.","Cars":"Cars (film)","Encanto":"Encanto (film)","Ratatouille":"Ratatouille (film)","Kung Fu Panda":"Kung Fu Panda (film)","Intensamente":"Inside Out (2015 film)","Mi villano favorito":"Despicable Me","Madagascar":"Madagascar (2005 film)","La sirenita":"The Little Mermaid (1989 film)","Aladdín":"Aladdin (1992 Disney film)","La bella y la bestia":"Beauty and the Beast (1991 film)","Moana":"Moana (2016 film)","Los increíbles":"The Incredibles","Up: una aventura de altura":"Up (2009 film)","La princesa y el sapo":"The Princess and the Frog","Mulán":"Mulan (1998 film)","Blancanieves":"Snow White and the Seven Dwarfs (1937 film)","Cenicienta":"Cinderella (1950 film)","Peter Pan":"Peter Pan (1953 film)","Bambi":"Bambi","Winnie Pooh":"Winnie the Pooh (2011 film)","101 dálmatas":"One Hundred and One Dalmatians","Lilo y Stitch":"Lilo & Stitch (2002 film)","Zootopia":"Zootopia","Cómo entrenar a tu dragón":"How to Train Your Dragon (film)","La era de hielo":"Ice Age (2002 film)","Sonic: la película":"Sonic the Hedgehog (film)","Super Mario Bros.: La película":"The Super Mario Bros. Movie","El gato con botas":"Puss in Boots (2011 film)","Trolls":"Trolls (film)","Hotel Transilvania":"Hotel Transylvania (film)","La vida secreta de tus mascotas":"The Secret Life of Pets","Sing: ¡Ven y canta!":"Sing (2016 American film)","La gran aventura LEGO":"The Lego Movie","La película de Bob Esponja":"The SpongeBob SquarePants Movie","Los Croods":"The Croods","Rio":"Rio (2011 film)","Happy Feet":"Happy Feet","Valiente":"Brave (2012 film)","Wall-E":"WALL-E","Grandes héroes":"Big Hero 6 (film)","La dama y el vagabundo":"Lady and the Tramp","Pinocho":"Pinocchio (1940 film)","Dumbo":"Dumbo (1941 film)","La bella durmiente":"Sleeping Beauty (1959 film)","Alicia en el país de las maravillas":"Alice in Wonderland (1951 film)","Tarzán":"Tarzan (1999 film)","Hércules":"Hercules (1997 film)","Pocahontas":"Pocahontas (1995 film)","El libro de la selva":"The Jungle Book (1967 film)","Campanita":"Tinker Bell (film)","Spirit: el corcel indomable":"Spirit: Stallion of the Cimarron","La familia Mitchell vs. las máquinas":"The Mitchells vs. the Machines","Red":"Turning Red","Luca":"Luca (2021 film)","Elementos":"Elemental (2023 film)","Wish: el poder de los deseos":"Wish (film)","El origen de los guardianes":"Rise of the Guardians","La Navidad de Charlie Brown":"A Charlie Brown Christmas","Las aventuras de Peabody y Sherman":"Mr. Peabody & Sherman","El Grinch":"The Grinch (film)","La pantera rosa":"The Pink Panther (1963 film)","Los pingüinos de Madagascar":"Penguins of Madagascar","El espanta tiburones":"Shark Tale","Las aventuras de Tadeo Jones":"Tad, the Lost Explorer","Bee Movie":"Bee Movie","El planeta del tesoro":"Treasure Planet","Tierra de osos":"Brother Bear","Chicken Little":"Chicken Little (2005 film)","El expreso polar":"The Polar Express (film)","La película de Garfield":"The Garfield Movie","La película de Peppa Pig":"Peppa Pig","Frozen":"Frozen (2013 film)","Shrek":"Shrek","Coco":"Coco (2017 film)","Toy Story":"Toy Story"};
+  const posterCache = {};
+  function posterCandidate(url, token, label){
+    return new Promise(resolve=>{
+      if(!url || token!==posterRequest){resolve(false);return;}
+      const p=new Image();let done=false;
+      const complete=(success)=>{
+        if(done)return;done=true;clearTimeout(limit);
+        p.onload=null;p.onerror=null;
+        if(success && token===posterRequest){
+          const img=$("filmPoster");
+          img.onload=()=>{};
+          img.src=url;img.hidden=false;$("filmEmoji").hidden=true;
+          $("posterSource").hidden=false;$("posterSource").textContent=label;
+        }
+        resolve(success);
+      };
+      const limit=setTimeout(()=>complete(false),5500);
+      p.onload=()=>complete(true);p.onerror=()=>complete(false);
+      p.src=url;
+    });
+  }
+  async function wikipediaPoster(title){
+    const name=wikiTitles[title] || title;
+    // MediaWiki ofrece CORS público con origin=*. Evitar proxies privados o claves.
+    const base="https://en.wikipedia.org/w/api.php";
+    const exact=new URLSearchParams({action:"query",format:"json",origin:"*",redirects:"1",prop:"pageimages",piprop:"thumbnail",pithumbsize:"440",titles:name});
+    async function query(params){
+      const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),5000);
+      try{const r=await fetch(base+"?"+params,{signal:ctrl.signal,mode:"cors",credentials:"omit"});
+        if(!r.ok)throw Error("Wikipedia no disponible");
+        const j=await r.json();const pages=Object.values(j.query?.pages||{});
+        return pages.find(p=>p.thumbnail?.source)?.thumbnail?.source || null;
+      }finally{clearTimeout(timer);}
+    }
+    try{
+      const first=await query(exact);if(first)return first;
+      const search=new URLSearchParams({action:"query",format:"json",origin:"*",generator:"search",gsrsearch:name+" película animada film",gsrlimit:"3",gsrnamespace:"0",prop:"pageimages",piprop:"thumbnail",pithumbsize:"440"});
+      return await query(search);
+    }catch(_e){return null;}
+  }
+  async function loadPoster(index){
+    const img=$("filmPoster"),emoji=$("filmEmoji"),badge=$("posterSource");
+    const token=++posterRequest,title=films[index][0],id=movieIds[title];
     img.hidden=true;emoji.hidden=false;badge.hidden=true;
     img.onload=null;img.onerror=null;img.removeAttribute("src");
     if(!id)return;
-    img.alt=`Póster real de ${title}`;
-    let usedProxy=false;
-    img.onload=function(){if(token!==posterRequest)return;img.hidden=false;emoji.hidden=true;badge.hidden=false;};
-    img.onerror=function(){
-      if(token!==posterRequest)return;
-      if(!usedProxy){usedProxy=true;img.src=`https://api.streamx.qzz.io/img/poster/medium/${id}/img`;return;}
-      img.hidden=true;emoji.hidden=false;badge.hidden=true;
-    };
-    img.src=`https://images.metahub.space/poster/medium/${id}/img`;
+    img.alt="Imagen real relacionada con "+title;
+    if(posterCache[id]){
+      if(await posterCandidate(posterCache[id],token,"Imagen de la película"))return;
+      delete posterCache[id];
+    }
+    const known=verifiedPosters[title];
+    if(known && await posterCandidate(known,token,"Póster de la película")){posterCache[id]=known;return;}
+    if(token!==posterRequest)return;
+    const wiki=await wikipediaPoster(title);
+    if(token!==posterRequest)return;
+    if(wiki && await posterCandidate(wiki,token,"Imagen de Wikipedia")){posterCache[id]=wiki;return;}
+    if(token!==posterRequest)return;
+    const metahub="https://images.metahub.space/poster/medium/"+id+"/img";
+    if(await posterCandidate(metahub,token,"Póster de la película")){posterCache[id]=metahub;return;}
+    if(token!==posterRequest)return;
+    const proxy="https://api.streamx.qzz.io/img/poster/medium/"+id+"/img";
+    if(await posterCandidate(proxy,token,"Póster de la película"))posterCache[id]=proxy;
   }
 
   function screen(name){

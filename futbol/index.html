@@ -253,10 +253,13 @@ function inputFor(side){
  if(p1){x+=touch.x;y+=touch.y;}[x,y]=normalized(x,y);
  return{x,y,shootHeld:p1?(keys.has('Space')||touch.shootHeld):keys.has('Enter'),
    shootTap:p1?(pressed.has('Space')||touch.shootTap):pressed.has('Enter'),
+   shootRelease:p1?touch.shootRelease:null,
    passHeld:p1?(keys.has('ShiftLeft')||keys.has('ShiftRight')||touch.passHeld):keys.has('KeyM'),
    passTap:p1?(pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.passTap):pressed.has('KeyM'),
+   passRelease:p1?touch.passRelease:null,
    crossHeld:p1?(keys.has('KeyQ')||touch.crossHeld):keys.has('Period'),
    crossTap:p1?(pressed.has('KeyQ')||touch.crossTap):pressed.has('Period'),
+   crossRelease:p1?touch.crossRelease:null,
    tackle:p1?(pressed.has('KeyF')||touch.tackle):pressed.has('Slash'),
    sw:p1?(pressed.has('KeyC')||touch.sw):pressed.has('KeyN'),
    sprint:p1?(keys.has('KeyE')||touch.sprint):keys.has('ControlRight')};
@@ -289,7 +292,7 @@ function kick(team,kind,power=.3){
  let vx=owner.dx,vy=owner.dy,target=null;power=clamp(power,0,1);
  if(kind==='pass'){
    // La fuerza determina alcance: corto, medio o pase largo.
-   const reach=130+power*410;
+   const reach=clamp((145+power*540)/(60*(1-(.950+power*.031))),62,570);
    const choices=game.players.filter(p=>p.team===team&&!p.gk&&p!==owner)
      .map(p=>({p,d:length(p.x-owner.x,p.y-owner.y)}))
      .sort((a,c)=>Math.abs(a.d-reach)+Math.max(0,-(a.p.x-owner.x)*forward)*.6+Math.abs(a.p.y-owner.y)*.055 -
@@ -820,7 +823,9 @@ function wireConnection(isHost){const c=conn;c.on('open',()=>{if(conn!==c)return
   else{toast('¡Conexión establecida! Cargando partido...');$('connectBtn').disabled=true;}
  });
  c.on('data',msg=>{if(conn!==c||!msg||typeof msg!=='object')return;
-   if(isHost){if(msg.type==='input'&&msg.input&&mode==='host'){const v=msg.input;remote={x:clamp(Number(v.x)||0,-1,1),y:clamp(Number(v.y)||0,-1,1),shootHeld:Boolean(v.shootHeld),shootTap:Boolean(v.shootTap),passHeld:Boolean(v.passHeld),passTap:Boolean(v.passTap),crossHeld:Boolean(v.crossHeld),crossTap:Boolean(v.crossTap),tackle:Boolean(v.tackle),sw:Boolean(v.sw),sprint:Boolean(v.sprint)};}}
+   if(isHost){if(msg.type==='input'&&msg.input&&mode==='host'){const v=msg.input;remote={x:clamp(Number(v.x)||0,-1,1),y:clamp(Number(v.y)||0,-1,1),shootHeld:Boolean(v.shootHeld),shootTap:Boolean(v.shootTap),shootRelease:v.shootRelease==null?null:clamp(Number(v.shootRelease)||0,0,1),
+      passHeld:Boolean(v.passHeld),passTap:Boolean(v.passTap),passRelease:v.passRelease==null?null:clamp(Number(v.passRelease)||0,0,1),
+      crossHeld:Boolean(v.crossHeld),crossTap:Boolean(v.crossTap),crossRelease:v.crossRelease==null?null:clamp(Number(v.crossRelease)||0,0,1),tackle:Boolean(v.tackle),sw:Boolean(v.sw),sprint:Boolean(v.sprint)};}}
    else{if(msg.type==='begin'){duration=Number(msg.duration)||120;beginGame('guest');}
    if(msg.type==='state'&&msg.state&&mode==='guest'){game=msg.state;setScore();setPieceBanner();if(game.goalPause>0){$('goalFlash').hidden=false;$('goalFlash').textContent='¡GOOOOL!';$('statusText').textContent='¡GOL!';}else{$('goalFlash').hidden=true;$('statusText').textContent='¡A JUGAR!';}if(game.ended&&!gameEnded)endGame();}
    if(msg.type==='end'&&mode==='guest'&&game){game.scores=msg.scores;endGame();}}
@@ -831,17 +836,17 @@ function wireConnection(isHost){const c=conn;c.on('open',()=>{if(conn!==c)return
 function getGuestInput(){
  let x=Number(keys.has('KeyD'))-Number(keys.has('KeyA')),y=Number(keys.has('KeyS'))-Number(keys.has('KeyW'));
  [x,y]=normalized(x+touch.x,y+touch.y);
- return{x,y,shootHeld:keys.has('Space')||touch.shootHeld,shootTap:pressed.has('Space')||touch.shootTap,
+ return{x,y,shootHeld:keys.has('Space')||touch.shootHeld,shootTap:pressed.has('Space')||touch.shootTap,shootRelease:touch.shootRelease,
    passHeld:keys.has('ShiftLeft')||keys.has('ShiftRight')||touch.passHeld,
-   passTap:pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.passTap,
-   crossHeld:keys.has('KeyQ')||touch.crossHeld,crossTap:pressed.has('KeyQ')||touch.crossTap,
+   passTap:pressed.has('ShiftLeft')||pressed.has('ShiftRight')||touch.passTap,passRelease:touch.passRelease,
+   crossHeld:keys.has('KeyQ')||touch.crossHeld,crossTap:pressed.has('KeyQ')||touch.crossTap,crossRelease:touch.crossRelease,
    tackle:pressed.has('KeyF')||touch.tackle,sw:pressed.has('KeyC')||touch.sw,
    sprint:keys.has('KeyE')||touch.sprint};
 }
 function sendGuestInput(now){
  if(now-guestLastPacket<40)return;guestLastPacket=now;
  sendNetwork({type:'input',input:getGuestInput()});
- pressed.clear();touch.shootTap=false;touch.passTap=false;touch.crossTap=false;touch.tackle=false;touch.sw=false;touch.shootRelease=null;touch.passRelease=null;touch.crossRelease=null;
+ pressed.clear();touch.shootTap=false;touch.passTap=false;touch.crossTap=false;touch.tackle=false;touch.sw=false;touch.shootRelease=null;touch.passRelease=null;touch.crossRelease=null;touch.shootRelease=null;touch.passRelease=null;touch.crossRelease=null;
 }
 function copyString(v){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(v).then(()=>true).catch(()=>fallbackCopy(v));return Promise.resolve(fallbackCopy(v));}
 function fallbackCopy(v){const t=document.createElement('textarea');t.value=v;t.style.position='fixed';t.style.opacity='0';document.body.append(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}t.remove();return ok;}
@@ -866,9 +871,25 @@ function bindTap(id,action){
 }
 function bindHold(id,action){
   const el=$(id);let pointer=null,downAt=0;
-  el.addEventListener('pointerdown',e=>{e.preventDefault();if(pointer!==null)return;pointer=e.pointerId;downAt=performance.now();makeAudio();if(mode==='guest'||mode==='solo'||mode==='host'){touch[action]=true;el.classList.add('held');}try{el.setPointerCapture(e.pointerId)}catch(_e){}},{passive:false});
-  function end(e){if(pointer!==e.pointerId)return;pointer=null;touch[action]=false;el.classList.remove('held');if(performance.now()-downAt<90){if(action==='shootHeld')touch.shootTap=true;else if(action==='passHeld')touch.passTap=true;else if(action==='crossHeld')touch.crossTap=true;}}
-  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);el.addEventListener('lostpointercapture',end);
+  el.addEventListener('pointerdown',e=>{
+    e.preventDefault();if(pointer!==null)return;pointer=e.pointerId;downAt=performance.now();makeAudio();
+    if(mode==='guest'||mode==='solo'||mode==='host'){touch[action]=true;el.classList.add('held');}
+    try{el.setPointerCapture(e.pointerId)}catch(_e){}
+  },{passive:false});
+  function end(e){
+    if(pointer!==e.pointerId)return;
+    if(e.cancelable)e.preventDefault();
+    pointer=null;touch[action]=false;el.classList.remove('held');
+    if(e.type==='pointercancel')return;
+    const seconds=Math.max(0,(performance.now()-downAt)/1000);
+    const power=clamp(seconds/(action==='passHeld'?.96:1.16),.10,1);
+    if(action==='shootHeld')touch.shootRelease=power;
+    else if(action==='passHeld')touch.passRelease=power;
+    else if(action==='crossHeld')touch.crossRelease=power;
+  }
+  el.addEventListener('pointerup',end,{passive:false});
+  el.addEventListener('pointercancel',end,{passive:false});
+  el.addEventListener('lostpointercapture',end);
 }
 bindHold('shootBtn','shootHeld');bindHold('passBtn','passHeld');bindHold('crossBtn','crossHeld');bindHold('sprintBtn','sprint');
 bindTap('tackleBtn','tackle');bindTap('switchBtn','sw');

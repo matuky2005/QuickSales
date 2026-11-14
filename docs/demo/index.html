@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#06120b">
+<title>Zombie Plague Web — Demo táctil</title>
+<style>
+:root{color-scheme:dark;--green:#c5ff62}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08160f;color:#fff;font-family:system-ui,-apple-system,sans-serif;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
+#world{display:block;position:fixed;inset:0;width:100%;height:100%}
+#look{position:absolute;left:38%;right:0;top:12%;bottom:0;touch-action:none;z-index:1}
+#top{position:absolute;z-index:5;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:max(7px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px;pointer-events:none}
+#top .name{font-size:12px;font-weight:900;letter-spacing:.09em;color:var(--green);text-shadow:0 2px 5px #000}
+#top .tag{font-size:10px;background:#07140ed9;border:1px solid #446548;padding:6px 9px;border-radius:9px;font-weight:700}
+#top a{pointer-events:auto;margin-left:auto;background:#14271dbb;border:1px solid #547357;color:#fff;text-decoration:none;padding:7px 12px;font-size:12px;border-radius:9px;font-weight:750}
+#hint{position:absolute;z-index:4;left:50%;transform:translateX(-50%);top:15%;width:min(340px,55%);padding:10px 12px;border:1px solid #5b814f;background:#05140ddc;text-align:center;border-radius:12px;font-size:12px;pointer-events:none}
+#hint b{display:block;color:var(--green);font-size:13px;letter-spacing:.04em}
+#hint span{display:block;color:#d1dfcf;margin-top:3px}
+#feedback{position:absolute;z-index:4;top:9%;left:max(12px,env(safe-area-inset-left));font:700 11px ui-monospace,monospace;color:#d7fbc6;max-width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#stick{position:absolute;z-index:6;left:max(28px,calc(env(safe-area-inset-left) + 22px));bottom:max(24px,calc(env(safe-area-inset-bottom) + 15px));width:128px;height:128px;border:2px solid #cffc7469;border-radius:50%;background:#0c24138c;touch-action:none;box-shadow:0 0 35px #0007}
+#stick:after{content:"MOVER";position:absolute;top:-23px;left:37px;font-size:10px;font-weight:850;letter-spacing:.13em;color:#eaffda}
+#knob{position:absolute;left:50%;top:50%;width:64px;height:64px;transform:translate(-50%,-50%);border:2px solid #c5ff62c4;border-radius:50%;background:#bdf66a77;box-shadow:0 4px 16px #0006}
+#buttons{z-index:7;position:absolute;right:max(15px,env(safe-area-inset-right));bottom:max(15px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,55px);grid-auto-rows:53px;gap:7px}
+.control{display:flex;align-items:center;justify-content:center;border:1px solid #87af77;border-radius:13px;background:#163322cd;color:#eefae8;font-size:10px;font-weight:900;touch-action:none;box-shadow:0 3px 10px #0007;padding:0 2px;cursor:pointer}
+.control.fire{background:#d4f86d;color:#142316;font-size:12px;border-color:#e5ff91;grid-column:3;grid-row:1 / 3}
+.control.active{filter:brightness(1.4);transform:scale(.96);background:#baf95b;color:#152516}
+#direction{position:absolute;z-index:4;left:max(28px,calc(env(safe-area-inset-left) + 20px));bottom:170px;font-size:10px;color:#e9ffcf;pointer-events:none}
+#portrait{display:none}
+@media(orientation:portrait){#portrait{position:fixed;z-index:30;inset:0;background:#07150cf5;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px;gap:9px}#portrait strong{color:var(--green);font-size:22px}#portrait span{color:#d4e5d1;max-width:300px}}
+@media(max-height:360px) and (orientation:landscape){#hint{top:18%;font-size:10px}#hint b{font-size:11px}#stick{width:105px;height:105px;bottom:14px}#knob{width:53px;height:53px}#buttons{grid-template-columns:repeat(3,48px);grid-auto-rows:45px;gap:5px}#direction{bottom:142px}}
+</style></head>
+<body>
+<canvas id="world" aria-label="Escenario geométrico demostrativo, no CS 1.6"></canvas><div id="look"></div>
+<div id="top"><div class="name">ZOMBIE PLAGUE WEB</div><div class="tag">PRE-ALFA · HUD TEST</div><a href="../">SALIR</a></div>
+<div id="hint"><b>PRUEBA DE CONTROLES — SIN CS 1.6</b><span>Arrastrá a la derecha para apuntar. Mové el joystick y mantené DISPARAR.</span></div>
+<div id="feedback" aria-live="polite">Último comando: —</div>
+<div id="direction">MOVIMIENTO</div>
+<div id="stick" role="application" aria-label="Joystick de movimiento"><div id="knob"></div></div>
+<div id="buttons">
+<button type="button" class="control" data-action="reload">RECARGA</button>
+<button type="button" class="control" data-action="jump">SALTAR</button>
+<button type="button" class="control fire" data-action="attack">DISPARAR</button>
+<button type="button" class="control" data-action="duck">AGACHAR</button>
+<button type="button" class="control" data-action="use">USAR</button>
+<button type="button" class="control" data-action="zp">ZP</button>
+<button type="button" class="control" data-action="weapon">ARMA</button>
+</div>
+<div id="portrait"><strong>GIRÁ EL IPHONE ↻</strong><span>La prueba está diseñada para jugar en horizontal. Activá el giro de pantalla en iOS.</span></div>
+<script>
+(function(){
+'use strict';
+const canvas=document.getElementById('world'),ctx=canvas.getContext('2d');
+const stick=document.getElementById('stick'),knob=document.getElementById('knob'),look=document.getElementById('look');
+const feedback=document.getElementById('feedback');
+let input={x:0,y:0},held=new Set(),last='—',aim={x:0,y:0},lookId=null,prev=null,stickId=null,flash=0,shot=0;
+function command(s){last=s;feedback.textContent='Último comando: '+s; /* Sustituiremos por Cmd_ExecuteString al integrar Xash3D. */ }
+function hold(name,on){if(held.has(name)===on)return;if(on)held.add(name);else held.delete(name);command((on?'+':'-')+name)}
+function updateMovement(x,y){const next=new Set();if(y<-.22)next.add('forward');if(y>.22)next.add('back');if(x<-.22)next.add('moveleft');if(x>.22)next.add('moveright');for(const k of ['forward','back','moveleft','moveright'])hold(k,next.has(k));input={x,y}}
+function stickMove(e){const b=stick.getBoundingClientRect(),r=b.width/2,cx=b.left+r,cy=b.top+r;let x=(e.clientX-cx)/(r*.72),y=(e.clientY-cy)/(r*.72);const d=Math.hypot(x,y);if(d>1){x/=d;y/=d}knob.style.left=(50+35*x)+'%';knob.style.top=(50+35*y)+'%';updateMovement(x,y)}
+stick.addEventListener('pointerdown',e=>{if(stickId!==null)return;stickId=e.pointerId;stick.setPointerCapture(e.pointerId);stickMove(e);e.preventDefault()});
+stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)stickMove(e)});
+function stopStick(e){if(stickId!==e.pointerId)return;stickId=null;knob.style.left='50%';knob.style.top='50%';updateMovement(0,0)}
+stick.addEventListener('pointerup',stopStick);stick.addEventListener('pointercancel',stopStick);stick.addEventListener('lostpointercapture',stopStick);
+look.addEventListener('pointerdown',e=>{if(lookId!==null)return;lookId=e.pointerId;prev={x:e.clientX,y:e.clientY};look.setPointerCapture(e.pointerId)});
+look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId||!prev)return;aim.x+=e.clientX-prev.x;aim.y+=e.clientY-prev.y;aim.x=Math.max(-180,Math.min(180,aim.x));aim.y=Math.max(-110,Math.min(110,aim.y));prev={x:e.clientX,y:e.clientY};});
+function stopLook(e){if(e.pointerId===lookId){lookId=null;prev=null}}
+look.addEventListener('pointerup',stopLook);look.addEventListener('pointercancel',stopLook);
+document.querySelectorAll('.control').forEach(btn=>{
+ const name=btn.dataset.action;let id=null;
+ function start(e){if(id!==null)return;id=e.pointerId;btn.setPointerCapture(id);btn.classList.add('active');if(name==='zp'||name==='weapon'){command(name==='zp'?'zp_menu':'invnext');return}hold(name,true);if(name==='attack'){flash=13;shot++}e.preventDefault()}
+ function stop(e){if(id!==e.pointerId)return;id=null;btn.classList.remove('active');if(name!=='zp'&&name!=='weapon')hold(name,false);e.preventDefault()}
+ btn.addEventListener('pointerdown',start);btn.addEventListener('pointerup',stop);btn.addEventListener('pointercancel',stop);btn.addEventListener('lostpointercapture',e=>{if(id===e.pointerId)stop(e)});
+});
+function releaseAll(){lookId=null;stickId=null;prev=null;updateMovement(0,0);for(const k of Array.from(held))hold(k,false);knob.style.left='50%';knob.style.top='50%'}
+window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll()});
+let tick=0,W=0,H=0,dpr=1;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+window.addEventListener('resize',resize);resize();
+function frame(){
+ tick++;ctx.clearRect(0,0,W,H);
+ const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#0b2417');sky.addColorStop(.55,'#24432d');sky.addColorStop(.56,'#152c19');sky.addColorStop(1,'#07140b');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ const horizon=H*.55;ctx.strokeStyle='#a3ef6030';ctx.lineWidth=1;
+ for(let i=-9;i<=9;i++){ctx.beginPath();ctx.moveTo(W/2+aim.x*.3,horizon);ctx.lineTo(W/2+i*W*.16+aim.x*.3,H);ctx.stroke()}
+ for(let i=1;i<8;i++){const y=horizon+(H-horizon)*(i/8)**1.6;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ const tx=W*.5+Math.sin(tick*.018)*W*.17-aim.x*.28,ty=horizon-18+Math.sin(tick*.02)*H*.07-aim.y*.2;
+ ctx.fillStyle='#7cd66c';ctx.beginPath();ctx.arc(tx,ty,17,0,Math.PI*2);ctx.fill();ctx.fillStyle='#17351b';ctx.fillRect(tx-6,ty-5,12,10);
+ const cx=W/2+aim.x*.24,cy=H*.48+aim.y*.2;
+ ctx.strokeStyle=flash>0?'#f7ffac':'#d5ff83';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-18,cy);ctx.lineTo(cx-6,cy);ctx.moveTo(cx+6,cy);ctx.lineTo(cx+18,cy);ctx.moveTo(cx,cy-18);ctx.lineTo(cx,cy-6);ctx.moveTo(cx,cy+6);ctx.lineTo(cx,cy+18);ctx.stroke();flash=Math.max(0,flash-1);
+ if(held.has('attack')&&tick%7===0){flash=6;shot++}
+ ctx.font='11px monospace';ctx.fillStyle='#d7ffd8';ctx.fillText('DEMO - SIN MOTOR / ZOMBIES',Math.max(12,W-245),Math.max(55,H*.10));
+ requestAnimationFrame(frame)
+}frame();
+})();
+</script>
+</body></html>

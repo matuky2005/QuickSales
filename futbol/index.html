@@ -133,6 +133,16 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
 }
 @media(orientation:portrait){.power-hud{position:relative;margin:8px auto;top:auto;left:auto;transform:none}}
 
+@media(orientation:portrait) and (max-width:700px){
+  body.is-game #game .touch-ui{position:relative;display:flex;justify-content:space-between;gap:5px;min-height:115px}
+  body.is-game #game .joystick{width:95px;height:95px}
+  body.is-game #game .stick{width:38px;height:38px}
+  body.is-game #game .touch-buttons{grid-template-columns:repeat(3,minmax(40px,1fr));grid-template-rows:48px 48px;gap:3px;flex:0 1 54%;min-width:144px}
+  body.is-game #game .touch-btn{font-size:9px;min-height:0;padding:3px}
+  body.is-game #game .touch-btn.shoot{min-height:97px;font-size:10px}
+  body.is-game #game .sprint-btn{position:absolute;left:101px;bottom:23px;min-width:42px;min-height:43px;padding:3px;font-size:9px}
+}
+
 </style>
 </head>
 <body>
@@ -311,7 +321,7 @@ function cpuTarget(p,holder,dt){const side=p.team,forward=side===0?1:-1;
  else if(opponentHolds){x=clamp(x+forward*40,L+30,R-30);y=clamp(y+(b.y-MID)*.14,T+30,B-30)}
  steer(p,x,y,112,dt);
 }
-function takeBall(p){const b=game.ball;b.holder=p.team*TEAM_SIZE+p.index;b.vx=0;b.vy=0;b.lock=.35;if(!p.gk && (mode==='solo'?p.team===0:true)){game.selected[p.team]=p.team*TEAM_SIZE+p.index;} }
+function takeBall(p){const b=game.ball;b.holder=p.team*TEAM_SIZE+p.index;b.vx=0;b.vy=0;b.h=0;b.vh=0;b.lock=.35;if(!p.gk && (mode==='solo'?p.team===0:true)){game.selected[p.team]=p.team*TEAM_SIZE+p.index;} }
 function resolveScore(team){game.scores[team]++;game.lastScore=team;game.goalPause=2.25;sfx('goal');flashUntil=performance.now()+1850;$('goalFlash').textContent='¡GOOOOL!';$('goalFlash').hidden=false;$('statusText').textContent=(team===0?'¡GOL DE ROJOS!':'¡GOL DE AZULES!');setScore();restartPositions(1-team);}
 function updatePowerHud(){
   if(!game)return;
@@ -541,7 +551,7 @@ function createAthlete(index){
     part(new THREE.CylinderGeometry(.17,.12,.53,8),sockMat,0,-1.02,.04,leg);
     const boot=part(new THREE.BoxGeometry(.32,.19,.58),shoeMat,0,-1.35,.21,leg);
   }
-  const badge=part(new THREE.PlaneGeometry(.63,.76),new THREE.MeshBasicMaterial({map:makeNumberTexture(id===4?1:id+7),transparent:true,depthWrite:false,side:THREE.DoubleSide}),0,2.37,.536);
+  const badge=part(new THREE.PlaneGeometry(.63,.76),new THREE.MeshBasicMaterial({map:makeNumberTexture(gk?1:id+2),transparent:true,depthWrite:false,side:THREE.DoubleSide}),0,2.37,.536);
   // Círculo destacado bajo el futbolista controlado.
   const indicator=new THREE.Mesh(new THREE.TorusGeometry(1.32,.105,4,36),new THREE.MeshBasicMaterial({color:side?0x9ad9ff:0xffe79a,transparent:true,opacity:.9}));
   indicator.rotation.x=-Math.PI/2;indicator.position.y=.10;root.add(indicator);

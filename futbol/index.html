@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Retro Fútbol 06: fútbol arcade original de navegador. Jugá solo, dos en un teclado o 1 contra 1 online desde dos celulares.">
-<title>RETRO FÚTBOL '06 — ¡A la cancha!</title>
+<title>RETRO FÚTBOL '06 3D — Estadio y multijugador</title>
 <style>
 :root{color-scheme:dark;--bg:#101e1b;--panel:#182e29;--panel2:#203e35;--line:#385649;--cream:#f3edd8;--muted:#b1c7b6;--orange:#f5b544;--green:#83ec94;--red:#fe746b;--blue:#81bdf7}
 *{box-sizing:border-box}
@@ -39,13 +39,13 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
 .main-btn{border:0;background:var(--orange);color:#163627;font-size:17px;font-weight:950;min-height:50px;border-radius:13px;padding:12px 17px;width:100%}.main-btn:active,.mode:active{transform:scale(.99)}.outline{border:1px solid #6d967b;background:#254c38;color:#e9f6e9;border-radius:12px;font-weight:900;padding:12px 15px;min-height:46px}
 .room-actions{display:flex;gap:9px}.room-actions>*{flex:1}.room-status{margin:17px 0 0;color:#d4e5cf;line-height:1.6}.warn{color:#ffe196}.bad{color:#ffb0a4}
 .game-shell{max-width:1050px;margin:0 auto}.game-hud{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center;margin-bottom:10px}.score-teams{display:flex;align-items:center;gap:9px;font-weight:950;font-size:clamp(11px,2.5vw,16px)}.score-teams.right{justify-content:flex-end}.jersey{width:20px;height:20px;transform:rotate(12deg);border:2px solid #ffffff8c;border-radius:5px 5px 3px 3px}.jersey.red{background:#ef6661}.jersey.blue{background:#62acff}
-.score-mid{text-align:center;padding:3px 15px;background:#0a1b14;border:1px solid #45624f;border-radius:13px}.score-big{font-size:clamp(24px,6vw,37px);line-height:1.15;font-weight:1000;letter-spacing:3px;color:#fff9e6;font-variant-numeric:tabular-nums}.match-time{font-size:12px;letter-spacing:2px;color:var(--orange);font-weight:950}.game-outer{position:relative;box-shadow:0 18px 42px #020b086b;border-radius:15px;overflow:hidden;border:3px solid #45624c;background:#25643a;touch-action:none}.game-canvas{display:block;width:100%;aspect-ratio:5/3;max-height:68vh;touch-action:none}
+.score-mid{text-align:center;padding:3px 15px;background:#0a1b14;border:1px solid #45624f;border-radius:13px}.score-big{font-size:clamp(24px,6vw,37px);line-height:1.15;font-weight:1000;letter-spacing:3px;color:#fff9e6;font-variant-numeric:tabular-nums}.match-time{font-size:12px;letter-spacing:2px;color:var(--orange);font-weight:950}.game-outer{position:relative;box-shadow:0 18px 42px #020b086b;border-radius:15px;overflow:hidden;border:3px solid #45624c;background:#25643a;touch-action:none}.game-canvas{display:block;width:100%;aspect-ratio:5/3;max-height:68vh;touch-action:none;background:linear-gradient(#b7d5d5,#31774d)}
 .flash{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;text-shadow:4px 4px 0 #102b20;color:#fff1bc;font-size:clamp(34px,10vw,88px);font-weight:1000;letter-spacing:-3px;text-align:center;animation:celebrate .55s infinite alternate}@keyframes celebrate{from{transform:scale(.96)}to{transform:scale(1.06)}}
 .role{font-size:12px;color:#d4e4d0;display:flex;align-items:center;justify-content:space-between;margin-top:7px;gap:12px}.status{color:var(--orange);font-weight:850}
 .touch-ui{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 0;min-height:155px;touch-action:none;user-select:none;-webkit-user-select:none}
 .joystick{position:relative;width:140px;height:140px;flex-shrink:0;border-radius:50%;border:3px solid #629271;background:radial-gradient(circle,#2f5a46,#172e25);touch-action:none;box-shadow:inset 0 0 18px #081b12}.stick{position:absolute;left:50%;top:50%;width:57px;height:57px;transform:translate(-50%,-50%);border-radius:50%;background:var(--orange);border:5px solid #fbe5a7;box-shadow:0 4px 9px #08180f9e;pointer-events:none}.joystick:after{content:"✛";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ffffff25;font-weight:950;font-size:82px;pointer-events:none}
 .touch-buttons{display:grid;grid-template-columns:80px 80px;grid-template-rows:70px 65px;gap:9px;align-items:center}.touch-btn{border-radius:18px;border:3px solid #ffffff57;color:#173b2c;background:#89c7fc;font-size:13px;font-weight:950;line-height:1.1;touch-action:none}.touch-btn.shoot{grid-row:1/3;grid-column:2;background:var(--orange);border-radius:40px;min-height:120px;font-size:16px}.touch-btn.pass{grid-row:1;grid-column:1;background:#a9edaa}.touch-btn.switch{grid-row:2;grid-column:1;background:#e6a8f0}.touch-btn:active{filter:brightness(1.18);transform:scale(.97)}
-.game-bottom{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}.keys{color:#9cbaaa;font-size:12px;line-height:1.5}.game-bottom .outline{white-space:nowrap}
+.game-bottom{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}.camera-tools{display:flex;gap:7px}.camera-tools .outline{padding:9px 12px}.three-error{position:absolute;inset:0;z-index:4;background:#0a2529;color:#fff7d8;padding:20px;display:grid;place-items:center;text-align:center;font-weight:900}.keys{color:#9cbaaa;font-size:12px;line-height:1.5}.game-bottom .outline{white-space:nowrap}
 .overlay{position:fixed;inset:0;z-index:50;background:#06100cdb;display:grid;place-items:center;padding:17px}.modal{padding:25px;max-width:440px;width:100%;text-align:center}.modal-icon{font-size:68px}.modal h2{font-size:clamp(30px,7vw,45px);margin:8px 0}.modal p{color:#ccdacd}.modal .outline{margin-top:10px;width:100%}
 .foot{color:#77958a;text-align:center;font-size:11px;margin-top:19px}.is-game .foot{display:none}
 @media(min-width:850px){.touch-ui{display:none}.game-canvas{max-height:65vh}}
@@ -57,12 +57,12 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
 </head>
 <body>
 <div class="shell">
-  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06</span><small>ARCADE EDITION</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
+  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06 3D</span><small>STADIUM EDITION</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
   <main id="menu">
     <section class="hero card">
       <div class="eyebrow">EL FÚTBOL DE ANTES · EN TU NAVEGADOR</div>
       <h1>LA PELOTA<br>NO SE <em>MANCHA.</em></h1>
-      <p class="sub">Fútbol arcade original con estética retro: corré, pasá, meté goles y enfrentate a un amigo desde otro teléfono. Inspirado en los juegos de cancha de los 2000.</p>
+      <p class="sub">Fútbol 3D original, con jugadores animados, cámara de estadio, pases, tiros y multijugador entre celulares. Inspirado en los clásicos futboleros de los 2000.</p>
       <div class="hero-art" aria-hidden="true"><span class="hero-player"></span><span class="hero-ball">⚽</span><span class="hero-player blue"></span></div>
       <span class="pill">Elegí tu partido</span>
       <div class="modes">
@@ -72,7 +72,7 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
         <button class="mode online" id="joinBtn"><i>🤝</i><strong>Unirse a partido</strong><small>Jugá desde otro celular o PC</small></button>
       </div>
       <div class="options-line"><strong>Duración del partido</strong><div class="times" id="timeOptions"><button class="time-btn" data-min="2" aria-pressed="true">2 min</button><button class="time-btn" data-min="3" aria-pressed="false">3 min</button><button class="time-btn" data-min="5" aria-pressed="false">5 min</button></div></div>
-      <p class="note">Sin instalación · Compatible con Chrome en iPhone · Online requiere internet y conexión WebRTC entre ambos jugadores.</p>
+      <p class="note">Gráficos WebGL 3D · Compatible con Chrome en iPhone · Requiere internet para cargar el motor · Online usa WebRTC.</p>
     </section>
   </main>
   <section class="lobby card" id="lobby" hidden>
@@ -86,19 +86,20 @@ p{margin:0 0 15px}.sub{color:#c0d5c7;font-size:15px;max-width:600px}
   </section>
   <section class="game-shell" id="game" hidden>
     <div class="game-hud"><div class="score-teams"><span class="jersey red"></span> ROJOS</div><div class="score-mid"><div class="match-time" id="clockText">02:00</div><div class="score-big" id="scoreText">0 - 0</div></div><div class="score-teams right">AZULES <span class="jersey blue"></span></div></div>
-    <div class="game-outer"><canvas id="pitch" width="1000" height="600" class="game-canvas" aria-label="Cancha de fútbol arcade con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div></div>
+    <div class="game-outer"><canvas id="pitch" width="1000" height="600" class="game-canvas" aria-label="Estadio tridimensional de fútbol con jugadores y balón"></canvas><div class="flash" id="goalFlash" hidden>¡GOOOOL!</div><div class="three-error" id="threeError" hidden>No se pudo abrir el estadio 3D. Revisá la conexión a internet y actualizá Chrome.</div></div>
     <div class="role"><span id="roleText">Manejás a los ROJOS</span><span class="status" id="statusText">¡A JUGAR!</span></div>
     <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>↗</button><button class="touch-btn shoot" id="shootBtn">TIRAR<br>⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button></div></div>
-    <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><button class="outline" id="exitBtn">← Salir del partido</button></div>
+    <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
-  <footer class="foot">Juego original, independiente de FIFA, PES, Konami y EA. No incluye marcas, equipos ni imágenes oficiales.</footer>
+  <footer class="foot">Juego 3D original inspirado en el fútbol clásico. No afiliado a FIFA, PES, Konami o EA.</footer>
 </div>
 <div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
-<script>
-'use strict';
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js";
+"use strict";
 const $=id=>document.getElementById(id);
-const canvas=$('pitch'),ctx=canvas.getContext('2d');
+const canvas=$('pitch');
 const W=1000,H=600,L=55,R=945,T=70,B=530,MID=300,GOAL=85;
 const TAU=Math.PI*2;
 let duration=120,mode='menu',game=null,peer=null,conn=null,room='',netTimer=0,clockId=0,lastFrame=0,hostSnapshot=0,guestLastPacket=0,sourceCode='',audio=null,soundOn=true,flashUntil=0;
@@ -229,37 +230,231 @@ function step(dt){if(!game||game.ended)return;
  touch.shoot=false;touch.pass=false;touch.sw=false;pressed.clear();
 }
 function endGame(){if(!game||gameEnded)return;game.ended=true;gameEnded=true;sfx('end');$('goalFlash').hidden=true;const a=game.scores[0],b=game.scores[1];$('resultTitle').textContent=a===b?'¡EMPATE!':a>b?'¡GANARON LOS ROJOS!':'¡GANARON LOS AZULES!';$('resultDesc').textContent=`Resultado final: Rojos ${a} — ${b} Azules`;$('resultOverlay').hidden=false;$('againBtn').hidden=mode==='guest';if(mode==='host')sendNetwork({type:'end',scores:game.scores});}
-function render(){if(!game)return;
- const c=ctx;c.clearRect(0,0,W,H);
- c.fillStyle='#163b28';c.fillRect(0,0,W,H);
- // Gradas y carteles de publicidad alrededor de la cancha.
- for(let i=0;i<20;i++){c.fillStyle=i%2?'#386049':'#456f55';c.fillRect(i*50,0,49,59);c.fillRect(i*50,540,49,60);}
- for(let i=0;i<17;i++){c.fillStyle=i%2?'#2d653f':'#225b39';c.fillRect(L+i*(R-L)/17,T,(R-L)/17+1,B-T);}
- c.fillStyle='#0d2b1b';c.fillRect(L-14,MID-GOAL-13,14,GOAL*2+26);c.fillRect(R,MID-GOAL-13,14,GOAL*2+26);
- c.fillStyle='#e9f4d5';c.fillRect(L-15,MID-GOAL-3,15,6);c.fillRect(L-15,MID+GOAL-3,15,6);c.fillRect(R,MID-GOAL-3,15,6);c.fillRect(R,MID+GOAL-3,15,6);
- c.strokeStyle='#f5f7dfd9';c.lineWidth=2.7;c.strokeRect(L,T,R-L,B-T);c.beginPath();c.moveTo(W/2,T);c.lineTo(W/2,B);c.stroke();
- c.beginPath();c.arc(W/2,MID,80,0,TAU);c.stroke();c.beginPath();c.arc(W/2,MID,3,0,TAU);c.fillStyle='#f5f7d9';c.fill();
- c.strokeRect(L,MID-140,125,280);c.strokeRect(R-125,MID-140,125,280);c.strokeRect(L,MID-81,46,162);c.strokeRect(R-46,MID-81,46,162);
- for(const x of [L+95,R-95]){c.beginPath();c.arc(x,MID,3,0,TAU);c.fill();}
- c.font='900 15px system-ui';c.textAlign='center';c.fillStyle='#d0e7ba74';c.fillText('RETRO 06',W/2,30);c.fillText('EL FÚTBOL ES TUYO',W/2,579);
- const ys=[147,227,307,387,467];for(let i=0;i<ys.length;i++){c.fillStyle=i%2?'#8ab68b':'#ffdf91';c.fillRect(20,ys[i],24,7);c.fillRect(955,ys[i],24,7);}
- const b=game.ball;
- const active=mode==='guest'?1:0;
- for(const p of game.players){
-  const chosen=game.selected[p.team]===p.team*5+p.index&&(!p.gk);
-  // sombra, aura de jugador controlado.
-  c.beginPath();c.ellipse(p.x+4,p.y+13,19,7,0,0,TAU);c.fillStyle='#071f1766';c.fill();
-  if(chosen){c.beginPath();c.arc(p.x,p.y,24,0,TAU);c.strokeStyle=p.team===0?'#ffe98b':'#b7d9ff';c.lineWidth=4;c.stroke();
-   c.beginPath();c.moveTo(p.x,p.y-39);c.lineTo(p.x-8,p.y-51);c.lineTo(p.x+8,p.y-51);c.closePath();c.fillStyle=p.team===active?'#ffe582':'#d7e5e4';c.fill();}
-  c.beginPath();c.arc(p.x,p.y,16,0,TAU);c.fillStyle=p.team===0?'#ea6660':'#5eace8';c.fill();c.strokeStyle='#f3e9d7';c.lineWidth=2.8;c.stroke();
-  c.beginPath();c.arc(p.x+p.dx*6,p.y+p.dy*6,4,0,TAU);c.fillStyle=p.team===0?'#ffc0b1':'#c6e9ff';c.fill();
-  c.font='950 15px system-ui';c.fillStyle='#fffef3';c.textAlign='center';c.textBaseline='middle';c.fillText(p.gk?'1':String(p.n),p.x,p.y+1);
- }
- c.beginPath();c.ellipse(b.x+4,b.y+7,9,4,0,0,TAU);c.fillStyle='#0000006b';c.fill();
- c.beginPath();c.arc(b.x,b.y,9,0,TAU);c.fillStyle='#fffefa';c.fill();c.strokeStyle='#1b3427';c.lineWidth=1.7;c.stroke();
- c.beginPath();c.arc(b.x,b.y,3.5,0,TAU);c.fillStyle='#27362d';c.fill();
- for(let i=0;i<5;i++){const a=TAU*i/5;c.beginPath();c.arc(b.x+6*Math.cos(a),b.y+6*Math.sin(a),1.6,0,TAU);c.fill();}
+
+const turfScale=.102, turfDepth=.102;
+let arena=null,cam3=null,gl3=null,teamModels=[],ballModel=null,ballShadow=null,footballLights=[],viewMode=0,last3dTick=performance.now(),drawError=false;
+const xr=x=>(x-500)*turfScale, zr=y=>(y-300)*turfDepth;
+function createWorld(){
+  if(arena)return;
+  try{
+    gl3=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"});
+    gl3.setPixelRatio(Math.min(window.devicePixelRatio||1,1.65));
+    gl3.setSize(1000,600,false);
+    gl3.outputColorSpace=THREE.SRGBColorSpace;
+    gl3.toneMapping=THREE.ACESFilmicToneMapping;
+    gl3.toneMappingExposure=1.32;
+    arena=new THREE.Scene();arena.background=new THREE.Color(0x91b6c1);
+    arena.fog=new THREE.FogExp2(0xa4b6ad,.007);
+    cam3=new THREE.PerspectiveCamera(49,5/3,.15,240);
+    arena.add(new THREE.HemisphereLight(0xd5e9ff,0x244821,2.2));
+    let sun=new THREE.DirectionalLight(0xffefd4,2.6);sun.position.set(-32,55,28);arena.add(sun);
+    let ambient=new THREE.AmbientLight(0xffffff,.38);arena.add(ambient);
+    const mat=(col,rough=1)=>new THREE.MeshStandardMaterial({color:col,roughness:rough});
+    const turf=[mat(0x287b43),mat(0x26743f)];
+    const px=xr(L),qx=xr(R),tz=zr(T),bz=zr(B);
+    function mesh(geo,m,x=0,y=0,z=0){const a=new THREE.Mesh(geo,m);a.position.set(x,y,z);arena.add(a);return a;}
+    function box(x,y,z,w,h,d,m){return mesh(new THREE.BoxGeometry(w,h,d),m,x,y,z);}
+    box(0,-.33,0,121,.65,86,mat(0x224d31));
+    for(let k=0;k<18;k++){let x=px+(qx-px)*(k+.5)/18;box(x,-.018,0,(qx-px)/18+.03,.036,bz-tz,turf[k%2]);}
+    let touch=mat(0xe6f5e7);
+    function pitchLine(x1,z1,x2,z2,width=.13){
+      const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz);
+      const a=box((x1+x2)/2,.055,(z1+z2)/2,len,.035,width,touch);
+      a.rotation.y=-Math.atan2(dz,dx);
+    }
+    function rect(x1,z1,x2,z2){pitchLine(x1,z1,x2,z1);pitchLine(x1,z2,x2,z2);pitchLine(x1,z1,x1,z2);pitchLine(x2,z1,x2,z2);}
+    rect(px,tz,qx,bz);pitchLine(0,tz,0,bz);
+    function circle(x,z,r,arcStart=0,arcEnd=Math.PI*2){
+      const pts=[];for(let i=0;i<=96;i++){const t=arcStart+(arcEnd-arcStart)*i/96;pts.push(new THREE.Vector3(x+Math.cos(t)*r,.066,z+Math.sin(t)*r));}
+      const g=new THREE.BufferGeometry().setFromPoints(pts),l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xeaf9ef}));arena.add(l);
+    }
+    circle(0,0,8.15);box(0,.065,0,.36,.04,.36,touch);
+    const pen=14.4,wide=14.2,goalWide=8.8;
+    rect(px,-wide,px+pen,wide);rect(qx-pen,-wide,qx,wide);
+    rect(px,-goalWide,px+5.2,goalWide);rect(qx-5.2,-goalWide,qx,goalWide);
+    circle(px+10,0,.32);circle(qx-10,0,.32);
+    const postMat=mat(0xf9fcfa,.5);
+    function rod(x1,y1,z1,x2,y2,z2,r=.11,m=postMat){
+      const d=new THREE.Vector3(x2-x1,y2-y1,z2-z1),ge=new THREE.CylinderGeometry(r,r,d.length(),7);
+      const rod=new THREE.Mesh(ge,m);rod.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2);rod.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());arena.add(rod);return rod;
+    }
+    for(const side of [-1,1]){
+      const x=side<0?px:qx,ex=x+side*3.3,gz=8.7,gh=3.3;
+      for(const z of [-gz,gz]){rod(x,0,z,x,gh,z,.13);rod(x,gh,z,ex,gh,z,.06);rod(ex,.05,z,ex,gh,z,.044);}
+      rod(x,gh,-gz,x,gh,gz,.13);rod(ex,gh,-gz,ex,gh,gz,.07);
+      const netmat=new THREE.LineBasicMaterial({color:0xe9eff4,transparent:true,opacity:.31});
+      for(let v=-gz;v<=gz+.01;v+=1.45){
+        for(const y of [0,gh]){const a=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,y,v),new THREE.Vector3(ex,y,v)]);arena.add(new THREE.Line(a,netmat));}
+        const a=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ex,0,v),new THREE.Vector3(ex,gh,v)]);arena.add(new THREE.Line(a,netmat));
+      }
+      for(let xStep=0;xStep<=3.3+.001;xStep+=.72){
+        const at=x+side*xStep;
+        for(const z of [-gz,gz]){
+          const a=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(at,0,z),new THREE.Vector3(at,gh,z)]);arena.add(new THREE.Line(a,netmat));
+        }
+      }
+    }
+    // Publicidad exterior original: evita marcas protegidas de FIFA/PES.
+    const adColors=[0x16374f,0x16604e,0x643029,0x26466a,0x3d3c68],adWords=["RETRO '06","TODO FÚTBOL","GOOOOL","ARCADE CUP","LA REVANCHA"];
+    function adTexture(word,color){
+      let c=document.createElement("canvas");c.width=512;c.height=96;let cx=c.getContext("2d");
+      cx.fillStyle="#"+color.toString(16).padStart(6,"0");cx.fillRect(0,0,512,96);
+      cx.strokeStyle="#ffffff55";cx.lineWidth=5;cx.strokeRect(4,4,504,88);
+      cx.fillStyle="#ffffff";cx.font="bold 45px system-ui";cx.textAlign="center";cx.textBaseline="middle";cx.fillText(word,256,50);
+      return new THREE.CanvasTexture(c);
+    }
+    const adM=adColors.map((c,i)=>new THREE.MeshBasicMaterial({map:adTexture(adWords[i],c),side:THREE.DoubleSide}));
+    for(let i=0;i<10;i++){
+      const x=-49+i*10.8;
+      for(const side of [-1,1]){const a=box(x,.85,side*25,10.7,1.7,.15,adM[i%5]);a.rotation.y=side<0?Math.PI:0;}
+    }
+    for(let i=0;i<3;i++)for(const side of [-1,1]){const a=box(side*50.9,1.1,-16+i*16, .16,2,15.7,adM[(i+2)%5]);a.rotation.y=0;}
+    // Tribunas: cuatro costados, filas con escalones y público de baja complejidad.
+    const stand=mat(0x48545d),concrete=mat(0x313e49),crowdM=[mat(0xb6e4f0),mat(0xf4c65e),mat(0xf7efe0),mat(0xb63a40),mat(0x3055a1)];
+    for(const side of [-1,1])for(let row=0;row<8;row++){
+      const z=side*(30+row*2.15),height=.38+row*.9;
+      box(0,height*.5,z,126,height,2.16,row%2?stand:concrete);
+    }
+    for(const side of [-1,1])for(let row=0;row<6;row++){
+      const x=side*(57+row*2.15),height=.38+row*.82;
+      box(x,height*.5,0,2.16,height,62,row%2?stand:concrete);
+    }
+    let seed=271828;
+    function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+    const gCrowd=new THREE.BoxGeometry(.32,.64,.28);
+    for(let ci=0;ci<crowdM.length;ci++){
+      const locations=[];
+      for(let i=0;i<410;i++){
+        const side=rnd()>.5?1:-1,row=Math.floor(rnd()*7);
+        const z=side*(30+row*2.15),x=-59+rnd()*118,y=row*.9+.86;
+        if(Math.floor(rnd()*5)===ci)locations.push([x,y,z]);
+      }
+      let count=locations.length;const inst=new THREE.InstancedMesh(gCrowd,crowdM[ci],count),obj=new THREE.Object3D();
+      locations.forEach((p,i)=>{obj.position.set(...p);obj.rotation.y=rnd()*6.28;obj.updateMatrix();inst.setMatrixAt(i,obj.matrix);});
+      inst.instanceMatrix.needsUpdate=true;arena.add(inst);
+    }
+    // Túnel, vallas, mástiles e iluminación.
+    const metal=mat(0x9babb8,.5);
+    for(const x of [-52,52])for(const z of [-32,32]){
+      rod(x,0,z,x,16,z,.22,metal);
+      const lamp=box(x,16.2,z,4.5,.4,.9,mat(0xffebbd,.23));
+      const light=new THREE.PointLight(0xfff4cb,.85,84);light.position.set(x,15,z);arena.add(light);
+    }
+    // Suelo de túnel y sombra exterior.
+    box(0,.1,-24.7,8,2,.4,concrete);
+    teamModels=[];
+    for(let i=0;i<10;i++)teamModels.push(createAthlete(i));
+    ballModel=createBall3D();
+    const shadowGeo=new THREE.CircleGeometry(.68,20),shadowMat=new THREE.MeshBasicMaterial({color:0x001912,transparent:true,opacity:.32,depthWrite:false});
+    ballShadow=new THREE.Mesh(shadowGeo,shadowMat);ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.082;arena.add(ballShadow);
+  }catch(err){
+    console.error("No se pudo iniciar WebGL 3D",err);drawError=true;const x=document.getElementById("threeError");if(x){x.hidden=false;x.textContent="Este dispositivo no pudo iniciar los gráficos 3D. Probá Chrome actualizado y recargá la página.";}throw err;
+  }
 }
+function makeNumberTexture(n){
+  const c=document.createElement("canvas");c.width=128;c.height=128;const x=c.getContext("2d");
+  x.font="900 91px Arial";x.textAlign="center";x.textBaseline="middle";x.strokeStyle="#0a1822";x.lineWidth=7;x.strokeText(String(n),64,65);x.fillStyle="#fffbea";x.fillText(String(n),64,65);
+  return new THREE.CanvasTexture(c);
+}
+function createAthlete(index){
+  const side=Math.floor(index/5),id=index%5,gk=id===4,shirt=side?0x287ae6:0xe63b45,shorts=side?0x0f2f78:0x6d1826,skin=[0xe3ad83,0xb67a5b,0xf0c2a0,0x97694c,0xd8a183][index%5],hair=[0x39271e,0x211712,0x533321,0x151618,0x513829][index%5];
+  const jersey=new THREE.MeshStandardMaterial({color:gk?(side?0xf5b237:0x50c4a6):shirt,roughness:.77});
+  const shortsMat=new THREE.MeshStandardMaterial({color:shorts});
+  const skinMat=new THREE.MeshStandardMaterial({color:skin});
+  const sockMat=new THREE.MeshStandardMaterial({color:gk?0x262a2d:0xf4f4f1});
+  const shoeMat=new THREE.MeshStandardMaterial({color:0x191b22,roughness:.8});
+  const root=new THREE.Group();arena.add(root);
+  const body=new THREE.Group();root.add(body);
+  function part(ge,m,x,y,z,parent=body){const a=new THREE.Mesh(ge,m);a.position.set(x,y,z);parent.add(a);return a;}
+  const sphere=(r,x,y,z,m,p=body)=>part(new THREE.SphereGeometry(r,12,9),m,x,y,z,p);
+  part(new THREE.CylinderGeometry(.54,.48,1.25,9),jersey,0,2.35,0);
+  part(new THREE.CylinderGeometry(.48,.40,.53,9),shortsMat,0,1.49,0);
+  sphere(.42,0,3.53,0,skinMat);
+  const hairPart=sphere(.433,0,3.73,-.035,new THREE.MeshStandardMaterial({color:hair}));hairPart.scale.y=.44;
+  const arms=[],legs=[];
+  for(const sign of [-1,1]){
+    const a=new THREE.Group();a.position.set(sign*.61,2.83,0);body.add(a);arms.push(a);
+    const arm=part(new THREE.CylinderGeometry(.195,.145,1.08,8),jersey,sign*.07,-.48,0,a);arm.rotation.z=sign*.22;
+    const hand=part(new THREE.SphereGeometry(.16,10,7),skinMat,sign*.13,-1.0,0,a);
+    const leg=new THREE.Group();leg.position.set(sign*.28,1.35,0);body.add(leg);legs.push(leg);
+    part(new THREE.CylinderGeometry(.24,.18,.83,8),shortsMat,0,-.44,0,leg);
+    part(new THREE.CylinderGeometry(.17,.12,.53,8),sockMat,0,-1.02,.04,leg);
+    const boot=part(new THREE.BoxGeometry(.32,.19,.58),shoeMat,0,-1.35,.21,leg);
+  }
+  const badge=part(new THREE.PlaneGeometry(.63,.76),new THREE.MeshBasicMaterial({map:makeNumberTexture(id===4?1:id+7),transparent:true,depthWrite:false,side:THREE.DoubleSide}),0,2.37,.536);
+  // Círculo destacado bajo el futbolista controlado.
+  const indicator=new THREE.Mesh(new THREE.TorusGeometry(1.32,.105,4,36),new THREE.MeshBasicMaterial({color:side?0x9ad9ff:0xffe79a,transparent:true,opacity:.9}));
+  indicator.rotation.x=-Math.PI/2;indicator.position.y=.10;root.add(indicator);
+  const tri=new THREE.Mesh(new THREE.ConeGeometry(.46,.82,3),new THREE.MeshBasicMaterial({color:side?0x88d9ff:0xffea60}));
+  tri.rotation.z=Math.PI;tri.position.y=5.3;root.add(tri);
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(.94,18),new THREE.MeshBasicMaterial({color:0x0a2715,transparent:true,opacity:.32,depthWrite:false}));
+  sh.rotation.x=-Math.PI/2;sh.position.y=.045;root.add(sh);
+  return{root,body,legs,arms,indicator,tri,oldX:null,oldZ:null,motion:0,side};
+}
+function createBall3D(){
+  const g=new THREE.Group();arena.add(g);
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(.47,18,14),new THREE.MeshStandardMaterial({color:0xfafcf2,roughness:.7}));g.add(ball);
+  const dark=new THREE.MeshStandardMaterial({color:0x1b2230,roughness:.75});
+  for(let i=0;i<11;i++){
+    const t=i*2.4,phi=Math.acos(1-2*(i+.5)/11);
+    const pt=new THREE.Vector3(Math.sin(phi)*Math.cos(t),Math.cos(phi),Math.sin(phi)*Math.sin(t));
+    const a=new THREE.Mesh(new THREE.CircleGeometry(.15,5),dark);
+    a.position.copy(pt.clone().multiplyScalar(.473));a.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),pt);g.add(a);
+  }
+  return g;
+}
+function resizeWorld(){
+  if(!gl3||!cam3)return;
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(!w||!h)return;
+  const ratio=Math.min(window.devicePixelRatio||1,1.65);
+  gl3.setPixelRatio(ratio);
+  gl3.setSize(w,h,false);
+  cam3.aspect=w/h;cam3.updateProjectionMatrix();
+}
+function render(){
+  if(!game||drawError)return;
+  if(!arena){try{createWorld();resizeWorld();}catch(_){return;}}
+  if(!gl3||!cam3)return;
+  const now=performance.now(),dt=Math.min((now-last3dTick)*.001,.08);last3dTick=now;
+  const active=mode==="guest"?1:0;
+  game.players.forEach((p,i)=>{
+    const m=teamModels[i],x=xr(p.x),z=zr(p.y);
+    const f=clamp(dt*15,.12,1);
+    if(m.oldX===null){m.root.position.set(x,0,z);}
+    else{m.root.position.x+=(x-m.root.position.x)*f;m.root.position.z+=(z-m.root.position.z)*f;}
+    m.oldX=x;m.oldZ=z;
+    const running=Math.hypot(p.x-(m.prevPX===undefined?p.x:m.prevPX),p.y-(m.prevPY===undefined?p.y:m.prevPY))>.6;
+    m.prevPX=p.x;m.prevPY=p.y;
+    m.motion+=running?dt*13:dt*3.1;
+    const run=running?1:.12,wave=Math.sin(m.motion)*run*.65;
+    m.legs[0].rotation.x=wave;m.legs[1].rotation.x=-wave;
+    m.arms[0].rotation.x=-wave*.7;m.arms[1].rotation.x=wave*.7;
+    m.body.position.y=running?Math.abs(Math.sin(m.motion))*.10:0;
+    m.body.rotation.y=Math.atan2(p.dx,p.dy);
+    const selected=game.selected[p.team]===i&&!p.gk;
+    m.indicator.visible=selected;m.tri.visible=selected;
+    if(selected){m.tri.position.y=5.0+Math.sin(now*.006)*.25;}
+  });
+  const b=game.ball;
+  let vx=xr(b.x),vz=zr(b.y),speed=Math.hypot(b.vx,b.vy);
+  let lift=b.holder===null?Math.abs(Math.sin(now*.011))*.85*clamp(speed/500,0,1):0;
+  ballModel.position.lerp(new THREE.Vector3(vx,.48+lift,vz),clamp(dt*23,.19,1));
+  ballModel.rotation.z+=dt*(speed/70+1);
+  ballModel.rotation.x+=dt*(speed/145+.22);
+  ballShadow.position.set(ballModel.position.x,.07,ballModel.position.z);
+  ballShadow.material.opacity=.29-lift*.13;
+  const chosen=game.players[game.selected[active]]||game.players[3];
+  const desiredX=clamp(xr(chosen.x)*.30,-9,9),desiredZ=clamp(zr(chosen.y)*.13,-3.5,3.5);
+  let cx,cy,cz;
+  if(viewMode===0){cx=desiredX+5;cy=49;cz=61;}
+  else{cx=desiredX+1;cy=29;cz=36;}
+  if(!cam3.userData.ready){cam3.position.set(cx,cy,cz);cam3.userData.ready=true;}
+  cam3.position.lerp(new THREE.Vector3(cx,cy,cz),clamp(dt*2.9,.02,.18));
+  cam3.lookAt(desiredX,0,desiredZ);
+  gl3.render(arena,cam3);
+}
+
 function animate(now){if(mode==='menu'||mode==='lobby'){clockId=0;return;}
  const dt=Math.min((now-lastFrame)/1000,.033);lastFrame=now;
  if(mode!=='guest'){step(dt);if(mode==='host'&&conn&&conn.open&&now-hostSnapshot>=65){sendNetwork({type:'state',state:game});hostSnapshot=now;}}
@@ -322,6 +517,8 @@ joy.addEventListener('pointermove',e=>{if(joyPointer===e.pointerId){e.preventDef
 function endStick(e){if(joyPointer!==e.pointerId)return;joyPointer=null;touch.x=touch.y=0;resetStick()}
 joy.addEventListener('pointerup',endStick);joy.addEventListener('pointercancel',endStick);
 window.addEventListener('pagehide',()=>{try{conn?.close()}catch(e){}});
+$('cameraBtn').onclick=()=>{viewMode=1-viewMode;$('cameraBtn').textContent=viewMode?'📷 Cámara cerca':'📹 Cámara TV';};
+window.addEventListener('resize',resizeWorld);
 // Si compartieron un enlace con ?room=123456, simplifica entrar desde el segundo celular.
 try{const params=new URL(location.href).searchParams,code=(params.get('room')||'').replace(/\D/g,'').slice(0,6);if(code.length===6){sourceCode=code;showLobby('join');$('codeInput').value=code;toast('Sala '+code+' detectada. Tocá “Unirme a la cancha” para entrar.');}}catch(e){}
 </script>

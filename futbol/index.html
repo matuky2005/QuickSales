@@ -406,19 +406,83 @@ function steer(p,tx,ty,spd,dt){
  p.x+=p.vx*dt;p.y+=p.vy*dt;
  if(Math.hypot(p.vx,p.vy)>4){[p.dx,p.dy]=normalized(p.vx,p.vy);}
 }
-function cpuTarget(p,holder,dt){const side=p.team,forward=side===0?1:-1;
- if(p.gk){steer(p,side===0?L+23:R-23,clamp(game.ball.y,MID-51,MID+51),158,dt);return;}
- if(holder===p){const targetX=side===0?R-48:L+48;steer(p,targetX,clamp(MID+(p.index-5)*10,T+70,B-70),140,dt);if(Math.abs(targetX-p.x)<180||Math.random()<dt*.08)kick(side,'shoot',.48);return;}
- const b=game.ball;
- const opponentHolds=holder&&holder.team!==side;
- const contenders=game.players.filter(q=>q.team===side&&!q.gk&&q!==holder&&q.team*TEAM_SIZE+q.index!==game.selected[side]);
- const near=contenders.sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y))[0];
- const isNear=near===p && (!holder||opponentHolds);
- if(isNear){steer(p,b.x,b.y,148,dt);return;}
- const form=initial[p.index];let x=side===0?form[0]:W-form[0];let y=form[1];
- if(holder&&holder.team===side){x=clamp(x+forward*85,L+40,R-40);y=clamp(y+(b.y-MID)*.24,T+30,B-30)}
- else if(opponentHolds){x=clamp(x+forward*40,L+30,R-30);y=clamp(y+(b.y-MID)*.14,T+30,B-30)}
- steer(p,x,y,112,dt);
+// IA defensiva: presión escalonada y marcaje individual, con coberturas.
+function planDefending(holder){
+  const b=game.ball;
+  const plans=[{press:[],mark:{}},{press:[],mark:{}}];
+  for(let team=0;team<2;team++){
+    const defending=holder?holder.team!==team:((b.x-W/2)*(team===0?1:-1)<140);
+    if(!defending)continue;
+    const defenders=game.players.filter(p=>p.team===team&&!p.gk);
+    const controlled=mode==='solo'&&team===0||mode==='host'&&team===0||mode==='local'||mode==='host'&&team===1;
+    const selectable=defenders.filter(p=>!controlled||p.team*TEAM_SIZE+p.index!==game.selected[team]);
+    const pressing=selectable.slice().sort((p,q)=>length(p.x-b.x,p.y-b.y)-length(q.x-b.x,q.y-b.y)).slice(0,holder?2:1);
+    plans[team].press=pressing.map(p=>p.team*TEAM_SIZE+p.index);
+    const remaining=selectable.filter(p=>!pressing.includes(p));
+    const attackers=game.players.filter(p=>p.team!==team&&!p.gk);
+    const reserved=new Set();
+    // Orden por cercanía del marcador a la zona de juego.
+    remaining.sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y));
+    for(const p of remaining){
+      let target=null,best=Infinity;
+      for(const e of attackers){
+        const id=e.team*TEAM_SIZE+e.index;
+        if(reserved.has(id))continue;
+        const d=length(p.x-e.x,p.y-e.y);
+        const areaBias=length(initial[p.index][0]-(p.team===0?e.x:W-e.x),initial[p.index][1]-e.y)*.10;
+        const score=d+areaBias+Math.max(0,(e.x-(team===0?W/2:W/2))*(team===0?1:-1))*.15;
+        if(score<best){best=score;target=e;}
+      }
+      if(target && best<265){
+        const id=target.team*TEAM_SIZE+target.index;
+        reserved.add(id);
+        plans[team].mark[p.team*TEAM_SIZE+p.index]=id;
+      }
+    }
+  }
+  game.defensePlan=plans;
+}
+function cpuTarget(p,holder,dt){
+ const side=p.team,forward=side===0?1:-1;
+ const b=game.ball,plan=game.defensePlan?.[side];
+ if(p.gk){steer(p,side===0?L+27:R-27,clamp(b.y,MID-52,MID+52),162,dt);return;}
+ if(holder===p){
+   const targetX=side===0?R-55:L+55;
+   steer(p,targetX,clamp(MID+(p.index-5)*9,T+68,B-68),153,dt);
+   if(Math.abs(targetX-p.x)<185||Math.random()<dt*.05)kick(side,'shoot',.57);return;
+ }
+ const pressId=p.team*TEAM_SIZE+p.index;
+ if(plan?.press.includes(pressId)){
+   // Primer defensor ataca balón, segundo cierra trayectoria de pase.
+   const rank=plan.press.indexOf(pressId);
+   let tx=b.x,ty=b.y;
+   if(rank===1&&holder){tx=b.x-forward*41;ty=b.y+(p.y>b.y?1:-1)*32;}
+   steer(p,clamp(tx,L+22,R-22),clamp(ty,T+22,B-22),rank===0?183:166,dt);
+   return;
+ }
+ const marked=plan?.mark[pressId];
+ if(marked!==undefined){
+   const enemy=game.players[marked];
+   if(enemy){
+     // Interponerse en la línea entre el atacante y el arco propio.
+     const towardOwn=side===0?-1:1;
+     const desiredX=clamp(enemy.x+towardOwn*23,L+25,R-25);
+     const desiredY=clamp(enemy.y+(MID-enemy.y)*.065,T+25,B-25);
+     steer(p,desiredX,desiredY,158,dt);
+     return;
+   }
+ }
+ // Movimiento de apoyo: los compañeros acompañan el ataque y ofrecen pase.
+ const form=initial[p.index];let x=side===0?form[0]:W-form[0],y=form[1];
+ if(holder&&holder.team===side){
+   const shift=clamp((holder.x-W/2)*.20,-105,105);
+   x=clamp(x+forward*75+shift,L+35,R-35);
+   y=clamp(y+(holder.y-MID)*.23,T+25,B-25);
+ }else if(holder){
+   x=clamp(x+forward*12,L+28,R-28);
+   y=clamp(y+(b.y-MID)*.17,T+25,B-25);
+ }
+ steer(p,x,y,125,dt);
 }
 function takeBall(p){const b=game.ball;const idx=p.team*TEAM_SIZE+p.index;if(game.offsideCandidate){const oc=game.offsideCandidate;game.offsideCandidate=null;if(oc.receiver===idx&&oc.team===p.team){beginRestart('offside',1-p.team,p.x,p.y);return;}}b.holder=idx;b.vx=0;b.vy=0;b.h=0;b.vh=0;b.drag=.984;b.lock=.35;game.lastTouchTeam=p.team;if(!p.gk && (mode==='solo'?p.team===0:true)){game.selected[p.team]=idx;} }
 function resolveScore(team){game.scores[team]++;game.lastScore=team;game.goalPause=2.25;game.restart=null;game.offsideCandidate=null;sfx('goal');flashUntil=performance.now()+1850;$('goalFlash').textContent='¡GOOOOL!';$('goalFlash').hidden=false;$('statusText').textContent=(team===0?'¡GOL DE ROJOS!':'¡GOL DE AZULES!');setScore();restartPositions(1-team);}
@@ -483,6 +547,7 @@ function step(dt){
    handleCharge(side,inp,dt);
  }
  const holder=b.holder===null?null:game.players[b.holder];
+ planDefending(holder);
  for(const p of game.players){
    const idx=p.team*TEAM_SIZE+p.index,inpt=inputs[p.team];
    p.kickT=Math.max(0,p.kickT-dt);p.tackleT=Math.max(0,p.tackleT-dt);p.stun=Math.max(0,p.stun-dt);

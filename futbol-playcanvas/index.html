@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Retro Fútbol 06: fútbol arcade original de navegador. Jugá solo, dos en un teclado o 1 contra 1 online desde dos celulares.">
-<title>RETRO FÚTBOL '06 — PlayCanvas V4 Animaciones</title>
+<title>RETRO FÚTBOL '06 — PlayCanvas V5 Cancha Grande</title>
 <style>
 :root{color-scheme:dark;--bg:#101e1b;--panel:#182e29;--panel2:#203e35;--line:#385649;--cream:#f3edd8;--muted:#b1c7b6;--orange:#f5b544;--green:#83ec94;--red:#fe746b;--blue:#81bdf7}
 *{box-sizing:border-box}
@@ -181,12 +181,12 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 </head>
 <body>
 <div class="shell">
-  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06 3D</span><small>PLAYCANVAS · ANIMACIONES V4</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
+  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06 3D</span><small>PLAYCANVAS · ESTADIO V5</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
   <main id="menu">
     <section class="hero card">
       <div class="eyebrow">EL FÚTBOL DE ANTES · EN TU NAVEGADOR</div>
       <h1>LA PELOTA<br>NO SE <em>MANCHA.</em></h1>
-      <p class="sub">PlayCanvas V4: futbolistas articulados, equipaciones con dorsales, cámara TV, 11 contra 11 y estadio más detallado. Inspirado en los clásicos futboleros de los 2000.</p>
+      <p class="sub">PlayCanvas V5: cancha de tamaño real, arcos ampliados, jugadores a escala, formación abierta y espacio para correr. Inspirado en los clásicos futboleros de los 2000.</p>
       <div class="hero-art" aria-hidden="true"><span class="hero-player"></span><span class="hero-ball">⚽</span><span class="hero-player blue"></span></div>
       <span class="pill">Elegí tu partido</span>
       <div class="modes">
@@ -216,7 +216,7 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
     <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>⏳</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⏳</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
     <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
-  <footer class="foot">PlayCanvas V4 · Gráficos y animaciones optimizados · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
+  <footer class="foot">PlayCanvas V5 · Proporciones y juego optimizados · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
 </div>
 <div class="orientation-tip" id="rotateHint"><div class="rotate-icon">📱↻</div><strong>Girás el iPhone y entrás a la cancha</strong><p>Para jugar 3D a pantalla completa, poné el teléfono horizontal.</p><button class="outline" id="portraitOk" type="button">Jugar así de todas formas</button></div>
 <div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
@@ -245,7 +245,9 @@ function sfx(name){if(name==='kick')note(165,.14,0,'sawtooth',.065);if(name==='c
 $('soundBtn').onclick=()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'🔊':'🔇';$('soundBtn').setAttribute('aria-label',soundOn?'Desactivar sonido':'Activar sonido');if(soundOn){makeAudio();sfx('pass')}};
 function player(team,index,x,y,gk=false){return{team,index,x,y,dx:team===0?1:-1,dy:0,n:1+index,gk,sel:false,vx:0,vy:0,kickT:0,tackleT:0,stun:0};}
 // Formación 4-4-2 para un campo amplio, con arquero al fondo.
-const initial=[[260,270],[260,470],[386,175],[386,565],[468,285],[468,455],[548,215],[548,525],[556,325],[582,407],[120,370]];
+// Formación 4-4-2 abierta: cuatro defensores, cuatro mediocampistas y dos puntas.
+// El rectángulo del campo se mantiene en 1060 x 560: escala ≈ 105 x 68 metros.
+const initial=[[240,148],[240,274],[240,466],[240,592],[410,155],[405,294],[405,447],[410,585],[540,295],[540,445],[116,370]];
 function createGame(){
  const ps=[];
  for(let t=0;t<2;t++)for(let i=0;i<TEAM_SIZE;i++){const [x,y]=initial[i];ps.push(player(t,i,t===0?x:W-x,y,i===TEAM_SIZE-1));}
@@ -714,6 +716,9 @@ function createAthlete3(i){
  const skin=[0xe4b389,0x995b40,0xc9885b,0xefc7a7,0xbb7956,0x72432e][i%6];
  const hair=[0x29201a,0x14191d,0x543324,0x222321,0x392819][i%5];
  const root=childNode(app3.root,'footballer-'+i,0,0,0);
+ // La malla original medía casi 4.6 unidades sobre un terreno de 122:
+ // 0.46x da una altura ≈ 2.1, cercana a un futbolista real.
+ root.setLocalScale(.46,.46,.46);
  const waist=childNode(root,'waist',0,1.65,0);
  // Equipo completo: tronco ligeramente en V, hombros y cuello.
  object3(waist,'box',shorts,0,.07,0,.93,.52,.72);
@@ -828,8 +833,8 @@ function createWorld(){
    light.setEulerAngles(45,26,15);app3.root.addChild(light);
    app3.scene.ambientLight=new pc.Color(.9,.92,.92);
    cam3=new pc.Entity('cameraTV');
-   cam3.addComponent('camera',{clearColor:new pc.Color(.49,.67,.74),fov:45,nearClip:.25,farClip:270});
-   cam3.setPosition(5,29,48);
+   cam3.addComponent('camera',{clearColor:new pc.Color(.49,.67,.74),fov:42,nearClip:.25,farClip:270});
+   cam3.setPosition(4,29,52);
    cam3.lookAt(0,0,0);
    app3.root.addChild(cam3);
    const px=wx(L),qx=wx(R),nz=wz(T),fz=wz(B);
@@ -855,19 +860,19 @@ function createWorld(){
    boundary(px,-9,px+5.3,9);boundary(qx-5.3,-9,qx,9);
    for(const gx of [px+11,qx-11])object3(app3.root,'sphere',0xe8f5d4,gx,.11,0,.34,.10,.34);
    for(const side of [-1,1]){
-     const x=side<0?px:qx,gz=4.45,depth=3.2;
+     const x=side<0?px:qx,gz=5.10,depth=3.6;
      for(const z of [-gz,gz]){
-       object3(app3.root,'cylinder',0xf9fbf1,x,1.45,z,.24,2.9,.24);
-       object3(app3.root,'cylinder',0xd2e2e6,x+side*depth,1.45,z,.11,2.9,.11);
+       object3(app3.root,'cylinder',0xf9fbf1,x,1.65,z,.16,3.3,.16);
+       object3(app3.root,'cylinder',0xd2e2e6,x+side*depth,1.65,z,.085,3.3,.085);
        // Estructura lateral de la red.
-       const net=object3(app3.root,'box',0xe3f0ee,x+side*depth/2,1.45,z,depth,.043,.043);
+       const net=object3(app3.root,'box',0xe3f0ee,x+side*depth/2,1.65,z,depth,.040,.040);
        net.setLocalEulerAngles(0,0,-8);
      }
-     object3(app3.root,'box',0xf8fff4,x,2.9,0,.25,.22,2*gz);
-     object3(app3.root,'box',0xe5eee9,x+side*depth,2.9,0,.12,.13,2*gz);
+     object3(app3.root,'box',0xf8fff4,x,3.30,0,.16,.16,2*gz);
+     object3(app3.root,'box',0xe5eee9,x+side*depth,3.30,0,.08,.10,2*gz);
      for(let i=-4;i<=4;i++){
-       object3(app3.root,'box',0xa8c7c5,x+side*depth/2,1.3,i*.98,depth,.018,.025);
-       object3(app3.root,'box',0xa8c7c5,x+side*depth,1.45,i*.98,.025,2.9,.025);
+       object3(app3.root,'box',0xa8c7c5,x+side*depth/2,1.52,i*1.12,depth,.017,.021);
+       object3(app3.root,'box',0xa8c7c5,x+side*depth,1.65,i*1.12,.021,3.3,.021);
      }
    }
 
@@ -943,10 +948,10 @@ function createWorld(){
    }
    actors=[];
    for(let i=0;i<TEAM_SIZE*2;i++)actors.push(createAthlete3(i));
-   ball3=object3(app3.root,'sphere',0xf9f9ee,0,.55,0,.99,.99,.99,'ball');
+   ball3=object3(app3.root,'sphere',0xf9f9ee,0,.20,0,.39,.39,.39,'ball');
    const spots=[[-.35,0,0],[.35,0,0],[0,.35,0],[0,-.35,0],[0,0,.35],[0,0,-.35]];
-   for(const spot of spots)object3(ball3,'sphere',0x1e2934,spot[0],spot[1],spot[2],.27,.27,.27);
-   ballShadow3=object3(app3.root,'cylinder',0x0c3d29,0,.045,0,1.2,.034,1.2);
+   for(const spot of spots)object3(ball3,'sphere',0x1e2934,spot[0]*.4,spot[1]*.4,spot[2]*.4,.105,.105,.105);
+   ballShadow3=object3(app3.root,'cylinder',0x0c3d29,0,.035,0,.52,.021,.52);
    app3.start();
    sceneWatchdog=setTimeout(()=>{if(!sceneDidRender){graphicsFail('PlayCanvas no está dibujando fotogramas.');}else if(!drawError){$('graphicsLoader').hidden=true;}},4500);
    resizeWorld();
@@ -1018,17 +1023,17 @@ function render(){
    m.lastX=p.x;m.lastZ=p.y;m.px=p.x;m.py=p.y;
  }
  const b=game.ball,oldBall=ball3.getPosition();
- const bx=wx(b.x),bz=wz(b.y),bh=.5+Math.max(0,b.h||0),bl=Math.min(1,dt*22);
+ const bx=wx(b.x),bz=wz(b.y),bh=.20+Math.max(0,b.h||0),bl=Math.min(1,dt*22);
  ball3.setPosition(oldBall.x+(bx-oldBall.x)*bl,oldBall.y+(bh-oldBall.y)*bl,oldBall.z+(bz-oldBall.z)*bl);
  const bspeed=Math.hypot(b.vx||0,b.vy||0);
  ball3.rotateLocal(bspeed*dt*.21,0,bspeed*dt*.12);
  ballShadow3.setPosition(ball3.getPosition().x,.045,ball3.getPosition().z);
- ballShadow3.setLocalScale(Math.max(.65,1.15-bh*.08),.034,Math.max(.55,1.15-bh*.08));
+ ballShadow3.setLocalScale(Math.max(.28,.52-bh*.032),.021,Math.max(.28,.52-bh*.032));
  const anticipation=Math.max(-5,Math.min(5,(b.vx||0)*worldScale*.09));
  const focusX=Math.max(-48,Math.min(48,wx(b.x)*.88+anticipation));
  const focusZ=Math.max(-13,Math.min(13,wz(b.y)*.35));
  const cv=cam3.getPosition(),tracking=Math.min(1,dt*3.1);
- const camTarget={x:focusX+1.9,y:viewMode?25:31.5,z:viewMode?39:49};
+ const camTarget={x:focusX+2,y:viewMode?25:30,z:viewMode?40:50};
  cam3.setPosition(cv.x+(camTarget.x-cv.x)*tracking,cv.y+(camTarget.y-cv.y)*tracking,cv.z+(camTarget.z-cv.z)*tracking);
  cam3.lookAt(new pc.Vec3(focusX,0,focusZ));
  drawRadar();
@@ -1152,7 +1157,7 @@ joy.addEventListener('pointermove',e=>{if(joyPointer===e.pointerId){e.preventDef
 function endStick(e){if(joyPointer!==e.pointerId)return;joyPointer=null;touch.x=touch.y=0;resetStick()}
 joy.addEventListener('pointerup',endStick);joy.addEventListener('pointercancel',endStick);
 window.addEventListener('pagehide',()=>{try{conn?.close()}catch(e){}});
-$('cameraBtn').onclick=()=>{viewMode=1-viewMode;cam3?.camera&&(cam3.camera.fov=viewMode?40:45);$('cameraBtn').textContent=viewMode?'📷 Cámara cerca':'📹 Cámara TV';};
+$('cameraBtn').onclick=()=>{viewMode=1-viewMode;cam3?.camera&&(cam3.camera.fov=viewMode?37:42);$('cameraBtn').textContent=viewMode?'📷 Cámara cerca':'📹 Cámara TV';};
 window.addEventListener('resize',resizeWorld);
 window.addEventListener('orientationchange',()=>setTimeout(resizeWorld,250));
 $('retryRender').onclick=()=>window.location.reload();

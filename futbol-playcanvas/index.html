@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Retro Fútbol 06: fútbol arcade original de navegador. Jugá solo, dos en un teclado o 1 contra 1 online desde dos celulares.">
-<title>RETRO FÚTBOL '06 — PlayCanvas Beta 3 (Color Fix)</title>
+<title>RETRO FÚTBOL '06 — PlayCanvas V4 Animaciones</title>
 <style>
 :root{color-scheme:dark;--bg:#101e1b;--panel:#182e29;--panel2:#203e35;--line:#385649;--cream:#f3edd8;--muted:#b1c7b6;--orange:#f5b544;--green:#83ec94;--red:#fe746b;--blue:#81bdf7}
 *{box-sizing:border-box}
@@ -181,12 +181,12 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 </head>
 <body>
 <div class="shell">
-  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06 3D</span><small>PLAYCANVAS EDITION · BETA</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
+  <header><div class="logo"><span class="logo-mark">⚽</span><div>RETRO FÚTBOL <span style="color:var(--orange)">'06 3D</span><small>PLAYCANVAS · ANIMACIONES V4</small></div></div><div class="hd-right"><span class="tag">1 VS 1 · MULTIJUGADOR</span><button class="icon-btn" id="soundBtn" aria-label="Desactivar sonido">🔊</button></div></header>
   <main id="menu">
     <section class="hero card">
       <div class="eyebrow">EL FÚTBOL DE ANTES · EN TU NAVEGADOR</div>
       <h1>LA PELOTA<br>NO SE <em>MANCHA.</em></h1>
-      <p class="sub">Nueva edición experimental PlayCanvas con cancha 3D, 11 contra 11, cámara TV, animaciones y física arcade. Inspirado en los clásicos futboleros de los 2000.</p>
+      <p class="sub">PlayCanvas V4: futbolistas articulados, equipaciones con dorsales, cámara TV, 11 contra 11 y estadio más detallado. Inspirado en los clásicos futboleros de los 2000.</p>
       <div class="hero-art" aria-hidden="true"><span class="hero-player"></span><span class="hero-ball">⚽</span><span class="hero-player blue"></span></div>
       <span class="pill">Elegí tu partido</span>
       <div class="modes">
@@ -216,7 +216,7 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
     <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>⏳</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⏳</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
     <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
-  <footer class="foot">PlayCanvas Beta v3 · Motor 3D abierto · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
+  <footer class="foot">PlayCanvas V4 · Gráficos y animaciones · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
 </div>
 <div class="orientation-tip" id="rotateHint"><div class="rotate-icon">📱↻</div><strong>Girás el iPhone y entrás a la cancha</strong><p>Para jugar 3D a pantalla completa, poné el teléfono horizontal.</p><button class="outline" id="portraitOk" type="button">Jugar así de todas formas</button></div>
 <div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
@@ -673,6 +673,37 @@ function pcLine(a,b,hex=0xf2f6dd,thickness=.13){
 }
 // Personajes estilizados con articulaciones independientes, pensados para WebGL móvil.
 // Animación procedural (no son modelos ni animaciones oficiales de PES).
+// Dorsales sobre la camiseta con una textura original generada en el navegador.
+// Si falla la textura en iOS, el resto del jugador permanece dibujado.
+const jerseyDecals=new Map();
+function shirtNumber(parent,number,frontZ,backZ){
+ try{
+   let data=jerseyDecals.get(number);
+   if(!data){
+     const image=document.createElement('canvas');image.width=128;image.height=128;
+     const g=image.getContext('2d');if(!g)return;
+     g.clearRect(0,0,128,128);
+     g.textAlign='center';g.textBaseline='middle';g.font='900 95px Arial, sans-serif';
+     g.lineWidth=9;g.strokeStyle='#15223a';g.strokeText(String(number),64,69);
+     g.fillStyle='#fffbe9';g.fillText(String(number),64,69);
+     const t=new pc.Texture(app3.graphicsDevice,{width:128,height:128,mipmaps:false});
+     t.setSource(image);
+     const mat=new pc.StandardMaterial();mat.useLighting=false;mat.useFog=false;
+     mat.emissive=new pc.Color(1,1,1);mat.emissiveMap=t;mat.emissiveIntensity=1;
+     mat.opacityMap=t;mat.blendType=pc.BLEND_NORMAL;mat.depthWrite=false;
+     mat.cull=pc.CULLFACE_NONE;mat.update();
+     data=mat;jerseyDecals.set(number,data);
+   }
+   for(const [z,back] of [[frontZ,false],[backZ,true]]){
+     const sticker=new pc.Entity('dorsal-'+number);
+     sticker.addComponent('render',{type:'plane'});sticker.render.material=data;
+     sticker.setLocalPosition(0,.98,z);sticker.setLocalScale(.49,1,.58);
+     sticker.setLocalEulerAngles(back?90:-90,0,0);
+     parent.addChild(sticker);
+   }
+ }catch(err){console.warn('Sin dorsal 3D (no esencial):',err);}
+}
+
 function createAthlete3(i){
  const side=Math.floor(i/TEAM_SIZE),idx=i%TEAM_SIZE,goalkeeper=idx===TEAM_SIZE-1;
  const red=side===0, jersey=goalkeeper?(red?0x37c5a7:0xf0c25e):(red?0xd63444:0x2374d7);
@@ -682,7 +713,7 @@ function createAthlete3(i){
  const skin=[0xe4b389,0x995b40,0xc9885b,0xefc7a7,0xbb7956,0x72432e][i%6];
  const hair=[0x29201a,0x14191d,0x543324,0x222321,0x392819][i%5];
  const root=childNode(app3.root,'footballer-'+i,0,0,0);
- const waist=childNode(root,'waist',0,1.45,0);
+ const waist=childNode(root,'waist',0,1.65,0);
  // Equipo completo: tronco ligeramente en V, hombros y cuello.
  object3(waist,'box',shorts,0,.07,0,.93,.52,.72);
  const torso=childNode(waist,'upper-body',0,.26,0);
@@ -692,6 +723,7 @@ function createAthlete3(i){
  object3(torso,'box',collar,0,1.18,.45,.23,.63,.055);
  // Franja/detalle frontal en la camiseta, algo distinto para arqueros.
  object3(torso,'box',goalkeeper?0x183f5a:(red?0xf6ecda:0xf3f2df),0,.94,.433,.24,.62,.055);
+ shirtNumber(torso,goalkeeper?1:(idx+2),.487,-.435);
  const neck=object3(torso,'cylinder',skin,0,1.67,.005,.26,.32,.26);
  const head=childNode(torso,'head',0,1.91,0);
  object3(head,'sphere',skin,0,.28,0,.70,.82,.69);
@@ -835,6 +867,47 @@ function createWorld(){
        object3(app3.root,'box',0xa8c7c5,x+side*depth,1.45,i*.98,.025,2.9,.025);
      }
    }
+
+   // Detalles de campo: bandas de corte finas, arcos, banderines y marcas.
+   for(let k=0;k<14;k++){
+     const zz=nz+(k+1)*(fz-nz)/15;
+     object3(app3.root,'box',k%2?0x2a7d43:0x2c8046,0,.008,zz,qx-px,.008,.032);
+   }
+   for(const side of [-1,1]){
+     const edge=side<0?px:qx;
+     const offset=side<0?1:-1;
+     const arcX=edge+offset*17;
+     // Semicírculo del área penal.
+     for(let j=0;j<18;j++){
+       const a=-Math.PI*.29+j*(Math.PI*.58)/18;
+       const b=-Math.PI*.29+(j+1)*(Math.PI*.58)/18;
+       pcLine([arcX+offset*8.4*Math.cos(a),8.4*Math.sin(a)],
+              [arcX+offset*8.4*Math.cos(b),8.4*Math.sin(b)],0xf3f9e4,.09);
+     }
+     // Círculos de córner.
+     for(const z of [nz,fz]){
+       const inward=z<0?1:-1;
+       for(let j=0;j<10;j++){
+         const a=j*Math.PI/20,b=(j+1)*Math.PI/20;
+         pcLine([edge+offset*1.3*Math.cos(a),z+inward*1.3*Math.sin(a)],
+                [edge+offset*1.3*Math.cos(b),z+inward*1.3*Math.sin(b)],0xe8f7db,.065);
+       }
+       const post=object3(app3.root,'cylinder',0xf9eee1,edge,.95,z,.065,1.90,.065);
+       const flag=object3(app3.root,'box',side<0?0xf3ce4b:0xed5d61,edge+offset*.30,1.55,z,.55,.38,.07);
+     }
+   }
+   // Túnel y bancos de suplentes (objetos pequeños y simples).
+   object3(app3.root,'box',0x263642,0,1.42,-47.5,8.8,2.84,2.8);
+   object3(app3.root,'box',0xc1d2cd,0,3.06,-47.5,9.2,.23,3.0);
+   for(const side of [-1,1]){
+     const cx=side*31;
+     object3(app3.root,'box',0x8aa6b7,cx,1.73,-42.4,9.2,.10,2.4);
+     object3(app3.root,'box',0x254965,cx,.53,-41.8,8.6,.57,1.3);
+     for(let i=0;i<4;i++){
+       object3(app3.root,'box',side<0?0xd8444e:0x3c8acb,cx-3.1+i*2.05,.97,-41.7,1.5,.58,.8);
+     }
+   }
+
    // Gradas: escalones y público individual. Materiales y geometrías ligeros para móvil.
    for(const side of [-1,1])for(let row=0;row<7;row++){
      const z=side*(45.2+row*2.30),height=.7+row*.81;
@@ -847,7 +920,7 @@ function createWorld(){
    let seed=5150;
    function rng(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
    const fans=[0xeaeff8,0xd73d45,0x5a9acc,0xf2cd70,0x53b17a,0xdad0c0];
-   for(let i=0;i<42;i++){
+   for(let i=0;i<(window.innerWidth<1000?26:66);i++){
      const side=rng()<.5?-1:1,row=Math.floor(rng()*6);
      const x=-67+rng()*134,z=side*(45.2+row*2.30);
      object3(app3.root,'box',fans[i%fans.length],x,1+row*.81,z,.41,.70,.32);
@@ -931,7 +1004,7 @@ function render(){
    m.root.setLocalEulerAngles(0,m.angle,0);
    const lean=(Math.min(1,moved/(dt*260)))*7;
    m.waist.setLocalEulerAngles(-lean-slide*58+stunT*8,0,(stride*.9+slide*8)*running);
-   m.waist.setLocalPosition(0,1.45+(running*.058*Math.abs(Math.sin(m.phase*2)))-slide*.39,0);
+   m.waist.setLocalPosition(0,1.65+(running*.058*Math.abs(Math.sin(m.phase*2)))-slide*.39,0);
    m.torso.setLocalEulerAngles(-running*4-slide*8, Math.sin(m.phase)*running*4,Math.sin(m.phase)*running*2.7);
    m.head.setLocalEulerAngles(-running*3+slide*8,hasBall?Math.sin(m.phase)*4:0,0);
    const selected=game.selected[p.team]===i&&!p.gk;

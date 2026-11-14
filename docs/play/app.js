@@ -165,6 +165,18 @@
       setTimeout(()=>{cmd('_vgui_menus 0');cmd('touch_enable 0');cmd('map de_dust2')},1350);
     } catch(err){fail(err);}
   }
+  $('diagnostic').addEventListener('click',()=>{
+    const tests=[
+      ['WebAssembly',typeof WebAssembly==='object'],
+      ['WebGL2',!!document.createElement('canvas').getContext('webgl2')],
+      ['JSZip (CDN)',typeof window.JSZip!=='undefined'],
+      ['Xash3D raw.js (CDN)',typeof window.Xash3D==='function']
+    ];
+    let passed=0;
+    for(const [name,ok] of tests) {if(ok)passed++;log((ok?'OK  ':'FALLÓ  ')+name);}
+    $('phase').textContent='Diagnóstico: '+passed+'/'+tests.length+' comprobaciones correctas. '+(passed===tests.length?'Podés intentar cargar tu ZIP.':'Revisá los mensajes y la conexión.');
+    log('El diagnóstico NO confirma que una partida 3D funcione en iOS.');
+  });
   start.addEventListener('click',run);
   window.addEventListener('unhandledrejection',e=>{log('Error asíncrono: '+(e.reason?.message||e.reason))});
   window.addEventListener('error',e=>{if(e.message)log('Error de navegador: '+e.message)});

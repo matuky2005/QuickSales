@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="format-detection" content="telephone=no">
   <meta name="theme-color" content="#17122f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Charadas de películas infantiles: un juego de mímica para jugar en familia o con amigos. No necesita bibliotecas externas.">
   <title>¡Mímica de peli! · Charadas infantiles</title>
   <style>
@@ -77,6 +79,26 @@
     body.is-playing .top{margin-bottom:9px}
     body.is-playing .actions{position:sticky;bottom:0;z-index:5;padding-bottom:max(4px,env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent 0%,#17122fe8 35%)}
     .notice{background:#ffe38b16;color:#fff0ba;padding:13px 14px;border-radius:13px;border:1px solid #ffe38b5c;margin:16px 0 0;font-size:13px;line-height:1.5}
+    /* Portadas auténticas de películas: se cargan de un proveedor externo y nunca son imprescindibles para jugar. */
+    .header-tools{display:flex;align-items:center;gap:7px;flex-shrink:0}
+    .sound-button{border:1px solid #ffe38b66;background:#fff5c718;color:#fff1b9;border-radius:13px;padding:10px 12px;font-size:13px;font-weight:850;white-space:nowrap}
+    .feature-posters{display:flex;gap:13px;align-items:flex-end;justify-content:center;margin:-7px 0 25px;min-height:110px}
+    .feature-poster{position:relative;width:74px;height:108px;border:2px solid #ffffff2d;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#624c88,#46345b);box-shadow:0 8px 22px #130e2590;display:grid;place-items:center;font-size:33px}
+    .feature-poster:nth-child(2){transform:translateY(-7px) rotate(4deg)}
+    .feature-poster:nth-child(1){transform:rotate(-8deg)}
+    .feature-poster:nth-child(3){transform:rotate(8deg)}
+    .feature-poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .poster-box{position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin-bottom:10px;min-height:96px;max-height:clamp(98px,26dvh,230px);flex:1 1 auto}
+    .film-poster{display:block;height:100%;max-height:clamp(105px,26dvh,225px);max-width:76%;width:auto;aspect-ratio:2/3;object-fit:cover;border-radius:13px;box-shadow:0 11px 28px rgba(0,0,0,.43);border:2px solid #ffffff38;background:#392a5a}
+    .poster-emoji{margin:0}
+    .film-card .eyebrow{margin-bottom:9px;flex-shrink:0}
+    .film-name{flex-shrink:0}
+    .film-card .hint{margin:11px 0 0;flex-shrink:0}
+    .poster-credit{position:absolute;top:9px;right:12px;font-size:10px;color:#e6daff;background:#140e30bb;padding:4px 7px;border-radius:8px}
+    .footnote{font-size:10px;color:#ad9fbf;text-align:center;line-height:1.5;margin-top:12px}
+    .footer{line-height:1.6}
+    @media(max-height:720px){body.is-playing .poster-box{min-height:72px;max-height:115px;flex:1 1 auto;margin-bottom:5px}body.is-playing .film-poster{max-height:115px}body.is-playing .film-card .hint{display:none}body.is-playing .film-name{font-size:clamp(27px,6.3vw,42px)}}
+    @media(max-width:370px){.header-button,.sound-button{padding:9px 9px;font-size:12px}.brand{font-size:15px}.brand-icon{width:35px;height:35px}}
     @media(max-height:740px){body.is-playing .film-card{min-height:170px}body.is-playing .game-top{margin-bottom:7px}body.is-playing .scoreboard{margin-bottom:6px}body.is-playing .timer-wrap{margin:0 0 7px}body.is-playing .action{min-height:63px}body.is-playing .actions{margin-top:8px}body.is-playing .small-actions{margin-top:3px}body.is-playing .poster-emoji{font-size:48px;margin-bottom:5px}body.is-playing .hint{margin-top:8px}body.is-playing .eyebrow{margin-bottom:7px}body.is-playing .film-card{padding:18px 13px}}
     @media(max-width:370px){.app{width:calc(100% - 20px);padding-top:14px}.config{padding:16px}.action{min-height:75px;font-size:17px}.film-card{min-height:260px}.score{padding:9px 10px}.film-name{font-size:33px}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -86,13 +108,14 @@
   <main class="app">
     <header class="top">
       <div class="brand"><div class="brand-icon" aria-hidden="true">🎬</div><div>¡Mímica de peli!<div class="mini">Edición infantil</div></div></div>
-      <button class="header-button" id="restartTop" hidden type="button">↻ Reiniciar</button>
+      <div class="header-tools"><button class="sound-button" id="soundToggle" type="button" aria-pressed="true" aria-label="Desactivar sonidos">🔊 Sonidos</button><button class="header-button" id="restartTop" hidden type="button">↻ Reiniciar</button></div>
     </header>
 
     <section id="setup" class="screen" aria-labelledby="welcomeTitle">
       <span class="sticker">🍿 ¡Diversión en familia!</span>
       <h1 class="heading" id="welcomeTitle">Adiviná la <span class="highlight">película.</span></h1>
-      <p class="lead">Actuá sin hablar y hacé que tu equipo adivine. Solo películas infantiles súper conocidas, para que todos puedan jugar.</p>
+      <p class="lead">Actuá sin hablar y hacé que tu equipo adivine. Películas súper conocidas, con pósters de verdad y efectos de sonido.</p>
+      <div class="feature-posters" aria-label="Ejemplos de películas"><div class="feature-poster">🧸<img src="https://images.metahub.space/poster/medium/tt0114709/img" alt="Póster de Toy Story" loading="lazy" onerror="this.hidden=true"></div><div class="feature-poster">❄️<img src="https://images.metahub.space/poster/medium/tt2294629/img" alt="Póster de Frozen" loading="lazy" onerror="this.hidden=true"></div><div class="feature-poster">👹<img src="https://images.metahub.space/poster/medium/tt0126029/img" alt="Póster de Shrek" loading="lazy" onerror="this.hidden=true"></div></div>
       <div class="config">
         <div class="field">
           <p class="field-label">¿Cómo juegan?</p>
@@ -135,7 +158,8 @@
       <div class="scoreboard" id="scoreboard"></div>
       <div class="timer-wrap"><div class="timer" id="timer" aria-label="Tiempo restante">1:00</div><div class="track" role="progressbar" aria-label="Tiempo restante" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" id="timerTrack"><div id="timeBar" class="bar"></div></div></div>
       <div class="film-card" id="filmCard">
-        <div class="poster-emoji" id="filmEmoji" aria-hidden="true">🎥</div>
+        <div class="poster-box"><img class="film-poster" id="filmPoster" alt="" hidden><div class="poster-emoji" id="filmEmoji" aria-hidden="true">🎥</div></div>
+        <div class="poster-credit" id="posterSource" hidden>Imagen original</div>
         <div class="eyebrow">Película para actuar</div>
         <h2 class="film-name" id="filmTitle" aria-live="polite">Toy Story</h2>
         <div class="hint">¡Usá gestos, movimientos y creatividad!</div>
@@ -163,7 +187,7 @@
       <div class="big-emoji" aria-hidden="true">🏆</div><div class="mini">¡Fin de la partida!</div><h2 class="result-title" id="finishTitle">¡Qué buen equipo!</h2><p class="result-copy" id="finishDesc">Estos son los resultados.</p>
       <div class="end-scores" id="finalScores"></div><button id="playAgain" class="primary" type="button">🔄 Jugar otra vez</button><button id="settingsAgain" class="secondary" type="button">⚙️ Cambiar configuración</button>
     </section>
-    <footer class="footer">🎞️ Más de 70 películas populares · Sin cuentas · Sin publicidad</footer>
+    <footer class="footer">🎞️ Más de 70 películas · Sonidos originales · Sin publicidad<br><span style="font-size:10px">Imágenes de películas servidas por MetaHub; derechos de sus respectivos titulares. Las imágenes requieren internet.</span></footer>
   </main>
 <script>
   "use strict";
@@ -194,11 +218,64 @@
     ["La película de Garfield","🐈"],["La película de Peppa Pig","🐷"]
   ];
 
+  // Identificadores de películas para pedir afiches reales, sin API key ni bibliotecas.
+  // Los pósters son imágenes de terceros y pueden dejar de estar disponibles.
+  const movieIds = {
+    "Toy Story":"tt0114709","Frozen":"tt2294629","El rey león":"tt0110357","Shrek":"tt0126029",
+    "Buscando a Nemo":"tt0266543","Monsters, Inc.":"tt0198781","Cars":"tt0317219","Coco":"tt2380307",
+    "Encanto":"tt2953050","Ratatouille":"tt0382932","Kung Fu Panda":"tt0441773","Intensamente":"tt2096673",
+    "Mi villano favorito":"tt1323594","Minions":"tt2293640","Madagascar":"tt0351283","La sirenita":"tt0097757",
+    "Aladdín":"tt0103639","La bella y la bestia":"tt0101414","Moana":"tt3521164","Los increíbles":"tt0317705",
+    "Up: una aventura de altura":"tt1049413","La princesa y el sapo":"tt0780521","Mulán":"tt0120762",
+    "Blancanieves":"tt0029583","Cenicienta":"tt0042332","Peter Pan":"tt0046183","Bambi":"tt0034492",
+    "Winnie Pooh":"tt1449283","101 dálmatas":"tt0055254","Lilo y Stitch":"tt0275847","Zootopia":"tt2948356",
+    "Cómo entrenar a tu dragón":"tt0892769","La era de hielo":"tt0268380","Sonic: la película":"tt3794354",
+    "Super Mario Bros.: La película":"tt6718170","El gato con botas":"tt0448694","Trolls":"tt1679335",
+    "Hotel Transilvania":"tt0837562","La vida secreta de tus mascotas":"tt2709768","Sing: ¡Ven y canta!":"tt3470600",
+    "La gran aventura LEGO":"tt1490017","La película de Bob Esponja":"tt0345950","Los Croods":"tt0481499",
+    "Rio":"tt1436562","Happy Feet":"tt0366548","Bolt":"tt0397892","Valiente":"tt1217209",
+    "Wall-E":"tt0910970","Grandes héroes":"tt2245084","La dama y el vagabundo":"tt0048280",
+    "Pinocho":"tt0032910","Dumbo":"tt0033563","La bella durmiente":"tt0053285","Alicia en el país de las maravillas":"tt0043274",
+    "Tarzán":"tt0120855","Hércules":"tt0119282","Pocahontas":"tt0114148","El libro de la selva":"tt0061852",
+    "Campanita":"tt0823671","Spirit: el corcel indomable":"tt0166813","La familia Mitchell vs. las máquinas":"tt7979580",
+    "Red":"tt8097030","Luca":"tt12801262","Elementos":"tt15789038","Wish: el poder de los deseos":"tt11304740",
+    "El origen de los guardianes":"tt1446192","La Navidad de Charlie Brown":"tt0059026","Las aventuras de Peabody y Sherman":"tt0864835",
+    "El Grinch":"tt2709692","La pantera rosa":"tt0057413","Los pingüinos de Madagascar":"tt1911658",
+    "El espanta tiburones":"tt0307453","Las aventuras de Tadeo Jones":"tt1764625","Bee Movie":"tt0389790",
+    "El planeta del tesoro":"tt0133240","Tierra de osos":"tt0328880","Chicken Little":"tt0371606","El expreso polar":"tt0338348",
+    "La película de Garfield":"tt0356634"
+  };
+
   const $ = id => document.getElementById(id);
   const screens = ["setup","ready","play","paused","roundEnd","finish"];
   const options = {teams:2,seconds:60,rounds:3};
   let state = null, clock = null, remainingMs = 0, startedAt = 0;
-  let audioCtx = null;
+  let audioCtx = null, posterRequest = 0, lastSecond = null;
+  let soundEnabled = true;
+  try { soundEnabled = localStorage.getItem("charadas_sonido") !== "off"; } catch(_e) {}
+  function renderSoundSetting(){
+    const btn=$("soundToggle");
+    btn.textContent=soundEnabled?"🔊 Sonidos":"🔇 Silencio";
+    btn.setAttribute("aria-pressed",String(soundEnabled));
+    btn.setAttribute("aria-label",soundEnabled?"Desactivar sonidos":"Activar sonidos");
+  }
+  renderSoundSetting();
+  function loadPoster(index){
+    const img=$("filmPoster"), emoji=$("filmEmoji"), badge=$("posterSource");
+    const token=++posterRequest, title=films[index][0], id=movieIds[title];
+    img.hidden=true;emoji.hidden=false;badge.hidden=true;
+    img.onload=null;img.onerror=null;img.removeAttribute("src");
+    if(!id)return;
+    img.alt=`Póster real de ${title}`;
+    let usedProxy=false;
+    img.onload=function(){if(token!==posterRequest)return;img.hidden=false;emoji.hidden=true;badge.hidden=false;};
+    img.onerror=function(){
+      if(token!==posterRequest)return;
+      if(!usedProxy){usedProxy=true;img.src=`https://api.streamx.qzz.io/img/poster/medium/${id}/img`;return;}
+      img.hidden=true;emoji.hidden=false;badge.hidden=true;
+    };
+    img.src=`https://images.metahub.space/poster/medium/${id}/img`;
+  }
 
   function screen(name){
     screens.forEach(id => {$(id).hidden = id !== name;});
@@ -214,7 +291,7 @@
   function nextFilm(){
     if(!state.deck.length){state.deck=newDeck(); if(state.lastFilm !== null && state.deck.length > 1 && state.deck[state.deck.length-1] === state.lastFilm){[state.deck[0],state.deck[state.deck.length-1]]=[state.deck[state.deck.length-1],state.deck[0]];}}
     const index=state.deck.pop();state.lastFilm=index;
-    $("filmTitle").textContent=films[index][0];$("filmEmoji").textContent=films[index][1];
+    $("filmTitle").textContent=films[index][0];$("filmEmoji").textContent=films[index][1];loadPoster(index);
     $("filmCard").style.animation="none";void $("filmCard").offsetWidth;$("filmCard").style.animation="pop .19s ease-out";
   }
   function turnTeam(){return state.turn%options.teams;}
@@ -244,21 +321,53 @@
     $("timerTrack").setAttribute("aria-valuenow",String(Math.round(pct)));
     const low=remainingMs <= 10000;
     $("timer").classList.toggle("low",low);$("timeBar").classList.toggle("low",low);
+    const currentSecond=Math.ceil(remainingMs/1000);
+    if(state && state.phase==="play" && currentSecond!==lastSecond && currentSecond<=5 && currentSecond>0){sound("tick");}
+    lastSecond=currentSecond;
   }
   function unlockAudio(){
-    // iOS WebKit (también usado por Chrome para iPhone) exige que el audio
-    // se habilite durante un toque explícito del usuario.
-    try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!audioCtx)audioCtx=new Audio();if(audioCtx.state==="suspended")audioCtx.resume().catch(()=>{});}catch(_e){}
+    // Chrome en iPhone usa WebKit y sólo autoriza el sonido después de un toque.
+    if(!soundEnabled)return;
+    try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;if(!audioCtx)audioCtx=new Ctx();if(audioCtx.state==="suspended")audioCtx.resume().catch(()=>{});}catch(_e){}
   }
-  function beep(freq=620,dur=.09){
-    try{unlockAudio();if(!audioCtx||audioCtx.state!=="running")return;const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type="sine";osc.frequency.value=freq;gain.gain.setValueAtTime(.07,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);osc.connect(gain).connect(audioCtx.destination);osc.start();osc.stop(audioCtx.currentTime+dur);}catch(_e){}
+  function tone(hz, start, duration, type="sine", volume=.1, endHz=0){
+    if(!audioCtx||audioCtx.state!=="running")return;
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    const at=audioCtx.currentTime+start;
+    osc.type=type;osc.frequency.setValueAtTime(hz,at);
+    if(endHz)osc.frequency.exponentialRampToValueAtTime(Math.max(endHz,1),at+duration);
+    gain.gain.setValueAtTime(.001,at);
+    gain.gain.exponentialRampToValueAtTime(Math.max(volume,.001),at+.018);
+    gain.gain.exponentialRampToValueAtTime(.001,at+duration);
+    osc.connect(gain);gain.connect(audioCtx.destination);
+    osc.start(at);osc.stop(at+duration+.02);
+  }
+  function noise(start=.0,duration=.12,volume=.08){
+    if(!audioCtx||audioCtx.state!=="running")return;
+    const len=Math.ceil(audioCtx.sampleRate*duration),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buf.getChannelData(0);
+    for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);
+    const src=audioCtx.createBufferSource(),gain=audioCtx.createGain();
+    src.buffer=buf;gain.gain.value=volume;src.connect(gain);gain.connect(audioCtx.destination);
+    src.start(audioCtx.currentTime+start);
+  }
+  function sound(kind){
+    if(!soundEnabled)return;
+    try{
+      unlockAudio(); if(!audioCtx||audioCtx.state!=="running")return;
+      if(kind==="correct"){tone(660,0,.13,"sine",.12,820);tone(990,.12,.27,"sine",.13,1200);tone(1320,.20,.19,"triangle",.06);}
+      if(kind==="pass"){noise(0,.11,.035);tone(520,0,.17,"triangle",.07,210);}
+      if(kind==="tick"){tone(980,0,.065,"square",.023);}
+      if(kind==="end"){tone(440,0,.27,"sawtooth",.067,330);tone(330,.24,.4,"sawtooth",.08,170);noise(.34,.2,.04);}
+      if(kind==="start"){tone(440,0,.1,"triangle",.07);tone(660,.12,.12,"triangle",.09);tone(880,.24,.16,"triangle",.10);}
+      if(kind==="win"){[523,659,784,1046].forEach((hz,i)=>tone(hz,i*.13,.30,"triangle",.09));tone(1318,.5,.54,"sine",.09);}
+    }catch(_e){}
   }
   function stopClock(){if(clock!==null){clearInterval(clock);clock=null;}}
-  function tick(){if(!state || state.phase!=="play")return;remainingMs=Math.max(0,remainingMs-(performance.now()-startedAt));startedAt=performance.now();renderTimer();if(remainingMs<=0){beep(340,.28);finishTurn();}}
+  function tick(){if(!state || state.phase!=="play")return;remainingMs=Math.max(0,remainingMs-(performance.now()-startedAt));startedAt=performance.now();renderTimer();if(remainingMs<=0){sound("end");finishTurn();}}
   function startClock(){startedAt=performance.now();stopClock();clock=setInterval(tick,100);}
   function beginRound(){
-    unlockAudio();
-    state.roundHits=0;state.roundPasses=0;state.phase="play";remainingMs=options.seconds*1000;
+    unlockAudio();sound("start");
+    state.roundHits=0;state.roundPasses=0;state.phase="play";remainingMs=options.seconds*1000;lastSecond=null;
     $("playRound").textContent=`Ronda ${state.turn+1} de ${totalTurns()}`;
     $("playTeam").textContent=options.teams===1?"¡Tu turno! 🎭":`Equipo ${turnTeam()+1} 🎭`;
     updateScores();nextFilm();renderTimer();screen("play");startClock();
@@ -266,8 +375,8 @@
   function answer(correct){
     if(!state || state.phase!=="play")return;
     tick();if(state.phase!=="play")return;
-    if(correct){state.roundHits++;state.scores[turnTeam()]++;beep(730,.075);updateScores();}
-    else{state.roundPasses++;beep(430,.06);}
+    if(correct){state.roundHits++;state.scores[turnTeam()]++;sound("correct");updateScores();}
+    else{state.roundPasses++;sound("pass");}
     nextFilm();
   }
   function pauseRound(){
@@ -300,7 +409,7 @@
       const value=document.createElement("b");value.textContent=score;
       div.append(label,value);$("finalScores").append(div);
     });
-    screen("finish");beep(840,.18);
+    screen("finish");sound("win");
   }
   function setSetting(name,value){
     options[name]=Number(value);
@@ -309,7 +418,8 @@
   document.querySelectorAll(".choices").forEach(group=>{
     group.addEventListener("click",e=>{const btn=e.target.closest(".choice");if(btn)setSetting(group.dataset.setting,btn.dataset.value);});
   });
-  $("startGame").addEventListener("click",startGame);
+  $("soundToggle").addEventListener("click",()=>{soundEnabled=!soundEnabled;try{localStorage.setItem("charadas_sonido",soundEnabled?"on":"off");}catch(_e){}renderSoundSetting();if(soundEnabled){unlockAudio();sound("start");}});
+  $("startGame").addEventListener("click",()=>{unlockAudio();startGame();});
   $("beginRound").addEventListener("click",beginRound);
   $("rightFilm").addEventListener("click",()=>answer(true));
   $("passFilm").addEventListener("click",()=>answer(false));

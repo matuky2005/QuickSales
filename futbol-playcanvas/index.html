@@ -306,7 +306,7 @@ function kick(team,kind,power=.3){
  let owner=b.holder!==null?game.players[b.holder]:null;
  if(owner&&owner.team!==team)return false;
  const me=game.players[game.selected[team]];
- if(!owner){if(!me||length(b.x-me.x,b.y-me.y)>39||b.h>1.2)return false;owner=me;}
+ if(!owner){if(!me||length(b.x-me.x,b.y-me.y)>25||b.h>1.2)return false;owner=me;}
  const goal=team===0?R:L,forward=team===0?1:-1;
  let vx=owner.dx,vy=owner.dy,target=null;power=clamp(power,0,1);
  if(kind==='pass'){
@@ -330,7 +330,7 @@ function kick(team,kind,power=.3){
  }
  if(!Number.isFinite(vx)||!Number.isFinite(vy))return false;
  game.offsideCandidate=target&&offsideAtPass(target,team,b.x)?{team,receiver:target.team*TEAM_SIZE+target.index}:null;
- b.holder=null;b.x=owner.x+vx*24;b.y=owner.y+vy*24;b.h=kind==='pass'&&power<.78?0:.12;
+ b.holder=null;b.x=owner.x+vx*10;b.y=owner.y+vy*10;b.h=kind==='pass'&&power<.78?0:.12;
  const speed=kind==='shoot'?360+power*470:kind==='cross'?340+power*180:145+power*540;
  b.vx=vx*speed;b.vy=vy*speed;b.lock=kind==='cross'?.34:.18;
  // La potencia controla velocidad Y rodaje. Un toque corto no llega al otro extremo.
@@ -399,21 +399,21 @@ function tackle(team){
  const b=game.ball,foe=b.holder!==null?game.players[b.holder]:null;
  let me=game.players[game.selected[team]];if(!me||me.gk)return false;
  const near=game.players.filter(p=>p.team===team&&!p.gk).sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y))[0];
- if(near&&length(me.x-b.x,me.y-b.y)>78){me=near;game.selected[team]=me.team*TEAM_SIZE+me.index;}
+ if(near&&length(me.x-b.x,me.y-b.y)>52){me=near;game.selected[team]=me.team*TEAM_SIZE+me.index;}
  me.tackleT=.52;game.tackleCd[team]=.85;
  const dist=length(me.x-b.x,me.y-b.y);
- if(dist>50||b.h>2.0)return false;
+ if(dist>30||b.h>2.0)return false;
  if(foe&&foe.team!==team){
    const fromBehind=(me.x-foe.x)*foe.dx+(me.y-foe.y)*foe.dy < -12;
-   const heavy=dist>18&&dist<44&&fromBehind;
+   const heavy=dist>13&&dist<27&&fromBehind;
    if(heavy){foe.stun=.42;beginRestart('freeKick',foe.team,foe.x,foe.y);sfx('tackle');return false;}
    foe.stun=.28;foe.vx*=.3;foe.vy*=.3;b.holder=null;
-   b.x=me.x+(me.dx||1)*19;b.y=me.y+(me.dy||0)*19;
+   b.x=me.x+(me.dx||1)*9;b.y=me.y+(me.dy||0)*9;
    b.vx=(me.dx||1)*155;b.vy=me.dy*155;b.h=.12;b.vh=1.6;b.lock=.17;
    game.lastTouchTeam=team;game.offsideCandidate=null;
    sfx('tackle');$('statusText').textContent='¡PELOTA RECUPERADA!';return true;
  }
- if(!foe&&dist<36){b.vx=(me.dx||1)*160;b.vy=me.dy*160;b.lock=.14;game.lastTouchTeam=team;game.offsideCandidate=null;sfx('tackle');return true;}
+ if(!foe&&dist<23){b.vx=(me.dx||1)*160;b.vy=me.dy*160;b.lock=.14;game.lastTouchTeam=team;game.offsideCandidate=null;sfx('tackle');return true;}
  return false;
 }
 function steer(p,tx,ty,spd,dt){
@@ -464,10 +464,10 @@ function planDefending(holder){
 function cpuTarget(p,holder,dt){
  const side=p.team,forward=side===0?1:-1;
  const b=game.ball,plan=game.defensePlan?.[side];
- if(p.gk){steer(p,side===0?L+27:R-27,clamp(b.y,MID-52,MID+52),162,dt);return;}
+ if(p.gk){const ownX=side===0?L:R;const advance=side===0?1:-1;steer(p,ownX+advance*(20+(Math.abs(b.x-ownX)<170?7:0)),clamp(b.y,MID-47,MID+47),128,dt);return;}
  if(holder===p){
    const targetX=side===0?R-55:L+55;
-   steer(p,targetX,clamp(MID+(p.index-5)*9,T+68,B-68),153,dt);
+   steer(p,targetX,clamp(MID+(p.index-5)*12,T+62,B-62),137,dt);
    if(Math.abs(targetX-p.x)<185||Math.random()<dt*.05)kick(side,'shoot',.57);return;
  }
  const pressId=p.team*TEAM_SIZE+p.index;
@@ -476,7 +476,7 @@ function cpuTarget(p,holder,dt){
    const rank=plan.press.indexOf(pressId);
    let tx=b.x,ty=b.y;
    if(rank===1&&holder){tx=b.x-forward*41;ty=b.y+(p.y>b.y?1:-1)*32;}
-   steer(p,clamp(tx,L+22,R-22),clamp(ty,T+22,B-22),rank===0?183:166,dt);
+   steer(p,clamp(tx,L+19,R-19),clamp(ty,T+19,B-19),rank===0?151:139,dt);
    return;
  }
  const marked=plan?.mark[pressId];
@@ -485,9 +485,9 @@ function cpuTarget(p,holder,dt){
    if(enemy){
      // Interponerse en la línea entre el atacante y el arco propio.
      const towardOwn=side===0?-1:1;
-     const desiredX=clamp(enemy.x+towardOwn*23,L+25,R-25);
-     const desiredY=clamp(enemy.y+(MID-enemy.y)*.065,T+25,B-25);
-     steer(p,desiredX,desiredY,158,dt);
+     const desiredX=clamp(enemy.x+towardOwn*30,L+25,R-25);
+     const desiredY=clamp(enemy.y+(MID-enemy.y)*.09,T+25,B-25);
+     steer(p,desiredX,desiredY,132,dt);
      return;
    }
  }
@@ -495,13 +495,13 @@ function cpuTarget(p,holder,dt){
  const form=initial[p.index];let x=side===0?form[0]:W-form[0],y=form[1];
  if(holder&&holder.team===side){
    const shift=clamp((holder.x-W/2)*.20,-105,105);
-   x=clamp(x+forward*75+shift,L+35,R-35);
-   y=clamp(y+(holder.y-MID)*.23,T+25,B-25);
+   x=clamp(x+forward*55+shift*.6,L+35,R-35);
+   y=clamp(y+(holder.y-MID)*.12,T+25,B-25);
  }else if(holder){
    x=clamp(x+forward*12,L+28,R-28);
    y=clamp(y+(b.y-MID)*.17,T+25,B-25);
  }
- steer(p,x,y,125,dt);
+ steer(p,x,y,112,dt);
 }
 function takeBall(p){const b=game.ball;const idx=p.team*TEAM_SIZE+p.index;if(game.offsideCandidate){const oc=game.offsideCandidate;game.offsideCandidate=null;if(oc.receiver===idx&&oc.team===p.team){beginRestart('offside',1-p.team,p.x,p.y);return;}}b.holder=idx;b.vx=0;b.vy=0;b.h=0;b.vh=0;b.drag=.984;b.lock=.35;game.lastTouchTeam=p.team;if(!p.gk && (mode==='solo'?p.team===0:true)){game.selected[p.team]=idx;} }
 function resolveScore(team){game.scores[team]++;game.lastScore=team;game.goalPause=2.25;game.restart=null;game.offsideCandidate=null;sfx('goal');flashUntil=performance.now()+1850;$('goalFlash').textContent='¡GOOOOL!';$('goalFlash').hidden=false;$('statusText').textContent=(team===0?'¡GOL DE ROJOS!':'¡GOL DE AZULES!');setScore();restartPositions(1-team);}
@@ -572,10 +572,10 @@ function step(dt){
    p.kickT=Math.max(0,p.kickT-dt);p.tackleT=Math.max(0,p.tackleT-dt);p.stun=Math.max(0,p.stun-dt);
    if(p.stun>0){p.vx*=Math.pow(.75,dt*60);p.vy*=Math.pow(.75,dt*60);}
    else if(!p.gk&&inpt&&game.selected[p.team]===idx){
-     const [mx,my]=normalized(inpt.x,inpt.y),want=Math.hypot(mx,my)>.06?(inpt.sprint?255:186):0;
-     const accel=clamp(dt*(inpt.sprint?7.8:9.4),0,1);
+     const [mx,my]=normalized(inpt.x,inpt.y),want=Math.hypot(mx,my)>.06?(inpt.sprint?190:135):0;
+     const accel=clamp(dt*(inpt.sprint?5.8:8.1),0,1);
      p.vx+=(mx*want-p.vx)*accel;p.vy+=(my*want-p.vy)*accel;
-     if(want<1){p.vx*=Math.pow(.82,dt*60);p.vy*=Math.pow(.82,dt*60);}
+     if(want<1){p.vx*=Math.pow(.79,dt*60);p.vy*=Math.pow(.79,dt*60);}
      p.x+=p.vx*dt;p.y+=p.vy*dt;
      if(Math.hypot(p.vx,p.vy)>9)[p.dx,p.dy]=normalized(p.vx,p.vy);
    }else{
@@ -586,18 +586,18 @@ function step(dt){
  // Colisiones suaves entre jugadores.
  for(let i=0;i<game.players.length;i++)for(let j=i+1;j<game.players.length;j++){
    const a=game.players[i],c=game.players[j],d=length(a.x-c.x,a.y-c.y);
-   if(d>0&&d<21){const push=(21-d)*.30,dx=(a.x-c.x)/d,dy=(a.y-c.y)/d;
+   if(d>0&&d<14){const push=(14-d)*.31,dx=(a.x-c.x)/d,dy=(a.y-c.y)/d;
      a.x=clamp(a.x+dx*push,L+12,R-12);a.y=clamp(a.y+dy*push,T+12,B-12);
      c.x=clamp(c.x-dx*push,L+12,R-12);c.y=clamp(c.y-dy*push,T+12,B-12);}
  }
  if(b.holder!==null){
-   const o=game.players[b.holder];b.x=o.x+o.dx*19;b.y=o.y+o.dy*19;b.h=0;b.vh=0;
+   const o=game.players[b.holder];b.x=o.x+o.dx*8;b.y=o.y+o.dy*8;b.h=0;b.vh=0;
    // La pelota controlada no rebota contra banda; se sanciona saque.
    if(b.y<T||b.y>B){beginRestart('throw',1-o.team,b.x,clamp(b.y,T+3,B-3));return;}
    if(b.x<L||b.x>R){beginRestart('goalKick',1-o.team,b.x<L?L+64:R-64,MID);return;}
    if(b.lock<=0){const adv=game.players.filter(p=>p.team!==o.team&&!p.gk)
      .sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y))[0];
-     if(adv&&length(adv.x-b.x,adv.y-b.y)<16&&o.stun<=0){takeBall(adv);sfx('steal');}
+     if(adv&&length(adv.x-b.x,adv.y-b.y)<15&&o.stun<=0){takeBall(adv);sfx('steal');}
    }
  }else{
    b.x+=b.vx*dt;b.y+=b.vy*dt;b.h+=b.vh*dt;b.vh-=21.5*dt;
@@ -617,7 +617,7 @@ function step(dt){
      beginRestart('throw',1-game.lastTouchTeam,b.x,b.y<=T?T+3:B-3);return;
    }
    if(b.lock<=0){
-     const options=game.players.filter(p=>length(p.x-b.x,p.y-b.y)<23&&(p.gk?b.h<2.3:b.h<1.2))
+     const options=game.players.filter(p=>length(p.x-b.x,p.y-b.y)<17&&(p.gk?b.h<2.3:b.h<1.2))
        .sort((a,c)=>length(a.x-b.x,a.y-b.y)-length(c.x-b.x,c.y-b.y));
      if(options.length){
        const p=options[0];

@@ -216,7 +216,7 @@ body.is-game{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
     <div class="touch-ui" id="touchUI"><div class="joystick" id="joystick" aria-label="Control de movimiento táctil"><div class="stick" id="stick"></div></div><button class="sprint-btn" id="sprintBtn" type="button">PIQUE<br>⚡</button><div class="touch-buttons"><button class="touch-btn pass" id="passBtn">PASE<br>⏳</button><button class="touch-btn cross" id="crossBtn">CENTRO<br>⏳</button><button class="touch-btn shoot" id="shootBtn">MANTENER<br>TIRO ⚽</button><button class="touch-btn switch" id="switchBtn">CAMBIO<br>⇄</button><button class="touch-btn tackle" id="tackleBtn">ROBAR<br>🛡️</button></div></div>
     <div class="game-bottom"><div class="keys" id="keyHelp">Movete con WASD · Tirá con ESPACIO · Pasá con SHIFT · Cambiá con C</div><div class="camera-tools"><button class="outline" id="cameraBtn">📹 Cámara TV</button><button class="outline" id="exitBtn">← Salir</button></div></div>
   </section>
-  <footer class="foot">PlayCanvas V4 · Gráficos y animaciones · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
+  <footer class="foot">PlayCanvas V4 · Gráficos y animaciones optimizados · Juego original, no afiliado a FIFA, PES, Konami o EA.</footer>
 </div>
 <div class="orientation-tip" id="rotateHint"><div class="rotate-icon">📱↻</div><strong>Girás el iPhone y entrás a la cancha</strong><p>Para jugar 3D a pantalla completa, poné el teléfono horizontal.</p><button class="outline" id="portraitOk" type="button">Jugar así de todas formas</button></div>
 <div class="overlay" id="resultOverlay" hidden><div class="modal card"><div class="modal-icon">🏆</div><div class="eyebrow">FINAL DEL PARTIDO</div><h2 id="resultTitle">¡Partidazo!</h2><p id="resultDesc">Rojos 0 · Azules 0</p><button class="main-btn" id="againBtn">↻ Revancha</button><button class="outline" id="resultExitBtn">Volver al menú</button></div></div>
@@ -706,6 +706,7 @@ function shirtNumber(parent,number,frontZ,backZ){
 
 function createAthlete3(i){
  const side=Math.floor(i/TEAM_SIZE),idx=i%TEAM_SIZE,goalkeeper=idx===TEAM_SIZE-1;
+ const detailed=window.innerWidth>=1050;
  const red=side===0, jersey=goalkeeper?(red?0x37c5a7:0xf0c25e):(red?0xd63444:0x2374d7);
  const shorts=goalkeeper?0x293d54:(red?0xf7f3e9:0x172e67);
  const collar=goalkeeper?0xffffff:(red?0xfbf5e5:0xfff8ec);
@@ -719,15 +720,16 @@ function createAthlete3(i){
  const torso=childNode(waist,'upper-body',0,.26,0);
  object3(torso,'capsule',jersey,0,.82,0,1.14,1.42,.78);
  object3(torso,'box',jersey,0,1.18,.11,1.11,.60,.73);
- object3(torso,'box',collar,0,1.58,-.015,.50,.14,.46);
- object3(torso,'box',collar,0,1.18,.45,.23,.63,.055);
+ if(detailed){object3(torso,'box',collar,0,1.58,-.015,.50,.14,.46);
+ object3(torso,'box',collar,0,1.18,.45,.23,.63,.055);}
  // Franja/detalle frontal en la camiseta, algo distinto para arqueros.
- object3(torso,'box',goalkeeper?0x183f5a:(red?0xf6ecda:0xf3f2df),0,.94,.433,.24,.62,.055);
+ if(detailed){object3(torso,'box',goalkeeper?0x183f5a:(red?0xf6ecda:0xf3f2df),0,.94,.433,.24,.62,.055);
  shirtNumber(torso,goalkeeper?1:(idx+2),.487,-.435);
- const neck=object3(torso,'cylinder',skin,0,1.67,.005,.26,.32,.26);
+ object3(torso,'cylinder',skin,0,1.67,.005,.26,.32,.26);}
  const head=childNode(torso,'head',0,1.91,0);
  object3(head,'sphere',skin,0,.28,0,.70,.82,.69);
  object3(head,'sphere',hair,0,.61,-.09,.73,.32,.73);
+ if(detailed){
  object3(head,'sphere',skin,-.36,.23,.02,.14,.22,.16);
  object3(head,'sphere',skin,.36,.23,.02,.14,.22,.16);
  object3(head,'sphere',skin,0,.22,.35,.16,.19,.15);
@@ -736,6 +738,7 @@ function createAthlete3(i){
    object3(head,'sphere',0x212c30,sign*.18,.32,.324,.072,.080,.060);
    object3(head,'box',hair,sign*.18,.43,.30,.19,.043,.045);
  }
+}
  // Brazos articulados en hombro y codo.
  const arms=[];
  for(const sign of [-1,1]){
@@ -743,7 +746,7 @@ function createAthlete3(i){
    object3(shoulder,'capsule',jersey,sign*.045,-.30,0,.34,.56,.35);
    const elbow=childNode(shoulder,'elbow',sign*.055,-.57,0);
    object3(elbow,'capsule',skin,0,-.29,0,.265,.60,.26);
-   object3(elbow,'sphere',skin,0,-.59,0,.27,.28,.27);
+   if(detailed)object3(elbow,'sphere',skin,0,-.59,0,.27,.28,.27);
    arms.push({shoulder,elbow,sign});
  }
  // Piernas: pivotes en cadera, rodilla y tobillo para flexionar y apoyar el pie.
@@ -752,12 +755,12 @@ function createAthlete3(i){
    const hip=childNode(waist,'hip',sign*.27,-.10,0);
    object3(hip,'capsule',shorts,0,-.41,0,.45,.85,.49);
    const knee=childNode(hip,'knee',0,-.79,0);
-   object3(knee,'sphere',skin,0,0,0,.29,.30,.29);
+   if(detailed)object3(knee,'sphere',skin,0,0,0,.29,.30,.29);
    object3(knee,'capsule',sock,0,-.36,0,.32,.75,.33);
-   object3(knee,'box',0xf7f6e9,0,-.10,.18,.36,.12,.13);
+   if(detailed)object3(knee,'box',0xf7f6e9,0,-.10,.18,.36,.12,.13);
    const ankle=childNode(knee,'ankle',0,-.75,0);
    object3(ankle,'box',0x19202c,0,-.12,.23,.41,.25,.76);
-   object3(ankle,'box',red?0xf8fafb:0xe7edf9,0,-.03,.57,.25,.065,.18);
+   if(detailed)object3(ankle,'box',red?0xf8fafb:0xe7edf9,0,-.03,.57,.25,.065,.18);
    legs.push({hip,knee,ankle,sign});
  }
  // Selección con aro y cursor de jugador, desactivables sin quitar geometría.
@@ -841,7 +844,7 @@ function createWorld(){
    }
    boundary(px,nz,qx,fz);pcLine([0,nz],[0,fz]);
    function circle(cx,cz,r,from=0,to=Math.PI*2){
-     const count=42;
+     const count=window.innerWidth<1050?26:42;
      for(let i=0;i<count;i++){
        const a=from+(to-from)*i/count,b=from+(to-from)*(i+1)/count;
        pcLine([cx+Math.cos(a)*r,cz+Math.sin(a)*r],[cx+Math.cos(b)*r,cz+Math.sin(b)*r],0xe5efd4,.10);
@@ -869,8 +872,8 @@ function createWorld(){
    }
 
    // Detalles de campo: bandas de corte finas, arcos, banderines y marcas.
-   for(let k=0;k<14;k++){
-     const zz=nz+(k+1)*(fz-nz)/15;
+   for(let k=0;k<(window.innerWidth<1050?7:14);k++){
+     const zz=nz+(k+1)*(fz-nz)/(window.innerWidth<1050?8:15);
      object3(app3.root,'box',k%2?0x2a7d43:0x2c8046,0,.008,zz,qx-px,.008,.032);
    }
    for(const side of [-1,1]){
@@ -878,17 +881,19 @@ function createWorld(){
      const offset=side<0?1:-1;
      const arcX=edge+offset*17;
      // Semicírculo del área penal.
-     for(let j=0;j<18;j++){
-       const a=-Math.PI*.29+j*(Math.PI*.58)/18;
-       const b=-Math.PI*.29+(j+1)*(Math.PI*.58)/18;
+     const segments=window.innerWidth<1050?10:18;
+     for(let j=0;j<segments;j++){
+       const a=-Math.PI*.29+j*(Math.PI*.58)/segments;
+       const b=-Math.PI*.29+(j+1)*(Math.PI*.58)/segments;
        pcLine([arcX+offset*8.4*Math.cos(a),8.4*Math.sin(a)],
               [arcX+offset*8.4*Math.cos(b),8.4*Math.sin(b)],0xf3f9e4,.09);
      }
      // Círculos de córner.
      for(const z of [nz,fz]){
        const inward=z<0?1:-1;
-       for(let j=0;j<10;j++){
-         const a=j*Math.PI/20,b=(j+1)*Math.PI/20;
+       const segments=window.innerWidth<1050?5:10;
+       for(let j=0;j<segments;j++){
+         const a=j*Math.PI/(2*segments),b=(j+1)*Math.PI/(2*segments);
          pcLine([edge+offset*1.3*Math.cos(a),z+inward*1.3*Math.sin(a)],
                 [edge+offset*1.3*Math.cos(b),z+inward*1.3*Math.sin(b)],0xe8f7db,.065);
        }
@@ -920,14 +925,14 @@ function createWorld(){
    let seed=5150;
    function rng(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
    const fans=[0xeaeff8,0xd73d45,0x5a9acc,0xf2cd70,0x53b17a,0xdad0c0];
-   for(let i=0;i<(window.innerWidth<1000?26:66);i++){
+   for(let i=0;i<(window.innerWidth<1050?16:66);i++){
      const side=rng()<.5?-1:1,row=Math.floor(rng()*6);
      const x=-67+rng()*134,z=side*(45.2+row*2.30);
      object3(app3.root,'box',fans[i%fans.length],x,1+row*.81,z,.41,.70,.32);
    }
    // Paneles LED originales (no son anuncios oficiales).
-   for(let i=0;i<14;i++){
-     const x=-67+i*10.2;
+   for(let i=0;i<(window.innerWidth<1050?9:14);i++){
+     const x=-67+i*(window.innerWidth<1050?15.2:10.2);
      for(const side of [-1,1]){
        object3(app3.root,'box',i%3===0?0x15405e:i%3===1?0x214c35:0x662f43,x,.74,side*40.9,10.0,1.4,.16);
      }

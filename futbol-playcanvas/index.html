@@ -330,7 +330,7 @@ function kick(team,kind,power=.3){
  }
  if(!Number.isFinite(vx)||!Number.isFinite(vy))return false;
  game.offsideCandidate=target&&offsideAtPass(target,team,b.x)?{team,receiver:target.team*TEAM_SIZE+target.index}:null;
- b.holder=null;b.x=owner.x+vx*10;b.y=owner.y+vy*10;b.h=kind==='pass'&&power<.78?0:.12;
+ b.holder=null;b.x=owner.x+vx*7;b.y=owner.y+vy*7;b.h=kind==='pass'&&power<.78?0:.12;
  const speed=kind==='shoot'?360+power*470:kind==='cross'?340+power*180:145+power*540;
  b.vx=vx*speed;b.vy=vy*speed;b.lock=kind==='cross'?.34:.18;
  // La potencia controla velocidad Y rodaje. Un toque corto no llega al otro extremo.
@@ -408,7 +408,7 @@ function tackle(team){
    const heavy=dist>13&&dist<27&&fromBehind;
    if(heavy){foe.stun=.42;beginRestart('freeKick',foe.team,foe.x,foe.y);sfx('tackle');return false;}
    foe.stun=.28;foe.vx*=.3;foe.vy*=.3;b.holder=null;
-   b.x=me.x+(me.dx||1)*9;b.y=me.y+(me.dy||0)*9;
+   b.x=me.x+(me.dx||1)*6;b.y=me.y+(me.dy||0)*6;
    b.vx=(me.dx||1)*155;b.vy=me.dy*155;b.h=.12;b.vh=1.6;b.lock=.17;
    game.lastTouchTeam=team;game.offsideCandidate=null;
    sfx('tackle');$('statusText').textContent='¡PELOTA RECUPERADA!';return true;
@@ -591,7 +591,7 @@ function step(dt){
      c.x=clamp(c.x-dx*push,L+12,R-12);c.y=clamp(c.y-dy*push,T+12,B-12);}
  }
  if(b.holder!==null){
-   const o=game.players[b.holder];b.x=o.x+o.dx*8;b.y=o.y+o.dy*8;b.h=0;b.vh=0;
+   const o=game.players[b.holder];b.x=o.x+o.dx*6;b.y=o.y+o.dy*6;b.h=0;b.vh=0;
    // La pelota controlada no rebota contra banda; se sanciona saque.
    if(b.y<T||b.y>B){beginRestart('throw',1-o.team,b.x,clamp(b.y,T+3,B-3));return;}
    if(b.x<L||b.x>R){beginRestart('goalKick',1-o.team,b.x<L?L+64:R-64,MID);return;}
@@ -606,7 +606,7 @@ function step(dt){
    // Línea de meta: gol, córner o saque de arco.
    if(b.x<=L||b.x>=R){
      const isRight=b.x>=R,defending=isRight?1:0,attacking=1-defending;
-     if(Math.abs(b.y-MID)<GOAL&&b.h<=2.52){resolveScore(attacking);return;}
+     if(Math.abs(b.y-MID)<GOAL&&b.h<=3.08){resolveScore(attacking);return;}
      const corner=game.lastTouchTeam===defending;
      beginRestart(corner?'corner':'goalKick',corner?attacking:defending,
        corner?(isRight?R-3:L+3):(isRight?R-65:L+65),corner?(b.y<MID?T+3:B-3):MID);

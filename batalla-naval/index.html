@@ -72,7 +72,7 @@
 .name-input{width:100%;max-width:350px;background:#082735;color:#e7fbff;border:1px solid #44707d;border-radius:9px;padding:13px;margin:9px 0 12px;outline-offset:2px}
 .battle-brief{color:#9cbcc6;font-size:11px;line-height:1.65;margin:0 0 14px}
 .multiplayer-board-note{font-size:11px;color:#69bfb8;margin-top:10px}
-.sink-cinema{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#0c333bcc,#010a19ec);z-index:999;pointer-events:none;overflow:hidden;animation:sinkIn .26s both,sinkFade .55s 1.94s both}
+.sink-cinema{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#0c333bcc,#010a19ec);z-index:999;pointer-events:none;overflow:hidden;animation:sinkIn .26s both,sinkFade .55s 2.48s both}
 .sink-horizon{position:absolute;inset:42% -15% -20%;background:repeating-linear-gradient(0deg,#62c7cf1a 0 2px,transparent 3px 29px),linear-gradient(#18839038,#06394ae6);transform:perspective(190px) rotateX(24deg);animation:sinkTide 2.2s ease-in-out infinite alternate}
 .sink-view{width:min(94vw,580px);height:min(78vw,365px);position:relative;z-index:3;display:flex;align-items:center;justify-content:center}
 .sink-vessel{width:min(83vw,490px);height:180px;position:absolute;top:26%;filter:drop-shadow(0 25px 17px #000b13c5);transform-origin:50% 72%;animation:vesselDown 2.6s cubic-bezier(.15,.7,.27,1) both}
@@ -96,6 +96,13 @@
 @media(max-width:560px){.target-chip{min-width:95px;flex-basis:95px;padding:10px 9px}.target-chip b{font-size:10px}.target-chip span{font-size:9px}.sink-vessel{top:25%}.sink-view{height:310px}.sink-heading{top:7%}}
 @media(prefers-reduced-motion:reduce){.sink-cinema{animation:sinkIn .1s both,sinkFade .1s 1.45s forwards}.sink-vessel,.sink-fire,.sink-horizon,.sink-spray,.sink-ripples,.sink-bubble{animation:none}}
 
+
+/* V2.1: Short invitation codes and separate narrator controls. */
+.room-code{font:900 clamp(35px,8vw,64px)/1 'Barlow Condensed',sans-serif!important;letter-spacing:.21em!important;color:#8ef3e8!important;user-select:all;overflow-wrap:anywhere}
+.header-right{gap:10px}.header-right .live-label{margin-right:10px}.icon-btn{flex-shrink:0;touch-action:manipulation}
+#voice-toggle{font-size:14px;letter-spacing:-.12em;font-weight:900}
+.sink-cinema{animation:sinkIn .26s both,sinkFade .55s 2.48s both}
+@media(max-width:560px){.header-right .live-label{display:none}.header-right{gap:8px}.icon-btn{width:37px;height:37px}.sink-view{height:min(390px,74vh)}.sink-heading{top:0}.sink-vessel{top:36%}.sink-label{bottom:0;max-width:93vw;line-height:1.5}}
 </style>
   <script async src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 
@@ -105,10 +112,10 @@
   <div class="app-shell">
     <header class="site-header">
       <button class="brand" data-action="menu" aria-label="Volver al menú"><span class="brand-logo">✦</span><span><strong>NEPTUNO</strong><small>BATTLESHIP COMMAND</small></span></button>
-      <div class="header-right"><div class="live-label"><span class="pulse-dot"></span> SISTEMA OPERATIVO</div><button class="icon-btn" id="sound-toggle" data-action="sound" aria-label="Activar o desactivar sonido" title="Sonido">♪</button></div>
+      <div class="header-right"><div class="live-label"><span class="pulse-dot"></span> SISTEMA OPERATIVO</div><button class="icon-btn" id="voice-toggle" data-action="voice" aria-label="Activar o desactivar las voces" title="Voces en español">◖))</button><button class="icon-btn" id="sound-toggle" data-action="sound" aria-label="Activar o desactivar los efectos de sonido" title="Efectos de sonido">♪</button></div>
     </header>
     <main id="app" aria-live="polite"></main>
-    <footer class="footer"><span>NEPTUNO <b> // </b> OPERACIONES NAVALES</span><span>EST. 2026 <b> · </b> V2.0</span></footer>
+    <footer class="footer"><span>NEPTUNO <b> // </b> OPERACIONES NAVALES</span><span>EST. 2026 <b> · </b> V2.1</span></footer>
   </div>
   <div id="toast-root" role="status" aria-live="polite"></div>
 <script>
@@ -126,6 +133,11 @@
   const app = document.getElementById('app');
   const toastRoot = document.getElementById('toast-root');
   const soundBtn = document.getElementById('sound-toggle');
+  const voiceBtn = document.getElementById('voice-toggle');
+  const SINK_DURATION = 3100;
+  const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const SHORT_CODE_RE = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
+  const PEER_PREFIX = 'neptuno-';
   const state = {
     stage: 'menu', mode: null, players: [], localId: 0, placer: 0,
     ready: [false, false], selected: 0, vertical: false,
@@ -135,7 +147,9 @@
     aiQueue: [], aiHits: [], aiRunning: false, muted: (() => { try { return localStorage.getItem('neptuno-muted') === 'true'; } catch (_) { return false; } })(),
     timerId: null, maxPlayers: 2, playerName: 'COMANDANTE', roster: [], connections: {},
     targetShots: {}, selectedTarget: null, hostPending: null, seq: 0, events: [],
-    onlineStarted: false, host: false, ending: false, personalShots: 0, personalHits: 0
+    onlineStarted: false, host: false, ending: false, personalShots: 0, personalHits: 0,
+    voicesOn: (() => { try {return localStorage.getItem('neptuno-voices') !== 'false'} catch (_) {return true} })(),
+    effectUntil: 0, lastEffectId: null, voiceTurnToken: '', lastNarration: ''
   };
   const coord = (x, y) => String.fromCharCode(65 + x) + String(y + 1);
   const key = (x, y) => `${x},${y}`;
@@ -175,6 +189,59 @@
       });
     } catch (err) { console.warn('Audio no disponible:', err); }
   }
+  let turnVoiceTimer, unlockTimer;
+  // Browser-native speech: voices and sound effects can be toggled independently.
+  function say(message) {
+    if (!state.voicesOn || !('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(message);
+      utterance.lang = 'es-AR'; utterance.rate = .96; utterance.pitch = .91; utterance.volume = 1;
+      const spanish = window.speechSynthesis.getVoices?.().filter(v => /^es(?:-|$)/i.test(v.lang)) || [];
+      utterance.voice = spanish.find(v => /^es-AR$/i.test(v.lang)) || spanish.find(v => /^es-/i.test(v.lang)) || spanish[0] || null;
+      state.lastNarration = message;
+      window.speechSynthesis.speak(utterance);
+    } catch (err) { console.warn('Narrador no disponible:', err); }
+  }
+  function turnName(id) {
+    if (state.mode === 'solo') return id === 1 ? 'la computadora' : 'jugador';
+    if (isOnline()) return state.roster.find(r => r.id === id)?.name || `comandante ${id + 1}`;
+    return `comandante ${id + 1}`;
+  }
+  function announceTurn() {
+    if (state.stage !== 'battle' || state.ending) return;
+    const token = `${state.mode}:${state.turnCount}:${state.turn}`;
+    if (state.voiceTurnToken === token) return;
+    state.voiceTurnToken = token;
+    say(`Turno de ${turnName(state.turn)}.`);
+  }
+  function queueTurnAnnouncement(delay = 0) {
+    clearTimeout(turnVoiceTimer);
+    if (!delay) announceTurn();
+    else turnVoiceTimer = setTimeout(() => announceTurn(), delay);
+  }
+  function makeRoomCode() {
+    const bytes = new Uint8Array(6);
+    if (window.crypto?.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for (let i = 0; i < bytes.length; i++) bytes[i] = rand(256);
+    return Array.from(bytes, b => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
+  }
+  function normalizeRoomCode(raw) {
+    const code = String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
+    // Preserve compatibility with invitations created before the six-character codes.
+    return SHORT_CODE_RE.test(code) ? code : String(raw || '').trim();
+  }
+  function roomPeerId(code) { return SHORT_CODE_RE.test(code) ? PEER_PREFIX + code : code; }
+  function releaseSinkLock() {
+    clearTimeout(unlockTimer);
+    unlockTimer = setTimeout(() => {
+      if (state.stage === 'battle') {
+        state.effectUntil = 0;
+        render();
+        queueTurnAnnouncement();
+      }
+    }, SINK_DURATION + 120);
+  }
   let toastTimer;
   function toast(message, warning = false) {
     clearTimeout(toastTimer);
@@ -213,6 +280,8 @@
   function shotsCount(map) { return Object.keys(map || {}).length; }
   function resetGame(mode) {
     clearTimeout(state.timerId);
+    clearTimeout(turnVoiceTimer); clearTimeout(unlockTimer);
+    try { window.speechSynthesis?.cancel(); } catch (_) {}
     destroyConnection();
     state.stage = mode === 'online' ? 'lobby' : 'placement';
     state.mode = mode; state.players = [createPlayer(), createPlayer()];
@@ -226,6 +295,7 @@
     state.selectedTarget = null; state.hostPending = null; state.seq = 0;
     state.events = []; state.onlineStarted = false; state.host = false; state.ending = false;
     state.personalShots = 0; state.personalHits = 0;
+    state.effectUntil = 0; state.lastEffectId = null; state.voiceTurnToken = ''; state.lastNarration = '';
     if (mode === 'solo') randomFleet(state.players[1]);
     render();
   }
@@ -237,6 +307,8 @@
     state.connections = {};
     if (p) { try { p.destroy(); } catch (_) {} }
     document.querySelectorAll('.sink-cinema').forEach(node => node.remove());
+    clearTimeout(turnVoiceTimer); clearTimeout(unlockTimer);
+    try {window.speechSynthesis?.cancel()} catch (_) {}
   }
   function openMenu() {
     resetGame(null); state.stage = 'menu'; state.mode = null;
@@ -245,7 +317,7 @@
   function renderMenu() {
     return `<section class="menu-hero">
       <div class="hero-content">
-        <div class="eyebrow">CENTRO DE COMBATE NAVAL · V2.0</div>
+        <div class="eyebrow">CENTRO DE COMBATE NAVAL · V2.1</div>
         <h1 class="hero-title">DOMINÁ<br>EL <em>OCÉANO.</em></h1>
         <p class="hero-description">Posicioná tu flota. Rastreá al enemigo. Dispará con precisión. Cada movimiento cuenta en esta batalla de estrategia naval.</p>
         <div class="hero-sub"><span><strong>10 × 10</strong> CUADRÍCULA</span><span><strong>05</strong> BUQUES</span><span><strong>2–6</strong> JUGADORES ONLINE</span></div>
@@ -342,7 +414,7 @@
   function renderLobby() {
     const connected = state.roster.length;
     return `<div class="lobby-wrap"><div class="eyebrow">SALA MULTIJUGADOR · 2 A 6 PERSONAS</div><h1>${state.host ? 'TU SALA ESTÁ ABIERTA' : 'SALA DE ESPERA'}</h1><div class="panel">
-      <div class="eyebrow">CÓDIGO DE INVITACIÓN</div><div class="room-code">${escapeHtml(state.onlineCode || 'ESTABLECIENDO CONEXIÓN…')}</div>
+      <div class="eyebrow">CÓDIGO DE INVITACIÓN · 6 CARACTERES</div><div class="room-code">${escapeHtml(state.onlineCode || 'ESTABLECIENDO CONEXIÓN…')}</div>
       ${state.host ? `<div class="btn-row"><button class="btn btn-primary" data-action="copy-link" ${!state.onlineCode ? 'disabled' : ''}>↗ COPIAR INVITACIÓN</button><button class="btn" data-action="copy-code" ${!state.onlineCode ? 'disabled' : ''}>COPIAR CÓDIGO</button></div>` : '<p class="tiny">Esperando a que se complete la sala. La flota se prepara cuando estén todos.</p>'}
       <div class="room-count"><strong>${connected} / ${state.maxPlayers} COMANDANTES CONECTADOS</strong><span class="pill">${connected === state.maxPlayers ? '✓ EQUIPO COMPLETO' : '⌛ ESPERANDO JUGADORES'}</span></div>
       ${rosterMarkup()}
@@ -361,14 +433,14 @@
     const mine = state.players[state.localId];
     const local = state.roster.find(r => r.id === state.localId);
     const alive = local?.alive !== false;
-    const myTurn = alive && state.turn === state.localId && !state.pendingShot && !state.ending;
+    const myTurn = alive && state.turn === state.localId && !state.pendingShot && !state.ending && Date.now() >= state.effectUntil;
     const choices = state.roster.filter(r => r.id !== state.localId);
     const validTargets = choices.filter(r => r.alive);
     if (!validTargets.some(r => r.id === state.selectedTarget)) state.selectedTarget = validTargets[0]?.id ?? null;
     const target = state.roster.find(r => r.id === state.selectedTarget);
     const viewed = state.targetShots[state.selectedTarget] || {};
     const targetButtons = choices.map(r => `<button class="target-chip ${r.id === state.selectedTarget ? 'selected' : ''} ${r.alive ? '' : 'eliminated'}" data-action="target" data-id="${r.id}" ${r.alive ? '' : 'disabled'}><b>${escapeHtml(r.name)}</b><span>${r.alive ? `⚓ ${r.shipsLeft}/5 barcos` : '✕ ELIMINADO'}</span></button>`).join('');
-    const status = state.ending ? 'BATALLA CONCLUIDA…' : !alive ? 'FLOTA HUNDIDA · MODO ESPECTADOR' : state.pendingShot ? 'DISPARO EN CURSO…' : myTurn ? 'TU TURNO — ¡ATACÁ!' : `TURNO DE ${escapeHtml(state.roster.find(r => r.id === state.turn)?.name || 'OTRO JUGADOR')}`;
+    const status = state.ending ? 'BATALLA CONCLUIDA…' : !alive ? 'FLOTA HUNDIDA · MODO ESPECTADOR' : Date.now() < state.effectUntil ? 'ANIMACIÓN DE HUNDIMIENTO EN CURSO…' : state.pendingShot ? 'DISPARO EN CURSO…' : myTurn ? 'TU TURNO — ¡ATACÁ!' : `TURNO DE ${escapeHtml(state.roster.find(r => r.id === state.turn)?.name || 'OTRO JUGADOR')}`;
     const helper = !alive ? 'Podés observar la batalla hasta conocer al ganador.' : myTurn ? 'Seleccioná un rival y tocá una coordenada de su tablero.' : 'Los comandantes disparan por turnos, uno tras otro.';
     return `<div class="battle-head"><div><div class="eyebrow">BATALLA MULTIJUGADOR · ${state.roster.length} COMANDANTES</div><h1>GUERRA NAVAL</h1></div><div class="battle-stats"><span class="stat-chip">DISPARO <strong>${state.turnCount}</strong></span><span class="stat-chip">TU FLOTA <strong>${aliveShips(mine)}/5</strong></span><button class="btn btn-soft" data-action="menu">SALIR</button></div></div>
     <div class="turn-banner ${!myTurn ? 'inactive' : ''}"><span class="turn-dot"></span><div><strong>${status}</strong><span>${helper}</span></div></div>
@@ -385,23 +457,29 @@
     </div></section><div class="battle-log">▸ <strong>BITÁCORA:</strong> ${state.events.slice(-4).reverse().map(e => `<div>${escapeHtml(e)}</div>`).join('') || escapeHtml(state.log)}</div>`;
   }
   let sinkTimer;
-  function showSink(result, targetLabel) {
+  function showSink(result, targetLabel, shooterLabel = '', effectId = null) {
     if (!result?.sunk) return;
+    if (effectId != null && state.lastEffectId === effectId) return;
+    if (effectId != null) state.lastEffectId = effectId;
     sound('sunk');
+    const ship = String(result.shipName || 'barco').toLowerCase();
+    say(`¡Barco hundido! ${ship} de ${targetLabel}.`);
     const old = document.querySelector('.sink-cinema'); if (old) old.remove();
     const cinematic = document.createElement('div'); cinematic.className = 'sink-cinema';
     cinematic.setAttribute('aria-label', `¡Buque hundido! ${targetLabel}`);
+    cinematic.dataset.effectId = String(effectId ?? 'local');
+    cinematic.dataset.synchronized = isOnline() ? 'true' : 'false';
     const bubbles = Array.from({length:17}, (_,i)=>`<i class="sink-bubble" style="--x:${8+(i*19)%85}%;--w:${8+(i*7)%18}px;--t:${.9+(i%5)*.2}s"></i>`).join('');
-    cinematic.innerHTML = `<div class="sink-horizon"></div><div class="sink-view"><div class="sink-heading"><small>⚓ IMPACTO CRÍTICO ⚓</small><strong>¡BUQUE HUNDIDO!</strong></div><div class="sink-vessel"><svg viewBox="0 0 500 210" role="img" aria-label="Barco que se hunde"><defs><linearGradient id="shipSinkFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a0bdc5"/><stop offset=".44" stop-color="#476e7a"/><stop offset="1" stop-color="#112c40"/></linearGradient></defs><path d="M22 120 L455 120 L480 135 L443 186 L86 186 L25 144Z" fill="url(#shipSinkFill)" stroke="#b6dce0" stroke-width="4"/><path d="M68 118 L94 92 L372 92 L424 119" fill="#2f596a" stroke="#8eb4ba" stroke-width="4"/><rect x="172" y="58" width="155" height="33" rx="5" fill="#6b919c"/><rect x="204" y="29" width="77" height="30" rx="3" fill="#b3cbd0"/><path d="M239 29 L239 6 M211 21 L270 21" stroke="#c8e5e5" stroke-width="5"/><path d="M310 73 L408 62" stroke="#d4e2df" stroke-width="7" stroke-linecap="round"/><circle cx="92" cy="137" r="13" fill="#1e3949" stroke="#9eb7c0" stroke-width="3"/><circle cx="405" cy="137" r="13" fill="#1e3949" stroke="#9eb7c0" stroke-width="3"/><path d="M25 141 L120 170 M155 146 L203 175 M312 143 L369 171" stroke="#ff9e73" stroke-width="5" stroke-linecap="round"/></svg></div><div class="sink-fire"></div><div class="sink-spray"></div><div class="sink-ripples"></div><div class="sink-label">${escapeHtml(result.shipName || 'BUQUE ENEMIGO')} · ${escapeHtml(targetLabel)}</div>${bubbles}</div>`;
+    cinematic.innerHTML = `<div class="sink-horizon"></div><div class="sink-view"><div class="sink-heading"><small>⚓ IMPACTO CRÍTICO ⚓</small><strong>¡BUQUE HUNDIDO!</strong></div><div class="sink-vessel"><svg viewBox="0 0 500 210" role="img" aria-label="Barco que se hunde"><defs><linearGradient id="shipSinkFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a0bdc5"/><stop offset=".44" stop-color="#476e7a"/><stop offset="1" stop-color="#112c40"/></linearGradient></defs><path d="M22 120 L455 120 L480 135 L443 186 L86 186 L25 144Z" fill="url(#shipSinkFill)" stroke="#b6dce0" stroke-width="4"/><path d="M68 118 L94 92 L372 92 L424 119" fill="#2f596a" stroke="#8eb4ba" stroke-width="4"/><rect x="172" y="58" width="155" height="33" rx="5" fill="#6b919c"/><rect x="204" y="29" width="77" height="30" rx="3" fill="#b3cbd0"/><path d="M239 29 L239 6 M211 21 L270 21" stroke="#c8e5e5" stroke-width="5"/><path d="M310 73 L408 62" stroke="#d4e2df" stroke-width="7" stroke-linecap="round"/><circle cx="92" cy="137" r="13" fill="#1e3949" stroke="#9eb7c0" stroke-width="3"/><circle cx="405" cy="137" r="13" fill="#1e3949" stroke="#9eb7c0" stroke-width="3"/><path d="M25 141 L120 170 M155 146 L203 175 M312 143 L369 171" stroke="#ff9e73" stroke-width="5" stroke-linecap="round"/></svg></div><div class="sink-fire"></div><div class="sink-spray"></div><div class="sink-ripples"></div><div class="sink-label">${escapeHtml(result.shipName || 'BUQUE ENEMIGO')} · ${escapeHtml(targetLabel)}${shooterLabel ? ' · IMPACTADO POR ' + escapeHtml(shooterLabel) : ''}</div>${bubbles}</div>`;
     document.body.appendChild(cinematic);
     clearTimeout(sinkTimer);
-    sinkTimer = setTimeout(() => cinematic.remove(), 2530);
+    sinkTimer = setTimeout(() => cinematic.remove(), SINK_DURATION);
   }
   function renderJoin() {
     return `<div class="lobby-wrap"><div class="eyebrow">PROTOCOLO P2P · UNIÓN DE FLOTAS</div><h1>UNIRSE A UNA SALA</h1><div class="panel"><h2 class="panel-heading">INGRESÁ EL CÓDIGO</h2>
       <p class="tiny">Pedile al anfitrión el código de su sala, o abrí directamente su enlace de invitación.</p>
       <div class="eyebrow" style="margin-top:18px">TU NOMBRE</div><input class="name-input" id="join-name" aria-label="Nombre del jugador" maxlength="18" value="${escapeHtml(state.playerName)}">
-      <input class="room-input" id="room-input" aria-label="Código de la sala" placeholder="Ej: 4f2c..." maxlength="180" value="${escapeHtml(state.onlineCode)}" autocapitalize="off" autocomplete="off" spellcheck="false">
+      <input class="room-input" id="room-input" aria-label="Código de la sala" placeholder="Ej: K7M4TX" maxlength="180" value="${escapeHtml(state.onlineCode)}" autocapitalize="off" autocomplete="off" spellcheck="false">
       <div class="btn-row"><button class="btn btn-primary" data-action="connect" ${state.joining ? 'disabled' : ''}>${state.joining ? 'CONECTANDO…' : 'CONECTAR →'}</button><button class="btn btn-soft" data-action="menu">← VOLVER</button></div>
       <p class="tiny" style="margin-top:18px">Requiere conexión a internet. Algunas redes corporativas o móviles pueden bloquear la comunicación directa entre dispositivos.</p></div></div>`;
   }
@@ -420,6 +498,9 @@
     return `<section class="result ${win ? 'win' : 'lose'}"><div class="result-card"><div class="result-icon">${win ? '♛' : '⚑'}</div><div class="eyebrow">INFORME FINAL DE OPERACIONES</div><h1>${title}</h1><p>${subtitle}</p><div class="score-line"><div><strong>${isOnline() ? state.personalShots : shotsCount(p.fired)}</strong>DISPAROS</div><div><strong>${isOnline() ? state.personalHits : Object.values(p.fired).filter(x => x === 'hit' || x === 'sunk').length}</strong>IMPACTOS</div><div><strong>${state.turnCount}</strong>RONDAS</div></div><div class="btn-row"><button class="btn btn-primary" data-action="again">↻ NUEVA PARTIDA</button><button class="btn btn-soft" data-action="menu">MENÚ PRINCIPAL</button></div></div></section>`;
   }
   function render() {
+    voiceBtn.classList.toggle('off', !state.voicesOn);
+    voiceBtn.title = state.voicesOn ? 'Desactivar voces' : 'Activar voces en español';
+    voiceBtn.setAttribute('aria-pressed', String(state.voicesOn));
     soundBtn.classList.toggle('off', state.muted);
     soundBtn.title = state.muted ? 'Activar sonidos' : 'Silenciar sonidos';
     const stage = state.stage;
@@ -477,6 +558,8 @@
   function endGame(winner) {
     state.winner = winner; state.stage = 'result'; state.pendingShot = null; state.ending = false;
     render(); sound(winner === state.localId || state.mode === 'local' ? 'win' : 'lose');
+    if (isOnline()) say(`¡Fin de la batalla! Ganó ${turnName(winner)}.`);
+    else say(winner === state.localId || state.mode === 'local' ? '¡Victoria naval!' : '¡Misión fallida!');
   }
   function finishTurn(shooter, target, result) {
     state.lastShot = { k: key(result.x, result.y), target };
@@ -487,12 +570,13 @@
       return;
     }
     state.turn = target; state.turnCount++;
+    queueTurnAnnouncement(result.sunk ? SINK_DURATION + 100 : 180);
     if (state.mode === 'local') state.curtain = true;
     render();
     if (state.mode === 'solo' && state.turn === 1) {
       state.aiRunning = true;
       render();
-      state.timerId = setTimeout(aiShoot, 850);
+      state.timerId = setTimeout(aiShoot, result.sunk ? SINK_DURATION + 650 : 850);
     }
   }
   function playerShoot(x, y) {
@@ -512,7 +596,7 @@
     const result = resolveShot(state.players[target], x, y);
     if (!result) return;
     recordOutgoing(p, result);
-    sound(result.sunk ? 'sunk' : result.hit ? 'hit' : 'miss');
+    if (!result.sunk) sound(result.hit ? 'hit' : 'miss');
     if (result.sunk) showSink(result, `COMANDANTE ${target + 1}`);
     finishTurn(shooter, target, result);
     if (state.stage === 'battle' && !state.curtain) displayImpact('enemy', x, y, result);
@@ -549,7 +633,7 @@
       }
     }
     state.aiRunning = false;
-    sound(result.sunk ? 'sunk' : result.hit ? 'hit' : 'miss');
+    if (!result.sunk) sound(result.hit ? 'hit' : 'miss');
     if (result.sunk) showSink(result, 'TU FLOTA');
     finishTurn(1, 0, result);
     if (state.stage === 'battle') displayImpact('own', x, y, result);
@@ -559,11 +643,13 @@
     const p = getPlacementPlayer();
     if (!fleetDone(p)) { toast('Primero ubicá los cinco barcos.', true); return; }
     sound('place');
-    if (state.mode === 'solo') { state.stage = 'battle'; render(); return; }
+    if (state.mode === 'solo') { state.stage = 'battle'; render(); queueTurnAnnouncement(140); return; }
     if (state.mode === 'local') {
       if (state.placer === 0) { state.placer = 1; state.selected = 0; state.vertical = false; state.curtain = true; }
       else { state.stage = 'battle'; state.curtain = true; state.turn = 0; }
-      render(); return;
+      render();
+      if (state.stage === 'battle') queueTurnAnnouncement(140);
+      return;
     }
     if (state.host) { hostSetReady(state.localId); }
     else { const my=state.roster.find(r=>r.id===state.localId); if(my)my.ready=true; state.connection?.send({ type: 'ready' }); }
@@ -598,12 +684,13 @@
     if (state.roster.length===state.maxPlayers && state.roster.every(p=>p.ready)) {
       state.stage='battle';state.turn=0;state.turnCount=1;
       broadcast({type:'battle-start',roster:state.roster,turn:state.turn});
-      toast('¡Comienza la batalla!');sound('place');
+      toast('¡Comienza la batalla!');sound('place');queueTurnAnnouncement(170);
     }
     render();
   }
   function hostProcessFire(shooter,target,x,y) {
     if (!state.host||state.stage!=='battle'||state.hostPending||state.ending) return;
+    if (Date.now() < state.effectUntil) { if (shooter !== 0) send(state.connections[shooter], {type:'turn-paused'}); return; }
     if (state.turn!==shooter || !Number.isInteger(x)||!Number.isInteger(y)||!inRange(x,y) || !Number.isInteger(target)) return;
     if (shooter===target || !state.roster.some(r=>r.id===target && r.alive) || !state.roster.some(r=>r.id===shooter && r.alive)) return;
     if(state.targetShots[target]?.[key(x,y)]!==undefined){
@@ -634,12 +721,16 @@
     const alive=activeRoster();
     const winner=alive.length===1 ? alive[0].id : null;
     state.turn=getNextTurn(req.shooter);state.turnCount++;
-    const message={type:'shot',shooter:req.shooter,target:req.target,x:req.x,y:req.y,hit:Boolean(result.hit),sunk:Boolean(result.sunk),shipCells:result.sunk?result.shipCells:[],shipName:result.sunk ? result.shipName||'BUQUE' : '',eliminated:Boolean(result.win),winner,turn:state.turn,turnCount:state.turnCount,roster:state.roster};
+    const message={type:'shot',effectId:`${state.seq}-${req.target}-${req.x}-${req.y}`,shooter:req.shooter,target:req.target,x:req.x,y:req.y,hit:Boolean(result.hit),sunk:Boolean(result.sunk),shipCells:result.sunk?result.shipCells:[],shipName:result.sunk ? result.shipName||'BUQUE' : '',eliminated:Boolean(result.win),winner,turn:state.turn,turnCount:state.turnCount,roster:state.roster};
     broadcast(message);applyOnlineShot(message);
   }
   function applyOnlineShot(m) {
     if(state.stage!=='battle'|| !Number.isInteger(m.shooter)||!Number.isInteger(m.target) || !inRange(m.x,m.y)) return;
     state.turn=m.turn;state.turnCount=m.turnCount;state.roster=m.roster;
+    if (m.sunk) {
+      state.effectUntil = Date.now() + SINK_DURATION + 100;
+      releaseSinkLock();
+    }
     state.pendingShot=null;
     // Shared radar: every commander can see coordinates already fired at a rival.
     const marks=state.targetShots[m.target] ||= {};
@@ -652,17 +743,19 @@
     state.lastShot={k:key(m.x,m.y),shooter:m.shooter,target:m.target};
     state.log=hitLog(result,`${who} → ${victim}`);
     state.events.push(state.log);state.events=state.events.slice(-12);
-    if(m.sunk)showSink(result,victim);
+    // The host broadcasts ONE authoritative sunk event to ALL devices, including spectators.
+    // Every client renders the same cinematic from that event, not only the shooter.
+    if(m.sunk)showSink(result,victim,who,m.effectId || `${m.turnCount}-${m.target}-${m.x}-${m.y}`);
     else sound(m.hit?'hit':'miss');
     if (m.winner!==null&&m.winner!==undefined) {
       state.ending=true; render();
-      state.timerId=setTimeout(()=>{if(state.ending && state.stage==='battle')endGame(m.winner);},m.sunk?2220:450);
-    } else {render();}
+      state.timerId=setTimeout(()=>{if(state.ending && state.stage==='battle')endGame(m.winner);},m.sunk?SINK_DURATION+280:450);
+    } else {render(); if (!m.sunk) queueTurnAnnouncement(240);}
     const type=m.target===state.localId?'own':m.shooter===state.localId && m.target===state.selectedTarget?'enemy':null;
     if(type)requestAnimationFrame(()=>displayImpact(type,m.x,m.y,result));
   }
   function onlinePlayerShoot(x,y) {
-    if(state.stage!=='battle'||state.ending||state.pendingShot||state.turn!==state.localId) return;
+    if(state.stage!=='battle'||state.ending||state.pendingShot||state.turn!==state.localId||Date.now()<state.effectUntil) return;
     const target=state.selectedTarget;
     if(target===null||target===state.localId||!state.roster.some(r=>r.id===target&&r.alive))return;
     if(state.targetShots[target]?.[key(x,y)]!==undefined){toast('Ya atacaste esa coordenada de este rival.',true);return;}
@@ -699,7 +792,7 @@
     const label=state.roster.find(r=>r.id===m.id)?.name||'Un comandante';
     state.events.push(`${label} se desconectó y quedó fuera de combate.`);
     toast(`${label} abandonó la batalla.`,true);
-    if(m.winner!==null && m.winner!==undefined)endGame(m.winner);else render();
+    if(m.winner!==null && m.winner!==undefined)endGame(m.winner);else {render();queueTurnAnnouncement(200);}
   }
   function receiveOnline(data,conn=null) {
     if (!data||typeof data!=='object'||!data.type)return;
@@ -728,13 +821,14 @@
           state.roster=data.roster;state.maxPlayers=data.maxPlayers;state.onlineStarted=true;
           state.players=Array.from({length:state.maxPlayers},()=>createPlayer());state.stage='placement';state.selected=0;state.vertical=false;render();toast('¡A preparar la flota!');break;
         case 'battle-start':
-          state.roster=data.roster;state.stage='battle';state.turn=data.turn;state.turnCount=1;render();toast('¡Batalla iniciada!');break;
+          state.roster=data.roster;state.stage='battle';state.turn=data.turn;state.turnCount=1;render();toast('¡Batalla iniciada!');queueTurnAnnouncement(170);break;
         case 'incoming-fire':
           if(state.stage!=='battle'||!Number.isInteger(data.x)||!Number.isInteger(data.y)||!inRange(data.x,data.y))return;
           const res=resolveShot(state.players[state.localId],data.x,data.y);
           if(res)send(state.connection,{type:'fire-result',token:data.token,...res});break;
         case 'shot':applyOnlineShot(data);break;
         case 'invalid-fire':state.pendingShot=null;toast('Esa coordenada ya fue atacada. Elegí otra.',true);render();break;
+        case 'turn-paused':state.pendingShot=null;toast('Esperá a que termine la animación.',true);render();break;
         case 'player-left':applyPlayerLeft(data);break;
         case 'return-lobby':state.roster=data.roster;state.stage='lobby';render();toast('Esperando otro comandante.',true);break;
         case 'busy':toast('Esta sala ya está llena o ha comenzado.',true);state.stage='online-choose';render();break;
@@ -767,6 +861,26 @@
       conn.on('error',()=>{toast('No se pudo mantener la conexión.',true);});
     }
   }
+  function openHostPeer(attempt = 0) {
+    if (!state.host || state.stage !== 'lobby' || !window.Peer) return;
+    const code = makeRoomCode();
+    const peer = new window.Peer(roomPeerId(code));
+    state.peer = peer; state.onlineCode = ''; render();
+    peer.on('open', id => {
+      if (state.peer !== peer) return;
+      state.onlineCode = id.startsWith(PEER_PREFIX) ? id.slice(PEER_PREFIX.length) : id;
+      render(); toast('Sala lista: compartí el código de seis caracteres.');
+    });
+    peer.on('connection', conn => { if (state.peer === peer) installPeer(conn); });
+    peer.on('error', err => {
+      if (state.peer !== peer) return;
+      if (err.type === 'unavailable-id' && attempt < 4) {
+        try {peer.destroy()} catch (_) {}
+        openHostPeer(attempt + 1); return;
+      }
+      toast(`No se pudo iniciar la sala (${err.type || 'red'}).`, true);
+    });
+  }
   function hostOnline(){
     const chosen=state.maxPlayers;
     const name=safeName(document.getElementById('host-name')?.value,'COMANDANTE 1');
@@ -775,14 +889,13 @@
     state.players=Array.from({length:chosen},()=>createPlayer());state.localId=0;
     state.stage='lobby';render();
     if(!window.Peer){toast('PeerJS no está disponible. Revisá tu conexión a Internet.',true);return;}
-    const peer=new window.Peer();state.peer=peer;
-    peer.on('open',id=>{if(state.peer!==peer)return;state.onlineCode=id;render();});
-    peer.on('connection',conn=>{if(state.peer===peer)installPeer(conn);});
-    peer.on('error',err=>{if(state.peer===peer)toast(`No se pudo iniciar la sala (${err.type||'red'}).`,true);});
+    openHostPeer();
   }
   function joinOnline(){
-    const code=(document.getElementById('room-input')?.value||'').trim();
-    if(!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,179}$/.test(code)){toast('Ingresá un código válido.',true);return;}
+    const code=normalizeRoomCode(document.getElementById('room-input')?.value||'');
+    if (!SHORT_CODE_RE.test(code) && !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,179}$/.test(code)) {
+      toast('Ingresá un código de 6 caracteres válido.',true);return;
+    }
     const name=safeName(document.getElementById('join-name')?.value,'COMANDANTE');
     state.onlineCode=code;state.playerName=name;state.joining=true;render();
     if(!window.Peer){toast('No se cargó PeerJS. Se necesita conexión a Internet.',true);state.joining=false;render();return;}
@@ -790,7 +903,7 @@
     const peer=new window.Peer();state.peer=peer;state.host=false;
     peer.on('open',()=>{
       if(state.peer!==peer)return;
-      installPeer(peer.connect(code,{reliable:true,metadata:{name}}));
+      installPeer(peer.connect(roomPeerId(code),{reliable:true,metadata:{name}}));
     });
     peer.on('error',err=>{if(state.peer!==peer)return;state.joining=false;toast(`No se pudo conectar (${err.type||'red'}).`,true);render();});
     state.timerId=setTimeout(()=>{if(state.stage==='join'&&state.joining){state.joining=false;toast('Tiempo de conexión agotado. Verificá el código.',true);render();}},17000);
@@ -809,6 +922,12 @@
   function actionClick(action, elem) {
     switch (action) {
       case 'menu': openMenu(); break;
+      case 'voice': state.voicesOn = !state.voicesOn; try {localStorage.setItem('neptuno-voices', String(state.voicesOn));} catch (_) {}
+        if (state.voicesOn) {
+          if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) toast('Este navegador no admite voces.', true);
+          else say('Narrador activado.');
+        } else {try {window.speechSynthesis?.cancel()} catch (_) {}}
+        render(); break;
       case 'sound': state.muted = !state.muted; try { localStorage.setItem('neptuno-muted', String(state.muted)); } catch (_) {} sound('click'); render(); break;
       case 'solo': resetGame('solo'); sound('click'); break;
       case 'local': resetGame('local'); sound('click'); break;
@@ -883,14 +1002,14 @@
   window.addEventListener('beforeunload', destroyConnection);
   // Link invites open the join screen and prefill the room code.
   const room = new URLSearchParams(location.search).get('room');
-  if (room && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,179}$/.test(room)) {state.stage = 'join'; state.mode = 'online'; state.onlineCode = room;}
+  if (room && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,179}$/.test(room)) {state.stage = 'join'; state.mode = 'online'; state.onlineCode = normalizeRoomCode(room);}
   render();
   // Minimal hooks for automated browser checks (no gameplay shortcuts in public UI).
   window.__neptunoDebug = {
     getState: () => ({ stage: state.stage, mode: state.mode, turn: state.turn, winner: state.winner,
       ready: [...state.ready], ships: state.players.map(p => p.ships.length), shots: state.players.map(p => Object.keys(p.fired).length),
       localId: state.localId, maxPlayers: state.maxPlayers, roster:state.roster, selectedTarget:state.selectedTarget, pendingShot:state.pendingShot,
-      targetShots:state.targetShots,events:state.events,host:state.host }),
+      targetShots:state.targetShots,events:state.events,host:state.host,onlineCode:state.onlineCode,voicesOn:state.voicesOn,effectUntil:state.effectUntil,lastEffectId:state.lastEffectId,lastNarration:state.lastNarration }),
   };
 })();
 
